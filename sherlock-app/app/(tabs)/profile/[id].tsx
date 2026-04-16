@@ -1,7 +1,7 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { TYPES } from '../../constants/data';
+import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { colors, fonts, spacing, radius } from '../../../constants/theme';
+import { TYPES } from '../../../constants/data';
 
 export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,7 +18,16 @@ export default function ProfileDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
+      {/* Header avec bouton retour */}
+      <View style={styles.topBar}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.topBarTitle}>Profil</Text>
+        <View style={styles.backBtn} />
+      </View>
+
+      {/* Hero */}
       <View style={styles.header}>
         <View style={[styles.typeCircle, { backgroundColor: type.color }]}>
           <Text style={styles.typeCircleText}>{type.num}</Text>
@@ -36,29 +45,29 @@ export default function ProfileDetailScreen() {
         <Text style={styles.sectionBody}>{type.metaphor}</Text>
       </View>
 
-      {/* Integration & Desintegration */}
+      {/* Integration & Désintégration */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Integration & Desintegration</Text>
+        <Text style={styles.sectionTitle}>Intégration & Désintégration</Text>
         <View style={styles.integrationBox}>
           <Text style={styles.integrationLabel}>
-            Integration vers le type {type.integration.toward}
+            Intégration vers le type {type.integration.toward}
           </Text>
           <Text style={styles.integrationDesc}>{type.integration.desc}</Text>
         </View>
         <View style={styles.integrationBox}>
           <Text style={styles.integrationLabel}>
-            Desintegration vers le type {type.disintegration.toward}
+            Désintégration vers le type {type.disintegration.toward}
           </Text>
           <Text style={styles.integrationDesc}>{type.disintegration.desc}</Text>
         </View>
       </View>
 
-      {/* Age Sections */}
+      {/* Tranches d'âge */}
       {(['5-8', '8-12', '13-16'] as const).map((ageKey) => {
         const labels: Record<string, string> = {
-          '5-8': 'De 5 a 8 ans',
-          '8-12': 'De 8 a 12 ans',
-          '13-16': 'De 13 a 16 ans',
+          '5-8': 'De 5 à 8 ans',
+          '8-12': 'De 8 à 12 ans',
+          '13-16': 'De 13 à 16 ans',
         };
         return (
           <View key={ageKey} style={styles.section}>
@@ -68,10 +77,10 @@ export default function ProfileDetailScreen() {
         );
       })}
 
-      {/* Keys */}
+      {/* Clés */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          Trois cles pour accompagner votre enfant
+          Trois clés pour accompagner votre enfant
         </Text>
         {type.keys.map((key, index) => (
           <View key={index} style={styles.keyCard}>
@@ -93,7 +102,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   content: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl + spacing.xl,
   },
   errorText: {
     fontFamily: fonts.sans,
@@ -103,13 +112,40 @@ const styles = StyleSheet.create({
     marginTop: 120,
   },
 
-  // Header
+  // Barre du haut
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: spacing.xxl + spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backBtnText: {
+    fontFamily: fonts.sans,
+    fontSize: 28,
+    color: colors.text,
+    lineHeight: 32,
+  },
+  topBarTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 18,
+    color: colors.text,
+  },
+
+  // Hero
   header: {
     alignItems: 'center',
-    paddingTop: 72,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     backgroundColor: colors.surface,
+    paddingTop: spacing.md,
   },
   typeCircle: {
     width: 72,
@@ -170,7 +206,7 @@ const styles = StyleSheet.create({
     color: colors.textSoft,
   },
 
-  // Integration boxes
+  // Intégration
   integrationBox: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
@@ -191,7 +227,7 @@ const styles = StyleSheet.create({
     color: colors.textSoft,
   },
 
-  // Key cards
+  // Clés
   keyCard: {
     backgroundColor: colors.surface,
     borderWidth: 1,

@@ -108,6 +108,7 @@ export default function QuizScreen() {
 
   // ── QUIZ EN COURS ──
   const progress = Math.min(currentQuestion / questions.length, 1);
+  const handleBack = () => reset();
 
   // Radar size: fill the screen on mobile
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
@@ -129,6 +130,18 @@ export default function QuizScreen() {
           <Text style={styles.legendText}>{resultLabel}</Text>
         </View>
       )}
+    </View>
+  );
+
+  const topBar = (
+    <View style={styles.quizTopBar}>
+      <Pressable onPress={handleBack} style={styles.quizBackBtn}>
+        <Text style={styles.quizBackBtnText}>‹</Text>
+      </Pressable>
+      <Text style={styles.quizTopBarTitle}>
+        {mode === 'enfant' ? '🧒 Mon enfant' : mode === 'ado' ? '🎧 Mon ado' : '🪞 Moi-même'}
+      </Text>
+      <View style={styles.quizBackBtn} />
     </View>
   );
 
@@ -176,6 +189,7 @@ export default function QuizScreen() {
         </LinearGradient>
 
         <View style={styles.rightPanel}>
+          {topBar}
           {progressBar}
           <ScrollView
             style={styles.scrollFlex}
@@ -192,6 +206,7 @@ export default function QuizScreen() {
   // ── MOBILE LAYOUT (radar + question fullscreen) ──
   return (
     <View style={styles.narrowContainer}>
+      {topBar}
       {progressBar}
       <ScrollView
         style={styles.scrollFlex}
@@ -323,6 +338,33 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 12,
     color: colors.textDim,
+  },
+
+  // ── Quiz top bar ──
+  quizTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: spacing.xxl + spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xs,
+  },
+  quizBackBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quizBackBtnText: {
+    fontFamily: fonts.sans,
+    fontSize: 28,
+    color: colors.text,
+    lineHeight: 32,
+  },
+  quizTopBarTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 16,
+    color: colors.text,
   },
 
   // ── Progress ──

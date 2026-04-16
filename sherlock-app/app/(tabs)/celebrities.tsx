@@ -401,10 +401,11 @@ function DetailScreen({ cas, playState, onSubmit }: {
 //  Écran Révélation (après réponse)
 // ─────────────────────────────────────────────
 
-function RevealScreen({ playState, onNext, onViewFiche }: {
+function RevealScreen({ playState, onNext, onViewFiche, onBack }: {
   playState: any;
   onNext: () => void;
   onViewFiche: (id: string) => void;
+  onBack: () => void;
 }) {
   const c = playState.currentCase;
   const isLast = playState.caseIndex >= playState.dossier.cases.length - 1;
@@ -413,6 +414,19 @@ function RevealScreen({ playState, onNext, onViewFiche }: {
   const answerType = c.format === 'faux_amis' ? null : (c as any).answer as number;
 
   return (
+    <View style={{ flex: 1 }}>
+      {/* Header */}
+      <View style={styles.screenHeader}>
+        <Pressable onPress={onBack} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.screenTitle}>
+          {playState.dossier.emoji} {playState.dossier.title}
+        </Text>
+        <Text style={{ width: 44, textAlign: 'right', fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted, alignSelf: 'center' }}>
+          {playState.caseIndex + 1}/{playState.dossier.cases.length}
+        </Text>
+      </View>
     <ScrollView style={styles.revealScroll} contentContainerStyle={styles.revealContent}>
       {/* Résultat */}
       <View style={[styles.revealResult, playState.correct ? styles.revealCorrect : styles.revealWrong]}>
@@ -453,6 +467,7 @@ function RevealScreen({ playState, onNext, onViewFiche }: {
         <Text style={styles.nextBtnText}>{isLast ? 'Terminer le dossier' : 'Cas suivant →'}</Text>
       </Pressable>
     </ScrollView>
+    </View>
   );
 }
 
@@ -814,6 +829,7 @@ export default function CelebritiesScreen() {
           playState={playState}
           onNext={nextCase}
           onViewFiche={openFiche}
+          onBack={goBack}
         />
       </View>
     );
@@ -1015,7 +1031,7 @@ const styles = StyleSheet.create({
 
   // ── Reveal ──
   revealScroll: { flex: 1 },
-  revealContent: { padding: spacing.md, paddingTop: spacing.xxl + spacing.lg, paddingBottom: spacing.xxl + spacing.xl },
+  revealContent: { padding: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.xxl + spacing.xl },
   revealResult: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, marginBottom: spacing.md },
   revealCorrect: { backgroundColor: colors.successBg, borderWidth: 1, borderColor: colors.success },
   revealWrong: { backgroundColor: colors.errorBg, borderWidth: 1, borderColor: colors.errorLight },

@@ -58,8 +58,9 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <QuestionsIcon color={color} size={size} />,
         }}
       />
-      {/* Ecrans caches de la tab bar */}
+      {/* Ecrans cachés de la tab bar */}
       <Tabs.Screen name="chapters" options={{ href: null }} />
+      <Tabs.Screen name="profile/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
