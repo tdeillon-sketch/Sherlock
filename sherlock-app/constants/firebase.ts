@@ -108,3 +108,26 @@ export async function updateLastSeen(uid: string): Promise<void> {
     lastSeen: serverTimestamp(),
   });
 }
+
+// ── Dossier progress ──
+
+export interface DossierProgressData {
+  completedCases: string[];
+  unlockedFiches: string[];
+  totalXP: number;
+  dailyLastDate: string | null;
+  dailyCompleted: boolean;
+  streak: number;
+}
+
+export async function saveDossierProgress(uid: string, progress: DossierProgressData): Promise<void> {
+  await updateDoc(userDocRef(uid), {
+    dossierProgress: progress,
+    lastSeen: serverTimestamp(),
+  });
+}
+
+export async function loadDossierProgress(uid: string): Promise<DossierProgressData | null> {
+  const data = await getUserData(uid);
+  return (data as any)?.dossierProgress ?? null;
+}
