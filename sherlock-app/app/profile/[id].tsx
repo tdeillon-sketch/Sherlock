@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: fonts.sans,
     fontSize: 16,
-    color: colors.textLight,
+    color: colors.textSoft,
     textAlign: 'center',
     marginTop: 120,
   },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     paddingTop: 72,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.surface,
   },
   typeCircle: {
     width: 72,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
   },
   typeName: {
     fontFamily: fonts.serif,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   wingTag: {
-    backgroundColor: colors.accentBg,
+    backgroundColor: colors.accentFill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serifItalic,
     fontSize: 15,
     lineHeight: 22,
-    color: colors.textLight,
+    color: colors.textSoft,
     textAlign: 'center',
   },
 
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 24,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 
   // Integration boxes
   integrationBox: {
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
     padding: spacing.lg,
     marginBottom: spacing.md,
@@ -188,12 +188,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 21,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 
   // Key cards
   keyCard: {
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.accentBg,
+    backgroundColor: colors.accentFill,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
@@ -226,6 +226,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 21,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 });

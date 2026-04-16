@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: fonts.sans,
     fontSize: 16,
-    color: colors.textLight,
+    color: colors.textSoft,
     textAlign: 'center',
     marginTop: 120,
   },
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: 56,
     paddingBottom: spacing.sm,
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.surface,
   },
   backButton: {
     flexDirection: 'row',
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.surface,
   },
   chapterBadge: {
     width: 44,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
   },
   chapterTitle: {
     fontFamily: fonts.serif,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serifItalic,
     fontSize: 15,
     lineHeight: 22,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 
   // Section
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 24,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 
   // Key Points
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   reflectionCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.cardBg,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,

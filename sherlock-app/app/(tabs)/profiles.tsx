@@ -91,11 +91,11 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.textLight,
+    color: colors.textSoft,
     lineHeight: 22,
   },
   card: {
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.lg,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardPressed: {
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.bgLight,
   },
   circle: {
     width: 48,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serif,
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
   },
   typeName: {
     fontFamily: fonts.serif,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   typeShort: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: colors.textLight,
+    color: colors.textSoft,
     textAlign: 'center',
     lineHeight: 19,
   },

@@ -76,13 +76,13 @@ export default function QAScreen() {
                 <Ionicons
                   name="search"
                   size={18}
-                  color={colors.textLighter}
+                  color={colors.textMuted}
                   style={styles.searchIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Rechercher une question..."
-                  placeholderTextColor={colors.textLighter}
+                  placeholderTextColor={colors.textMuted}
                   value={query}
                   onChangeText={setQuery}
                   onSubmitEditing={handleSearch}
@@ -96,7 +96,7 @@ export default function QAScreen() {
                   pressed && styles.searchBtnPressed,
                 ]}
               >
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <Ionicons name="arrow-forward" size={20} color={colors.white} />
               </Pressable>
             </View>
 
@@ -106,7 +106,7 @@ export default function QAScreen() {
                 <Ionicons
                   name="help-circle-outline"
                   size={40}
-                  color={colors.textLighter}
+                  color={colors.textMuted}
                 />
                 <Text style={styles.emptyTitle}>Aucun resultat</Text>
                 <Text style={styles.emptyText}>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.textLight,
+    color: colors.textSoft,
     lineHeight: 22,
   },
   pillsScroll: {
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   pill: {
-    backgroundColor: colors.accentBg,
+    backgroundColor: colors.accentFill,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.full,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
@@ -230,11 +230,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.textLighter,
+    color: colors.textMuted,
     textAlign: 'center',
   },
   qaCard: {
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.lg,
@@ -252,13 +252,13 @@ const styles = StyleSheet.create({
   qaAnswer: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.textLight,
+    color: colors.textSoft,
     lineHeight: 21,
     marginBottom: spacing.sm,
   },
   qaSource: {
     fontFamily: fonts.serifItalic,
     fontSize: 12,
-    color: colors.textLighter,
+    color: colors.textMuted,
   },
 });

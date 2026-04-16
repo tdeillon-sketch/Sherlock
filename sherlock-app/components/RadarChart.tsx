@@ -1,6 +1,7 @@
 import React from 'react';
 import Svg, { Polygon, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { CX, CY, R, radarPos, computeArrow, getTopType } from '../utils/radar';
+import { colors } from '../constants/theme';
 
 interface RadarChartProps {
   scores: Record<number, number>;
@@ -51,7 +52,7 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
           key={`guide-${idx}`}
           points={pts}
           fill="transparent"
-          stroke="rgba(255,255,255,0.12)"
+          stroke={colors.subtle12}
           strokeWidth={0.8}
         />
       ))}
@@ -64,7 +65,7 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
           y1={s.y1}
           x2={s.x2}
           y2={s.y2}
-          stroke="rgba(255,255,255,0.06)"
+          stroke={colors.subtle06}
           strokeWidth={0.6}
         />
       ))}
@@ -75,7 +76,7 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
           key={`label-${l.num}`}
           x={l.x}
           y={l.y}
-          fill={l.num === topType ? '#e8a06a' : '#667788'}
+          fill={l.num === topType ? colors.accentLight : colors.textDim}
           fontSize={12}
           fontWeight={l.num === topType ? 'bold' : 'normal'}
           textAnchor="middle"
@@ -88,8 +89,8 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
       {/* Data polygon */}
       <Polygon
         points={dataPolygonStr}
-        fill="rgba(192,113,58,0.15)"
-        stroke="#c0713a"
+        fill={colors.accentFill}
+        stroke={colors.accent}
         strokeWidth={1.5}
       />
 
@@ -102,7 +103,7 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
             cx={p.x}
             cy={p.y}
             r={isTop ? 5 : 3}
-            fill={isTop ? '#e8a06a' : '#c0713a'}
+            fill={isTop ? colors.accentLight : colors.accent}
           />
         );
       })}
@@ -113,11 +114,11 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
         y1={CY}
         x2={arrow.x}
         y2={arrow.y}
-        stroke="#e8a06a"
+        stroke={colors.accentLight}
         strokeWidth={2}
         strokeLinecap="round"
       />
-      <Circle cx={arrow.x} cy={arrow.y} r={4} fill="#e8a06a" />
+      <Circle cx={arrow.x} cy={arrow.y} r={4} fill={colors.accentLight} />
     </Svg>
   );
 }

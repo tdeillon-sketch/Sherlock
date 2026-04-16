@@ -172,20 +172,20 @@ const styles = StyleSheet.create({
   questionNum: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: '#556677',
+    color: colors.textFaint,
     marginBottom: spacing.md,
   },
   situationText: {
     fontFamily: fonts.serifItalic,
     fontSize: 14,
-    color: colors.quizMuted,
+    color: colors.textMuted,
     lineHeight: 20,
     marginBottom: spacing.sm,
   },
   questionText: {
     fontFamily: fonts.serif,
     fontSize: 20,
-    color: colors.quizText,
+    color: colors.text,
     lineHeight: 28,
     marginBottom: spacing.lg,
   },
@@ -193,16 +193,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   answerCard: {
-    backgroundColor: colors.quizCardBg,
+    backgroundColor: colors.cardBg,
     borderWidth: 1,
-    borderColor: colors.quizBorder,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingVertical: 14,
     paddingHorizontal: spacing.md,
   },
   answerCardPressed: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(192,113,58,0.08)',
+    backgroundColor: colors.accentSoft,
   },
   answerInner: {
     flexDirection: 'row',
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: colors.subtle06,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -224,20 +224,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: '600',
-    color: '#8899aa',
+    color: colors.textMuted,
   },
   letterTextPressed: {
-    color: '#ffffff',
+    color: colors.white,
   },
   answerText: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: '#d0d0d0',
+    color: colors.textSoft,
     flex: 1,
     lineHeight: 21,
   },
   answerTextPressed: {
-    color: colors.quizText,
+    color: colors.text,
   },
 
   // ===== Slider styles =====
@@ -249,14 +249,14 @@ const styles = StyleSheet.create({
   sliderLabelLeft: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: colors.quizMuted,
+    color: colors.textMuted,
     flex: 1,
     textAlign: 'left',
   },
   sliderLabelRight: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: colors.quizMuted,
+    color: colors.textMuted,
     flex: 1,
     textAlign: 'right',
   },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: colors.cardBg,
     borderRadius: radius.md,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.xs,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   sliderTickCenter: {
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: colors.border,
   },
   sliderTickSelected: {
     backgroundColor: colors.accent,
@@ -289,17 +289,17 @@ const styles = StyleSheet.create({
   sliderTickText: {
     fontFamily: fonts.sans,
     fontSize: 11,
-    color: colors.quizMuted,
+    color: colors.textMuted,
     fontWeight: '600',
   },
   sliderTickTextSelected: {
-    color: '#ffffff',
+    color: colors.white,
   },
   sliderValueDisplay: {
     fontFamily: fonts.serif,
     fontSize: 28,
     fontWeight: '700',
-    color: colors.quizText,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -316,6 +316,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: colors.white,
   },
 });

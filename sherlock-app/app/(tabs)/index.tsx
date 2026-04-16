@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: 72,
     paddingBottom: spacing.lg,
-    backgroundColor: colors.bgWarm,
+    backgroundColor: colors.surface,
   },
   headerTitle: {
     fontFamily: fonts.serif,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serifItalic,
     fontSize: 15,
     lineHeight: 22,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 
   // Parts
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
   },
   chapterContent: {
     flex: 1,
@@ -125,13 +125,13 @@ const styles = StyleSheet.create({
   chapterQuote: {
     fontFamily: fonts.serifItalic,
     fontSize: 14,
-    color: colors.textLight,
+    color: colors.textSoft,
     marginBottom: spacing.sm,
   },
   chapterDesc: {
     fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 21,
-    color: colors.textLight,
+    color: colors.textSoft,
   },
 });

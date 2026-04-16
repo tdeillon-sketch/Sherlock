@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, fonts, spacing, radius } from '../constants/theme';
-import { TYPES } from '../constants/data';
+import { TYPES, QuizMode } from '../constants/data';
 
 interface QuizResultProps {
   topType: number;
@@ -9,6 +9,7 @@ interface QuizResultProps {
   totalPoints: number;
   childAge: string | null;
   wingType: number | null;
+  mode?: QuizMode;
   onViewProfile: () => void;
   onReset: () => void;
 }
@@ -19,6 +20,7 @@ export default function QuizResult({
   totalPoints,
   childAge,
   wingType,
+  mode = 'enfant',
   onViewProfile,
   onReset,
 }: QuizResultProps) {
@@ -38,6 +40,12 @@ export default function QuizResult({
       {/* Heading */}
       <Text style={styles.heading}>
         Type {topType} — {typeData.name}
+      </Text>
+
+      {/* Context label */}
+      <Text style={styles.modeLabel}>
+        {mode === 'enfant' ? 'Le profil de votre enfant' :
+         mode === 'ado' ? 'Ton profil' : 'Votre profil'}
       </Text>
 
       {/* Short description */}
@@ -133,26 +141,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serif,
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
   },
   heading: {
     fontFamily: fonts.serif,
     fontSize: 24,
-    color: colors.quizText,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
   description: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.quizMuted,
+    color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: spacing.lg,
     paddingHorizontal: spacing.md,
   },
   noteBox: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: colors.subtle05,
     borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -171,22 +179,22 @@ const styles = StyleSheet.create({
   noteText: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.quizText,
+    color: colors.text,
     lineHeight: 20,
   },
   ageBox: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.lg,
     alignSelf: 'stretch',
     borderLeftWidth: 3,
-    borderLeftColor: '#8899aa',
+    borderLeftColor: colors.textMuted,
   },
   ageText: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: '#bbccdd',
+    color: colors.textSoft,
     lineHeight: 19,
   },
   scoreTags: {
@@ -200,15 +208,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: colors.subtle06,
   },
   scoreTagTop: {
-    backgroundColor: 'rgba(192,113,58,0.2)',
+    backgroundColor: colors.accentMedium,
   },
   scoreTagText: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: '#8899aa',
+    color: colors.textMuted,
   },
   scoreTagTextTop: {
     color: colors.accentLight,
@@ -230,11 +238,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: colors.white,
   },
   btnOutline: {
     borderWidth: 1,
-    borderColor: colors.quizBorder,
+    borderColor: colors.border,
     paddingVertical: 14,
     paddingHorizontal: spacing.xl,
     borderRadius: radius.full,
@@ -242,11 +250,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnOutlinePressed: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: colors.cardBg,
   },
   btnOutlineText: {
     fontFamily: fonts.sans,
     fontSize: 16,
-    color: colors.quizMuted,
+    color: colors.textMuted,
+  },
+  modeLabel: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.accentLight,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.md,
   },
 });

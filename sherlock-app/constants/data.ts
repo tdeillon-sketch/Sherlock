@@ -270,205 +270,572 @@ export interface QuizQuestion {
     sliderScores?: { low: Record<number, number>; high: Record<number, number> };
 }
 
-export const QUIZ: QuizQuestion[] = [
-    // --- 12 BEHAVIORAL CHOICE QUESTIONS ---
+export type QuizMode = 'enfant' | 'ado' | 'adulte';
+
+export const QUIZ_ENFANT: QuizQuestion[] = [
+    // --- Bloc A: 12 BEHAVIORAL CHOICE QUESTIONS (parent answers FOR child, 3rd person) ---
     {
         type: 'choice',
-        category: "Après l'école",
-        situation: "Votre enfant rentre de l'école avec un dessin fait en classe.",
-        q: "Que fait-il avec son dessin ?",
+        category: "A l'ecole",
+        q: "Apres l'ecole, votre enfant prefere :",
         a: [
-            { text: "Il le regarde d'un œil critique et pointe ce qu'il aurait dû mieux faire", emoji: "🎯", scores: {1: 2} },
-            { text: "Il vous l'offre avec fierté, guettant votre réaction de bonheur", emoji: "💝", scores: {2: 2} },
-            { text: "Il l'agite en riant, déjà lancé sur trois autres projets", emoji: "🎨", scores: {7: 2} }
+            { text: "Retrouver ses amis dehors", scores: {2: 1, 7: 1, 3: 1} },
+            { text: "Se retrouver au calme", scores: {4: 1, 5: 1, 9: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "Au parc",
-        situation: "Un autre enfant prend le jouet de votre enfant.",
-        q: "Comment réagit-il ?",
+        category: "A l'ecole",
+        q: "Face a une mauvaise note, il :",
         a: [
-            { text: "Il reprend le jouet avec autorité : « C'est le mien. »", emoji: "💪", scores: {8: 2} },
-            { text: "Il propose de jouer ensemble plutôt que de se disputer", emoji: "🤝", scores: {9: 2} },
-            { text: "Il cherche un adulte des yeux pour savoir quoi faire", emoji: "👀", scores: {6: 2} }
+            { text: "Est tres decu de lui-meme", scores: {1: 2, 3: 1} },
+            { text: "S'en remet vite", scores: {7: 1, 9: 1} },
+            { text: "Veut comprendre et s'ameliorer", scores: {5: 1, 1: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "Face au changement",
-        situation: "Vous annoncez un changement de programme inattendu.",
-        q: "Comment réagit votre enfant ?",
+        category: "Avec les copains",
+        q: "En groupe, votre enfant a tendance a :",
         a: [
-            { text: "Il s'enthousiasme : « Chouette, une aventure ! »", emoji: "✨", scores: {7: 2} },
-            { text: "Il se ferme, a besoin de temps seul pour digérer l'émotion", emoji: "🌊", scores: {4: 2} },
-            { text: "Il pose beaucoup de questions pratiques et veut comprendre les détails", emoji: "🔍", scores: {5: 2} }
+            { text: "Prendre la parole et animer", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Observer et ecouter", scores: {5: 1, 4: 1, 9: 1} },
+            { text: "S'occuper des autres", scores: {2: 1, 6: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "En famille",
-        situation: "Lors d'un repas de famille animé.",
-        q: "Que fait votre enfant ?",
+        category: "Avec les copains",
+        q: "Quand un ami est triste :",
         a: [
-            { text: "Il raconte ses exploits de la semaine avec animation", emoji: "⭐", scores: {3: 2} },
-            { text: "Il remarque si quelqu'un ne respecte pas les règles de table", emoji: "⚖️", scores: {1: 2} },
-            { text: "Il sourit, acquiesce, mange tranquillement", emoji: "☮️", scores: {9: 2} }
+            { text: "Il veut l'aider et le consoler", scores: {2: 2, 6: 1} },
+            { text: "Il essaie de le faire rire", scores: {7: 2, 3: 1} },
+            { text: "Il reste present en silence", scores: {9: 1, 5: 1, 4: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "L'exposé",
-        situation: "Votre enfant doit présenter un exposé devant sa classe.",
-        q: "Comment s'y prend-il ?",
+        category: "Avec les copains",
+        q: "Dans les disputes entre amis :",
         a: [
-            { text: "Il le prépare méticuleusement et stresse à l'idée de faire une erreur", emoji: "📐", scores: {1: 1, 6: 1} },
-            { text: "Il improvise avec brio le jour J, même s'il n'a pas beaucoup préparé", emoji: "🎭", scores: {7: 2} },
-            { text: "Il fait des recherches approfondies, bien au-delà de ce qui est demandé", emoji: "📚", scores: {5: 2} }
+            { text: "Il prend parti pour ce qui est juste", scores: {1: 2, 8: 1} },
+            { text: "Il essaie de reconcilier tout le monde", scores: {9: 2, 2: 1} },
+            { text: "Il se met en retrait", scores: {5: 1, 4: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "L'ami triste",
-        situation: "Un ami de votre enfant est triste.",
-        q: "Comment réagit votre enfant ?",
+        category: "A la maison",
+        q: "Sa chambre est generalement :",
         a: [
-            { text: "Il le prend dans ses bras ou propose immédiatement son aide", emoji: "💕", scores: {2: 2} },
-            { text: "Il ressent profondément sa tristesse, au point d'en être envahi(e)", emoji: "🎭", scores: {4: 2} },
-            { text: "Il lui dit : « T'inquiète pas, je vais régler ça. »", emoji: "🛡️", scores: {8: 2} }
+            { text: "Rangee, chaque chose a sa place", scores: {1: 2, 6: 1} },
+            { text: "Un joyeux bazar creatif", scores: {7: 1, 4: 1} },
+            { text: "Ni rangee ni en desordre, ca ne le concerne pas", scores: {9: 2} }
         ]
     },
     {
         type: 'choice',
-        category: "Le week-end",
-        situation: "Si on lui laisse le choix un samedi matin.",
-        q: "Que choisit-il de faire ?",
+        category: "A la maison",
+        q: "Quand vous lui dites non :",
         a: [
-            { text: "Ranger, trier, organiser quelque chose", emoji: "📦", scores: {1: 1, 5: 1} },
-            { text: "Essayer quelque chose de nouveau : un sport, un endroit", emoji: "🚀", scores: {7: 2} },
-            { text: "Se laisser porter, profiter du rythme des autres", emoji: "🌿", scores: {9: 2} }
+            { text: "Il conteste et veut negocier", scores: {8: 2, 7: 1} },
+            { text: "Il accepte mais on sent la frustration", scores: {1: 1, 4: 1, 6: 1} },
+            { text: "Il obeit sans trop reagir", scores: {9: 2, 2: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "Face à l'erreur",
-        situation: "Votre enfant casse un verre en mettant la table.",
-        q: "Comment réagit-il ?",
+        category: "Face aux emotions",
+        q: "Quand il est triste :",
         a: [
-            { text: "Il s'en veut terriblement et se critique sévèrement", emoji: "😰", scores: {1: 2} },
-            { text: "Il assume : « Oui, j'ai cassé le verre. Et alors ? »", emoji: "💪", scores: {8: 2} },
-            { text: "Il en rit et passe vite à autre chose", emoji: "😄", scores: {7: 1, 3: 1} }
+            { text: "Il en parle ou pleure ouvertement", scores: {2: 1, 4: 2} },
+            { text: "Il se replie en silence", scores: {5: 1, 9: 1, 1: 1} },
+            { text: "Il essaie de se changer les idees", scores: {7: 1, 3: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "En groupe",
-        situation: "Dans la cour de récréation.",
-        q: "Quel rôle prend votre enfant ?",
+        category: "Face aux emotions",
+        q: "Ce qui le met le plus en colere :",
         a: [
-            { text: "Il s'assure que personne n'est laissé de côté", emoji: "🫂", scores: {2: 2} },
-            { text: "Il prend naturellement le leadership du jeu", emoji: "⚡", scores: {3: 1, 8: 1} },
-            { text: "Il écoute attentivement mais garde une distance", emoji: "🔭", scores: {5: 2} }
+            { text: "L'injustice", scores: {1: 2, 8: 1} },
+            { text: "Se sentir ignore ou incompris", scores: {4: 2, 2: 1} },
+            { text: "Etre empeche de faire ce qu'il veut", scores: {7: 1, 8: 2} }
         ]
     },
     {
         type: 'choice',
-        category: "La fierté",
-        situation: "Votre enfant est le plus fier de lui quand...",
-        q: "Qu'est-ce qui le rend le plus fier ?",
+        category: "Face aux emotions",
+        q: "Quand il a peur :",
         a: [
-            { text: "Il a aidé quelqu'un qui l'a remercié avec gratitude", emoji: "🙏", scores: {2: 2} },
-            { text: "Il a atteint un objectif ou gagné quelque chose", emoji: "🏆", scores: {3: 2} },
-            { text: "Il a créé quelque chose d'unique ou été vraiment compris", emoji: "🎨", scores: {4: 2} }
+            { text: "Il cherche votre presence", scores: {6: 2, 2: 1} },
+            { text: "Il fait comme si de rien n'etait", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Il se retire dans un endroit sur", scores: {5: 1, 9: 1, 4: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "L'injustice",
-        situation: "Quelque chose d'injuste se produit à l'école.",
-        q: "Comment réagit votre enfant ?",
+        category: "Sa personnalite",
+        q: "Ce qui le motive le plus :",
         a: [
-            { text: "Il le dit clairement et tient sa position", emoji: "⚔️", scores: {1: 1, 8: 1} },
-            { text: "Il s'inquiète des conséquences avant d'agir", emoji: "😟", scores: {6: 2} },
-            { text: "Il détourne l'attention avec humour", emoji: "🃏", scores: {7: 1, 3: 1} }
+            { text: "Reussir et etre reconnu", scores: {3: 2, 8: 1} },
+            { text: "Apprendre et comprendre", scores: {5: 2, 1: 1} },
+            { text: "S'amuser et decouvrir", scores: {7: 2, 4: 1} }
         ]
     },
     {
         type: 'choice',
-        category: "Portrait global",
-        situation: "Ce qui décrit le mieux votre enfant au quotidien.",
-        q: "Quel portrait correspond le mieux ?",
+        category: "Sa personnalite",
+        q: "Sa plus grande force :",
         a: [
-            { text: "Une vigilance permanente, un besoin de sécurité", emoji: "🔒", scores: {6: 2} },
-            { text: "Une sensibilité profonde, un besoin d'être compris(e)", emoji: "💜", scores: {4: 2} },
-            { text: "Une énergie tournée vers la réussite", emoji: "🌟", scores: {3: 2} }
+            { text: "Sa determination et son sens de la justice", scores: {1: 1, 8: 1} },
+            { text: "Sa curiosite et sa profondeur", scores: {5: 2, 4: 1} },
+            { text: "Son optimisme et son enthousiasme", scores: {7: 2, 3: 1} }
         ]
     },
 
-    // --- 8 SLIDER QUESTIONS ---
+    // --- Bloc B: 8 SLIDER QUESTIONS (cross-framework dimensions) ---
     {
         type: 'slider',
-        category: "Tempérament",
-        q: "Comment décririez-vous le tempérament général de votre enfant ?",
-        sliderLeft: "Plutôt réservé, en retrait",
-        sliderRight: "Plutôt expressif, extraverti",
-        sliderScores: { low: {5: 2, 4: 1, 9: 1}, high: {7: 2, 3: 1, 8: 1} }
+        category: "Dimensions",
+        q: "Comment decririez-vous votre enfant ?",
+        sliderLeft: "Plutot reserve",
+        sliderRight: "Plutot expressif",
+        sliderScores: { low: {5: 2, 4: 1, 9: 1}, high: {7: 2, 3: 1, 2: 1} }
     },
     {
         type: 'slider',
-        category: "Face aux règles",
-        q: "Face aux règles et à l'autorité, votre enfant...",
-        sliderLeft: "Respecte les règles scrupuleusement",
-        sliderRight: "Teste et défie les limites",
+        category: "Dimensions",
+        q: "Face aux regles, votre enfant :",
+        sliderLeft: "Respecte les regles",
+        sliderRight: "Teste les limites",
         sliderScores: { low: {1: 2, 6: 1}, high: {8: 2, 7: 1} }
     },
     {
         type: 'slider',
-        category: "Besoins sociaux",
-        q: "En matière de vie sociale...",
-        sliderLeft: "Préfère la solitude ou un petit cercle",
-        sliderRight: "A besoin d'être entouré(e) en permanence",
-        sliderScores: { low: {5: 2, 4: 1}, high: {2: 2, 7: 1} }
+        category: "Dimensions",
+        q: "En matiere de vie sociale :",
+        sliderLeft: "Prefere la solitude",
+        sliderRight: "Toujours avec les autres",
+        sliderScores: { low: {5: 2, 4: 1}, high: {2: 2, 7: 1, 3: 1} }
     },
     {
         type: 'slider',
-        category: "Face à l'échec",
-        q: "Quand quelque chose ne se passe pas comme prévu...",
-        sliderLeft: "S'auto-critique sévèrement",
-        sliderRight: "Rebondit vite, passe à autre chose",
-        sliderScores: { low: {1: 2, 4: 1}, high: {7: 2, 3: 1} }
+        category: "Dimensions",
+        q: "Face a l'echec, votre enfant :",
+        sliderLeft: "Se critique severement",
+        sliderRight: "Rebondit vite",
+        sliderScores: { low: {1: 2, 4: 1, 6: 1}, high: {7: 2, 9: 1, 3: 1} }
     },
     {
         type: 'slider',
-        category: "Expression émotionnelle",
-        q: "En matière d'émotions, votre enfant...",
-        sliderLeft: "Garde tout pour lui/elle",
-        sliderRight: "Exprime tout avec intensité",
-        sliderScores: { low: {5: 2, 9: 1}, high: {4: 2, 8: 1} }
+        category: "Dimensions",
+        q: "En matiere d'emotions :",
+        sliderLeft: "Garde ses emotions",
+        sliderRight: "Les exprime intensement",
+        sliderScores: { low: {5: 2, 9: 1, 1: 1}, high: {4: 2, 2: 1, 8: 1} }
     },
     {
         type: 'slider',
-        category: "Rapport aux autres",
-        q: "Dans sa relation aux autres enfants...",
-        sliderLeft: "Cherche à aider et faire plaisir",
-        sliderRight: "Cherche à diriger et décider",
+        category: "Dimensions",
+        q: "Dans sa relation aux autres :",
+        sliderLeft: "Veut aider les autres",
+        sliderRight: "Veut diriger les autres",
         sliderScores: { low: {2: 2, 9: 1}, high: {8: 2, 3: 1} }
     },
     {
         type: 'slider',
-        category: "Gestion du stress",
-        q: "Quand votre enfant est stressé(e)...",
-        sliderLeft: "Il/elle anticipe et s'inquiète beaucoup",
-        sliderRight: "Il/elle cherche à contrôler la situation",
-        sliderScores: { low: {6: 2, 1: 1}, high: {8: 2, 3: 1} }
+        category: "Dimensions",
+        q: "Face au stress :",
+        sliderLeft: "Anticipe et s'inquiete",
+        sliderRight: "Fonce et controle",
+        sliderScores: { low: {6: 2, 1: 1}, high: {8: 2, 3: 1, 7: 1} }
     },
     {
         type: 'slider',
-        category: "Motivation profonde",
-        q: "Ce qui motive le plus votre enfant au fond...",
-        sliderLeft: "Être aimé(e) et utile aux autres",
-        sliderRight: "Être libre et vivre des expériences",
-        sliderScores: { low: {2: 2, 6: 1}, high: {7: 2, 4: 1} }
+        category: "Dimensions",
+        q: "Ce qui motive votre enfant au fond :",
+        sliderLeft: "Veut etre aime",
+        sliderRight: "Veut etre libre",
+        sliderScores: { low: {2: 2, 6: 1, 4: 1}, high: {7: 2, 8: 1, 5: 1} }
+    }
+];
+
+export const QUIZ_ADO: QuizQuestion[] = [
+    // --- Bloc A: 12 BEHAVIORAL CHOICE QUESTIONS (teen answers, tutoiement) ---
+    {
+        type: 'choice',
+        category: "Au quotidien",
+        q: "Apres les cours, tu preferes :",
+        a: [
+            { text: "Retrouver tes potes", scores: {2: 1, 7: 1, 3: 1} },
+            { text: "Te poser au calme", scores: {4: 1, 5: 1, 9: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Au quotidien",
+        q: "Quand tu te plantes a un controle :",
+        a: [
+            { text: "Ca te mine", scores: {1: 2, 3: 1} },
+            { text: "Tu passes a autre chose", scores: {7: 1, 9: 1} },
+            { text: "Tu veux comprendre tes erreurs", scores: {5: 1, 1: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Avec tes amis",
+        q: "En soiree ou en groupe, tu es plutot :",
+        a: [
+            { text: "Celui qui lance les delires", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Celui qui observe et ecoute", scores: {5: 1, 4: 1, 9: 1} },
+            { text: "Celui qui veille sur les autres", scores: {2: 1, 6: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Avec tes amis",
+        q: "Un pote va mal :",
+        a: [
+            { text: "Tu veux l'aider concretement", scores: {2: 2, 6: 1} },
+            { text: "Tu essaies de le faire marrer", scores: {7: 2, 3: 1} },
+            { text: "Tu restes la, sans forcer", scores: {9: 1, 5: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Avec tes amis",
+        q: "Quand ca clashe dans le groupe :",
+        a: [
+            { text: "Tu defends ce qui est juste", scores: {1: 2, 8: 1} },
+            { text: "Tu essaies de calmer le jeu", scores: {9: 2, 2: 1} },
+            { text: "Tu te mets en retrait", scores: {5: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Chez toi",
+        q: "Ta chambre c'est plutot :",
+        a: [
+            { text: "Rangee et organisee", scores: {1: 2, 6: 1} },
+            { text: "Le bazar creatif", scores: {7: 1, 4: 1} },
+            { text: "Tu t'en fiches un peu", scores: {9: 2} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Chez toi",
+        q: "Quand on te dit non :",
+        a: [
+            { text: "Tu contestes et negocies", scores: {8: 2, 7: 1} },
+            { text: "Tu acceptes mais ca te frustre", scores: {1: 1, 4: 1, 6: 1} },
+            { text: "Tu laisses couler", scores: {9: 2, 2: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Tes emotions",
+        q: "Quand t'es triste :",
+        a: [
+            { text: "Tu en parles a quelqu'un", scores: {2: 1, 4: 2} },
+            { text: "Tu gardes ca pour toi", scores: {5: 1, 9: 1, 1: 1} },
+            { text: "Tu te changes les idees", scores: {7: 1, 3: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Tes emotions",
+        q: "Ce qui te met le plus en rage :",
+        a: [
+            { text: "L'injustice", scores: {1: 2, 8: 1} },
+            { text: "Qu'on t'ignore ou qu'on te comprenne pas", scores: {4: 2, 2: 1} },
+            { text: "Qu'on t'empeche de faire ce que tu veux", scores: {7: 1, 8: 2} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Tes emotions",
+        q: "Quand t'as peur :",
+        a: [
+            { text: "Tu cherches du soutien", scores: {6: 2, 2: 1} },
+            { text: "Tu fais genre tout va bien", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Tu t'isoles", scores: {5: 1, 9: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Qui tu es",
+        q: "Ce qui te motive le plus :",
+        a: [
+            { text: "Reussir et etre reconnu", scores: {3: 2, 8: 1} },
+            { text: "Apprendre et comprendre le monde", scores: {5: 2, 1: 1} },
+            { text: "Vivre des experiences et kiffer", scores: {7: 2, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Qui tu es",
+        q: "Ta plus grande force :",
+        a: [
+            { text: "Ta determination", scores: {1: 1, 8: 1} },
+            { text: "Ta sensibilite et ta profondeur", scores: {5: 2, 4: 1} },
+            { text: "Ton energie et ton optimisme", scores: {7: 2, 3: 1} }
+        ]
+    },
+
+    // --- Bloc B: 8 SLIDER QUESTIONS (teen wording) ---
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Tu te decrirais comment ?",
+        sliderLeft: "Plutot reserve(e)",
+        sliderRight: "Plutot extraverti(e)",
+        sliderScores: { low: {5: 2, 4: 1, 9: 1}, high: {7: 2, 3: 1, 2: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Face aux regles :",
+        sliderLeft: "Tu respectes les regles",
+        sliderRight: "Tu testes les limites",
+        sliderScores: { low: {1: 2, 6: 1}, high: {8: 2, 7: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Cote vie sociale :",
+        sliderLeft: "Tu preferes etre seul(e)",
+        sliderRight: "Toujours avec du monde",
+        sliderScores: { low: {5: 2, 4: 1}, high: {2: 2, 7: 1, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Quand ca se passe mal :",
+        sliderLeft: "Tu te remets en question",
+        sliderRight: "Tu rebondis vite",
+        sliderScores: { low: {1: 2, 4: 1, 6: 1}, high: {7: 2, 9: 1, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Tes emotions :",
+        sliderLeft: "Tu gardes tes emotions",
+        sliderRight: "Tu les exprimes fort",
+        sliderScores: { low: {5: 2, 9: 1, 1: 1}, high: {4: 2, 2: 1, 8: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Avec les autres :",
+        sliderLeft: "Tu veux aider",
+        sliderRight: "Tu veux mener",
+        sliderScores: { low: {2: 2, 9: 1}, high: {8: 2, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Face au stress :",
+        sliderLeft: "Tu anticipes et t'inquietes",
+        sliderRight: "Tu fonces",
+        sliderScores: { low: {6: 2, 1: 1}, high: {8: 2, 3: 1, 7: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Au fond de toi :",
+        sliderLeft: "Tu veux etre aime(e)",
+        sliderRight: "Tu veux etre libre",
+        sliderScores: { low: {2: 2, 6: 1, 4: 1}, high: {7: 2, 8: 1, 5: 1} }
+    }
+];
+
+export const QUIZ_ADULTE: QuizQuestion[] = [
+    // --- Bloc A: 12 BEHAVIORAL CHOICE QUESTIONS (vouvoiement) ---
+    {
+        type: 'choice',
+        category: "Au travail",
+        q: "Apres une journee de travail, vous preferez :",
+        a: [
+            { text: "Voir du monde, sortir", scores: {2: 1, 7: 1, 3: 1} },
+            { text: "Vous retrouver au calme", scores: {4: 1, 5: 1, 9: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Au travail",
+        q: "Face a un echec professionnel :",
+        a: [
+            { text: "Vous etes tres dur avec vous-meme", scores: {1: 2, 3: 1} },
+            { text: "Vous passez a autre chose", scores: {7: 1, 9: 1} },
+            { text: "Vous analysez ce qui s'est passe", scores: {5: 1, 1: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "En societe",
+        q: "Dans un groupe, vous avez tendance a :",
+        a: [
+            { text: "Prendre la parole et animer", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Observer et ecouter", scores: {5: 1, 4: 1, 9: 1} },
+            { text: "Vous occuper des autres", scores: {2: 1, 6: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "En societe",
+        q: "Un proche traverse un moment difficile :",
+        a: [
+            { text: "Vous voulez l'aider concretement", scores: {2: 2, 6: 1} },
+            { text: "Vous essayez de lui remonter le moral", scores: {7: 2, 3: 1} },
+            { text: "Vous etes present, sans forcer", scores: {9: 1, 5: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "En societe",
+        q: "Dans un conflit :",
+        a: [
+            { text: "Vous defendez ce qui est juste", scores: {1: 2, 8: 1} },
+            { text: "Vous cherchez le compromis", scores: {9: 2, 2: 1} },
+            { text: "Vous prenez du recul", scores: {5: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Vos habitudes",
+        q: "Votre espace de vie est plutot :",
+        a: [
+            { text: "Range et organise", scores: {1: 2, 6: 1} },
+            { text: "Creatif et vivant", scores: {7: 1, 4: 1} },
+            { text: "Vous ne vous en souciez pas vraiment", scores: {9: 2} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Vos habitudes",
+        q: "Face a une decision que vous jugez injuste :",
+        a: [
+            { text: "Vous contestez et argumentez", scores: {8: 2, 7: 1} },
+            { text: "Vous acceptez mais ca vous travaille", scores: {1: 1, 4: 1, 6: 1} },
+            { text: "Vous vous adaptez", scores: {9: 2, 2: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Vos emotions",
+        q: "Quand vous etes triste :",
+        a: [
+            { text: "Vous en parlez a un proche", scores: {2: 1, 4: 2} },
+            { text: "Vous gardez ca pour vous", scores: {5: 1, 9: 1, 1: 1} },
+            { text: "Vous vous changez les idees", scores: {7: 1, 3: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Vos emotions",
+        q: "Ce qui vous met le plus en colere :",
+        a: [
+            { text: "L'injustice et l'incoherence", scores: {1: 2, 8: 1} },
+            { text: "Etre ignore ou mal compris", scores: {4: 2, 2: 1} },
+            { text: "Etre controle ou empeche", scores: {7: 1, 8: 2} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Vos emotions",
+        q: "Face a l'incertitude :",
+        a: [
+            { text: "Vous cherchez des reperes et du soutien", scores: {6: 2, 2: 1} },
+            { text: "Vous gardez la face", scores: {3: 1, 7: 1, 8: 1} },
+            { text: "Vous vous repliez pour reflechir", scores: {5: 1, 9: 1, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Votre identite",
+        q: "Ce qui vous motive le plus :",
+        a: [
+            { text: "Reussir et avoir de l'impact", scores: {3: 2, 8: 1} },
+            { text: "Comprendre en profondeur", scores: {5: 2, 1: 1} },
+            { text: "Vivre pleinement, decouvrir", scores: {7: 2, 4: 1} }
+        ]
+    },
+    {
+        type: 'choice',
+        category: "Votre identite",
+        q: "Votre plus grande force :",
+        a: [
+            { text: "Votre rigueur et votre sens de la justice", scores: {1: 1, 8: 1} },
+            { text: "Votre sensibilite et votre profondeur", scores: {5: 2, 4: 1} },
+            { text: "Votre energie et votre optimisme", scores: {7: 2, 3: 1} }
+        ]
+    },
+
+    // --- Bloc B: 8 SLIDER QUESTIONS (vouvoiement) ---
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Comment vous decririez-vous ?",
+        sliderLeft: "Plutot reserve(e)",
+        sliderRight: "Plutot expressif(ve)",
+        sliderScores: { low: {5: 2, 4: 1, 9: 1}, high: {7: 2, 3: 1, 2: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Face aux regles :",
+        sliderLeft: "Vous respectez les regles",
+        sliderRight: "Vous testez les limites",
+        sliderScores: { low: {1: 2, 6: 1}, high: {8: 2, 7: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "En matiere de vie sociale :",
+        sliderLeft: "Vous preferez la solitude",
+        sliderRight: "Vous etes toujours avec du monde",
+        sliderScores: { low: {5: 2, 4: 1}, high: {2: 2, 7: 1, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Face a l'echec :",
+        sliderLeft: "Vous vous remettez en question",
+        sliderRight: "Vous rebondissez vite",
+        sliderScores: { low: {1: 2, 4: 1, 6: 1}, high: {7: 2, 9: 1, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Vos emotions :",
+        sliderLeft: "Vous gardez vos emotions",
+        sliderRight: "Vous les exprimez intensement",
+        sliderScores: { low: {5: 2, 9: 1, 1: 1}, high: {4: 2, 2: 1, 8: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Dans votre relation aux autres :",
+        sliderLeft: "Vous voulez aider",
+        sliderRight: "Vous voulez diriger",
+        sliderScores: { low: {2: 2, 9: 1}, high: {8: 2, 3: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Face au stress :",
+        sliderLeft: "Vous anticipez et vous inquietez",
+        sliderRight: "Vous foncez et controlez",
+        sliderScores: { low: {6: 2, 1: 1}, high: {8: 2, 3: 1, 7: 1} }
+    },
+    {
+        type: 'slider',
+        category: "Dimensions",
+        q: "Ce qui vous motive au fond :",
+        sliderLeft: "Vous voulez etre aime(e)",
+        sliderRight: "Vous voulez etre libre",
+        sliderScores: { low: {2: 2, 6: 1, 4: 1}, high: {7: 2, 8: 1, 5: 1} }
     }
 ];
 
