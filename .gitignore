@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+sherlock-app/node_modules/
+
+# Env files
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+.expo/
+sherlock-app/.expo/
+*.tsbuildinfo
+
+# PDF (too large for git)
+*.pdf

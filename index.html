@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sherlock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  ÉCRAN DE CONNEXION                     -->
+<!-- ═══════════════════════════════════════ -->
+<section id="login" class="screen active">
+    <div class="login-wrap">
+
+        <!-- Artwork : Sherlock + icône boussole -->
+        <div class="login-art">
+            <div class="sherlock-wrap">
+                <img src="assets/sherlock.png" alt="Sherlock" class="sherlock-img"
+                     onerror="this.style.opacity='0'">
+            </div>
+            <div class="compass-icon-wrap">
+                <div class="compass-icon-bg">
+                    <svg class="compass-icon-svg" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#2a9090"/>
+                                <stop offset="100%" stop-color="#0d4545"/>
+                            </radialGradient>
+                        </defs>
+                        <circle cx="90" cy="90" r="84" fill="url(#cg)"/>
+                        <circle cx="90" cy="90" r="70" fill="none" stroke="#50c8c8" stroke-width="1.5" opacity="0.5"/>
+                        <circle cx="90" cy="90" r="56" fill="none" stroke="#50c8c8" stroke-width="1" opacity="0.3"/>
+                        <line x1="90" y1="8"   x2="90"  y2="20"  stroke="white" stroke-width="2"/>
+                        <line x1="90" y1="160" x2="90"  y2="172" stroke="white" stroke-width="2"/>
+                        <line x1="8"  y1="90"  x2="20"  y2="90"  stroke="white" stroke-width="2"/>
+                        <line x1="160" y1="90" x2="172" y2="90"  stroke="white" stroke-width="2"/>
+                        <polygon points="90,28 83,92 90,84 97,92" fill="#cc3355"/>
+                        <polygon points="90,152 83,88 90,96 97,88" fill="#2ab8b0"/>
+                        <circle cx="90" cy="90" r="22" fill="#0a3535"/>
+                        <circle cx="90" cy="90" r="16" fill="none" stroke="#4ab8b8" stroke-width="1.5"/>
+                        <circle cx="90" cy="90" r="9"  fill="#cc3355"/>
+                        <circle cx="90" cy="90" r="3.5" fill="white"/>
+                        <text x="90"  y="11"  text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14" font-weight="700" font-family="Arial,sans-serif">N</text>
+                        <text x="11"  y="91"  text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14" font-weight="700" font-family="Arial,sans-serif">T</text>
+                        <text x="169" y="91"  text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14" font-weight="700" font-family="Arial,sans-serif">F</text>
+                        <text x="90"  y="173" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14" font-weight="700" font-family="Arial,sans-serif">S</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Citation -->
+        <blockquote class="login-quote">
+            <p>You see, but you do not observe</p>
+            <p>The distinction is clear</p>
+            <cite>- Sherlock Holmes</cite>
+        </blockquote>
+
+        <!-- Connexion -->
+        <div class="login-cta">
+            <button class="btn-google" onclick="handleSignIn()">
+                <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 13.252 17.64 11.444 17.64 9.2z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+            </button>
+            <p class="login-note">only authorized user can log-in</p>
+            <a href="mailto:info@sherlock.com" class="login-email">info@sherlock.com</a>
+        </div>
+    </div>
+    <div class="page-curl"></div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!--  APPLICATION PRINCIPALE                 -->
+<!-- ═══════════════════════════════════════ -->
+<div id="app" class="app-shell hidden">
+
+    <!-- Fond d'écran : marine foncé + boussole en filigrane + faisceau diagonal -->
+    <div class="app-bg" aria-hidden="true">
+        <div class="beam"></div>
+        <svg class="bg-compass" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" r="182" fill="none" stroke="rgba(80,180,180,0.18)" stroke-width="2"/>
+            <circle cx="200" cy="200" r="152" fill="rgba(20,70,85,0.18)"/>
+            <circle cx="200" cy="200" r="152" fill="none" stroke="rgba(80,180,180,0.14)" stroke-width="1.5"/>
+            <circle cx="200" cy="200" r="118" fill="none" stroke="rgba(80,180,180,0.10)" stroke-width="1"/>
+            <line x1="200" y1="20"  x2="200" y2="52"  stroke="rgba(180,220,220,0.3)" stroke-width="2.5"/>
+            <line x1="200" y1="348" x2="200" y2="380" stroke="rgba(180,220,220,0.3)" stroke-width="2.5"/>
+            <line x1="20"  y1="200" x2="52"  y2="200" stroke="rgba(180,220,220,0.3)" stroke-width="2.5"/>
+            <line x1="348" y1="200" x2="380" y2="200" stroke="rgba(180,220,220,0.3)" stroke-width="2.5"/>
+            <line x1="60"  y1="60"  x2="78"  y2="78"  stroke="rgba(180,220,220,0.15)" stroke-width="1.5"/>
+            <line x1="340" y1="60"  x2="322" y2="78"  stroke="rgba(180,220,220,0.15)" stroke-width="1.5"/>
+            <line x1="60"  y1="340" x2="78"  y2="322" stroke="rgba(180,220,220,0.15)" stroke-width="1.5"/>
+            <line x1="340" y1="340" x2="322" y2="322" stroke="rgba(180,220,220,0.15)" stroke-width="1.5"/>
+            <polygon points="200,52 190,200 200,190 210,200" fill="rgba(180,55,75,0.55)"/>
+            <polygon points="200,348 190,200 200,210 210,200" fill="rgba(40,160,150,0.45)"/>
+            <circle cx="200" cy="200" r="48"  fill="rgba(8,45,58,0.35)"/>
+            <circle cx="200" cy="200" r="36"  fill="none" stroke="rgba(80,180,180,0.3)"  stroke-width="1.5"/>
+            <circle cx="200" cy="200" r="22"  fill="none" stroke="rgba(80,180,180,0.2)"  stroke-width="1"/>
+            <circle cx="200" cy="200" r="12"  fill="rgba(180,55,75,0.45)"/>
+            <circle cx="200" cy="200" r="4.5" fill="rgba(255,255,255,0.35)"/>
+            <text x="200" y="24"  text-anchor="middle" dominant-baseline="middle" fill="rgba(190,230,230,0.55)" font-size="30" font-weight="700" font-family="Arial,sans-serif">N</text>
+            <text x="22"  y="202" text-anchor="middle" dominant-baseline="middle" fill="rgba(190,230,230,0.55)" font-size="30" font-weight="700" font-family="Arial,sans-serif">T</text>
+            <text x="378" y="202" text-anchor="middle" dominant-baseline="middle" fill="rgba(190,230,230,0.55)" font-size="30" font-weight="700" font-family="Arial,sans-serif">F</text>
+            <text x="200" y="380" text-anchor="middle" dominant-baseline="middle" fill="rgba(190,230,230,0.55)" font-size="30" font-weight="700" font-family="Arial,sans-serif">S</text>
+        </svg>
+    </div>
+
+    <!-- ── Contenu principal ── -->
+    <main class="app-content">
+
+        <!-- ACCUEIL -->
+        <section id="accueil" class="app-section active">
+            <div class="content-scroll">
+                <div class="home-header">
+                    <p class="home-companion-badge">📖 Companion App</p>
+                    <h1 class="home-title">On a tous besoin<br>de quelqu'un d'autre</h1>
+                    <p class="home-author">Thomas Deillon</p>
+                    <p class="home-intro">
+                        Cette application est le <strong>compagnon numérique</strong> du livre.
+                        Elle vous aide à explorer les thèmes, identifier le profil Enneagramme
+                        de votre enfant, et trouver des réponses concrètes à vos questions de parent.
+                    </p>
+                </div>
+
+                <h2 class="section-label">Le livre en un coup d'œil</h2>
+                <div id="chapters-list"></div>
+            </div>
+        </section>
+
+        <!-- QUIZ -->
+        <section id="quiz" class="app-section">
+            <div class="content-scroll">
+                <div class="quiz-header-block">
+                    <h2 class="section-title">Quiz Enneagramme</h2>
+                    <p class="section-sub">9 situations du quotidien pour identifier le profil dominant de votre enfant.</p>
+                    <div class="quiz-progress-bar">
+                        <div class="quiz-progress-fill" id="qpf"></div>
+                    </div>
+                </div>
+                <div id="quiz-body"></div>
+            </div>
+        </section>
+
+        <!-- PROFILS -->
+        <section id="profils" class="app-section">
+            <div class="content-scroll">
+                <h2 class="section-title">Les 9 profils</h2>
+                <p class="section-sub">Aucun type n'est mieux qu'un autre. Chacun a sa logique propre.</p>
+                <div class="profiles-grid" id="profiles-grid"></div>
+            </div>
+        </section>
+
+        <!-- PROFIL DÉTAIL (sous-écran de Profils) -->
+        <section id="profil-detail" class="app-section">
+            <div class="content-scroll">
+                <button class="btn-back" onclick="switchTab('profils')">← Retour aux profils</button>
+                <div id="profil-content"></div>
+            </div>
+        </section>
+
+        <!-- QUESTIONS (IA Claude) -->
+        <section id="questions" class="app-section">
+            <div class="content-scroll">
+                <h2 class="section-title">Questions</h2>
+                <p class="section-sub">Posez n'importe quelle question sur la parentalité. Notre assistant IA répond en s'inspirant des thèmes du livre.</p>
+
+                <div class="qa-suggestions" id="qa-suggestions"></div>
+
+                <div class="qa-input-wrap">
+                    <textarea id="qa-input"
+                        placeholder="Ex : Comment réagir face à un enfant perfectionniste qui refuse ses erreurs ?"
+                        rows="3"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askClaude()}"
+                    ></textarea>
+                    <button class="qa-send-btn" onclick="askClaude()" id="qa-send">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="qa-results"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ── Navigation bas ── -->
+    <nav class="bottom-nav">
+        <button class="tab-btn active" data-tab="accueil" onclick="switchTab('accueil')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Accueil</span>
+        </button>
+
+        <button class="tab-btn" data-tab="quiz" onclick="switchTab('quiz')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="12" y1="3"  x2="12" y2="6"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="3"  y1="12" x2="6"  y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span>Quiz</span>
+        </button>
+
+        <button class="tab-btn" data-tab="profils" onclick="switchTab('profils')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="9"  cy="7"  r="3" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="17" cy="8"  r="2.5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M3 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M17 11c2.209 0 4 1.791 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span>Profils</span>
+        </button>
+
+        <button class="tab-btn" data-tab="questions" onclick="switchTab('questions')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="8"  cy="10" r="1" fill="currentColor"/>
+                <circle cx="12" cy="10" r="1" fill="currentColor"/>
+                <circle cx="16" cy="10" r="1" fill="currentColor"/>
+            </svg>
+            <span>Questions</span>
+        </button>
+    </nav>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
