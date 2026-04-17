@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle, Line, Polyline } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Polyline, G } from 'react-native-svg';
 
 interface TabIconProps {
   color: string;
@@ -54,6 +54,15 @@ export function QuestionsIcon({ color, size }: TabIconProps) {
       <Path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" />
       <Path d="M8 10h8" />
       <Path d="M8 13h5" />
+    </Svg>
+  );
+}
+
+export function DuoIcon({ color, size }: TabIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={9} cy={12} r={6} stroke={color} strokeWidth={1.6} fill="none" />
+      <Circle cx={15} cy={12} r={6} stroke={color} strokeWidth={1.6} fill="none" />
     </Svg>
   );
 }

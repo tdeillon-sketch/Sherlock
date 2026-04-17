@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { HomeIcon, QuizIcon, ProfilesIcon, GameIcon, QuestionsIcon } from '../../components/TabIcons';
+import { HomeIcon, QuizIcon, ProfilesIcon, GameIcon, DuoIcon } from '../../components/TabIcons';
 import { colors, fonts } from '../../constants/theme';
 
 export default function TabLayout() {
@@ -52,10 +52,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="qa"
+        name="duo"
         options={{
-          title: 'Questions',
-          tabBarIcon: ({ color, size }) => <QuestionsIcon color={color} size={size} />,
+          title: 'Duo',
+          tabBarIcon: ({ color, size }) => <DuoIcon color={color} size={size} />,
         }}
       />
       {/* Ecrans cachés de la tab bar */}
