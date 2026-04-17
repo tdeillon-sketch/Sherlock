@@ -8,7 +8,7 @@ import { ResponseType, makeRedirectUri } from 'expo-auth-session';
 import Constants from 'expo-constants';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  signInWithGoogleIdToken, getUserData, createUserData, updateLastSeen,
+  signInAnon, signInWithGoogleIdToken, getUserData, createUserData, updateLastSeen,
 } from '../constants/firebase';
 import { GOOGLE_OAUTH, isGoogleConfigured } from '../constants/google_oauth';
 
@@ -158,6 +158,32 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
         <Text style={styles.hint}>
           Vos données restent privées. Aucun partage, aucune publicité.
         </Text>
+
+        {/* ── DEV BYPASS ── (visible only in Expo Go / __DEV__) */}
+        {(__DEV__ || isExpoGo) && (
+          <Pressable
+            onPress={async () => {
+              setLoading(true);
+              setError(null);
+              try {
+                const user = await signInAnon();
+                const existing = await getUserData(user.uid).catch(() => null);
+                if (!existing) await createUserData(user.uid);
+                else await updateLastSeen(user.uid).catch(() => {});
+                onSuccess();
+              } catch (e: any) {
+                setError(e?.message ?? 'Bypass échoué');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            style={styles.devBypass}
+          >
+            <Text style={styles.devBypassText}>
+              🔓 Dev bypass (anonymous) — Expo Go only
+            </Text>
+          </Pressable>
+        )}
       </View>
     </ScrollView>
   );
@@ -223,5 +249,19 @@ const styles = StyleSheet.create({
   hint: {
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     marginTop: spacing.xl, textAlign: 'center',
+  },
+  devBypass: {
+    marginTop: spacing.xl,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.textMuted,
+    borderStyle: 'dashed',
+    opacity: 0.6,
+  },
+  devBypassText: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    textAlign: 'center',
   },
 });
