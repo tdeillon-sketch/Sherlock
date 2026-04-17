@@ -23,15 +23,22 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   // Detect if running inside Expo Go (vs a standalone build).
-  // In Expo Go, redirect URI must go through the Expo auth proxy because
-  // Google's OAuth 2.0 policy rejects custom `exp://` schemes with a
-  // Web Client ID. In a standalone iOS build, we use the native iOS
-  // Client ID with its reversed URL scheme.
-  const isExpoGo = Constants.appOwnership === 'expo';
+  // `executionEnvironment` is more reliable than `appOwnership` on SDK 54+.
+  const isExpoGo =
+    Constants.executionEnvironment === 'storeClient' ||
+    Constants.appOwnership === 'expo';
 
+  // In Expo Go, force the Expo auth proxy URL (HTTPS) because Google's
+  // OAuth 2.0 policy rejects custom `exp://` schemes with a Web Client ID.
+  // In standalone builds, we use the app's custom scheme + iOS Client ID.
   const redirectUri = isExpoGo
-    ? makeRedirectUri({ native: 'https://auth.expo.io/@anonymous/sherlock-app' })
+    ? 'https://auth.expo.io/@anonymous/sherlock-app'
     : makeRedirectUri({ scheme: 'sherlock-app' });
+
+  // Log once at mount for debugging
+  useEffect(() => {
+    console.log('[GoogleAuth] isExpoGo=', isExpoGo, 'redirectUri=', redirectUri);
+  }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:        GOOGLE_OAUTH.expoClientId,
