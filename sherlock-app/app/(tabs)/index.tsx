@@ -66,16 +66,17 @@ export default function HomeScreen() {
 
       {/* ── Introduction ── */}
       <View style={styles.introSection}>
-        <Text style={styles.introTitle}>Bienvenue</Text>
+        <Text style={styles.introTitle}>Bonjour,</Text>
         <Text style={styles.introBody}>
-          Cette application est le compagnon du livre. Elle se concentre sur l'Ennéagramme — non pas parce que c'est l'unique outil pour comprendre nos enfants, encore moins parce qu'il serait sans défauts. Simplement parce qu'il ouvre une porte. Une porte vers cette idée fondamentale : nos enfants ne sont pas nous, et ils ne perçoivent pas le monde comme nous le percevons.
+          Je m'appelle Thomas. Je suis père, et comme vous, j'ai souvent eu le sentiment de ne pas comprendre ce qui se passait dans la petite tête de mes enfants. Pourquoi l'un se braque quand je le cadre, pourquoi l'autre se replie quand je crois bien faire, pourquoi un troisième semble avoir besoin de tellement plus d'attention que les autres.
         </Text>
         <Text style={styles.introBody}>
-          L'Ennéagramme est une langue parmi d'autres pour nommer ces différences. Imparfaite, partielle, parfois caricaturale — mais utile. Elle donne des mots à ce que vous ressentez confusément depuis longtemps : votre enfant n'a pas le même moteur intérieur que vous, et ce qui le nourrit n'est peut-être pas ce que vous lui offrez naturellement.
+          J'ai écrit ce livre — et conçu cette application — pour partager un outil qui m'a beaucoup aidé : l'Ennéagramme. Ce n'est pas l'unique manière de comprendre nos enfants, et il a ses défauts. Mais il ouvre une porte. Une porte vers cette évidence si difficile à accepter : <Text style={{ fontStyle: 'italic' }}>nos enfants ne sont pas nous</Text>. Ils ne ressentent pas le monde comme nous, ne sont pas nourris par les mêmes choses, ne souffrent pas pour les mêmes raisons.
         </Text>
         <Text style={styles.introBody}>
-          Les outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer, à vous interroger, à dialoguer autrement.
+          Les quatre outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer votre enfant autrement, à vous interroger sur vos propres réflexes, à entamer le dialogue. Prenez ce qui vous parle, laissez le reste. Et surtout, n'oubliez jamais qu'aucun livre, aucune app, ne remplacera votre regard d'amour sur lui.
         </Text>
+        <Text style={styles.introSignature}>— Thomas</Text>
       </View>
 
       {/* ── Tools (entrées vers les onglets) ── */}
@@ -216,6 +217,12 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: colors.textSoft,
     marginBottom: spacing.md,
+  },
+  introSignature: {
+    fontFamily: fonts.serifItalic,
+    fontSize: 15,
+    color: colors.accent,
+    marginTop: spacing.xs,
   },
 
   // ── Tools section ──
