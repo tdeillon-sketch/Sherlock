@@ -28,7 +28,8 @@
     "production": {
       "ios": {
         "appleId": "thomas.deillon@icloud.com",
-        "appleTeamId": "6VXK7BJANY"
+        "appleTeamId": "6VXK7BJANY",
+        "ascAppId": "6762472752"
       }
     }
   }
