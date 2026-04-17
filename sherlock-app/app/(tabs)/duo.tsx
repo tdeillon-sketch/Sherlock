@@ -5,120 +5,171 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
-  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { DuoContext, CONTEXT_LABELS, getDuoPair } from '../../constants/duo';
+import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT } from '../../constants/duo';
 
 // ── Type metadata ──────────────────────────────────────────────
 const TYPE_COLORS = [
-  '#7b8e6e', // 1
-  '#c0713a', // 2
-  '#d4a03c', // 3
-  '#8b6ca7', // 4
-  '#5b8a9a', // 5
-  '#6b7b8e', // 6
-  '#d4853c', // 7
-  '#9b4a4a', // 8
-  '#7a9a7b', // 9
+  '#7b8e6e', '#c0713a', '#d4a03c', '#8b6ca7',
+  '#5b8a9a', '#6b7b8e', '#d4853c', '#9b4a4a', '#7a9a7b',
+];
+const TYPE_NAMES = [
+  'Perfectionniste', 'Assistant', 'Battant', 'Artiste',
+  'Observateur', 'Loyaliste', 'Épicurien', 'Chef', 'Médiateur',
 ];
 
-const TYPE_SHORT = [
-  'Perfectio.', // 1
-  'Assistant',  // 2
-  'Battant',    // 3
-  'Artiste',    // 4
-  'Observat.',  // 5
-  'Loyaliste',  // 6
-  'Épicurien',  // 7
-  'Chef',       // 8
-  'Médiateur',  // 9
-];
+// ── Role ───────────────────────────────────────────────────────
+type ProfileRole = 'adulte' | 'enfant' | 'ado';
 
-const CONTEXTS: DuoContext[] = ['enfant', 'ado', 'couple', 'adulte'];
+const ROLE_LABELS: Record<ProfileRole, string> = {
+  adulte: 'Adulte',
+  enfant: 'Enfant',
+  ado:    'Ado',
+};
 
-// ── Collapsible section ────────────────────────────────────────
-function Section({
-  title,
+function deriveContext(roleA: ProfileRole, roleB: ProfileRole): DuoContext {
+  if (roleA === 'enfant' && roleB === 'enfant') return 'pairs';
+  if (roleA === 'ado'    && roleB === 'ado')    return 'pairs';
+  if (roleA === 'enfant' || roleB === 'enfant') return 'enfant';
+  if (roleA === 'ado'    || roleB === 'ado')    return 'ado';
+  return 'adulte';
+}
+
+function contextLabel(ctx: DuoContext, roleA: ProfileRole, roleB: ProfileRole): string {
+  switch (ctx) {
+    case 'pairs':
+      return roleA === 'enfant' ? 'Amitié entre enfants (5–12 ans)' : 'Amitié entre ados (13–17 ans)';
+    case 'enfant': return 'Relation parent · enfant (5–12 ans)';
+    case 'ado':    return 'Relation parent · ado (13–17 ans)';
+    default:       return 'Relation amis · collègues · couple';
+  }
+}
+
+// ── Flat section ───────────────────────────────────────────────
+function FlatSection({
   emoji,
+  title,
   body,
-  open,
-  onToggle,
-  accentColor,
+  colorA,
 }: {
-  title: string;
   emoji: string;
+  title: string;
   body: string;
-  open: boolean;
-  onToggle: () => void;
-  accentColor: string;
+  colorA: string;
 }) {
   return (
-    <View style={sectionStyles.wrap}>
-      <Pressable
-        style={({ pressed }) => [sectionStyles.header, pressed && { opacity: 0.7 }]}
-        onPress={onToggle}
-      >
-        <View style={[sectionStyles.pill, { backgroundColor: accentColor + '22' }]}>
-          <Text style={sectionStyles.pillEmoji}>{emoji}</Text>
+    <View style={fsStyles.wrap}>
+      <View style={fsStyles.headerRow}>
+        <View style={[fsStyles.pill, { backgroundColor: colorA + '25' }]}>
+          <Text style={fsStyles.pillEmoji}>{emoji}</Text>
         </View>
-        <Text style={sectionStyles.title}>{title}</Text>
-        <Text style={[sectionStyles.chevron, { color: accentColor }]}>
-          {open ? '▴' : '▾'}
-        </Text>
-      </Pressable>
-      {open && (
-        <View style={sectionStyles.body}>
-          <Text style={sectionStyles.bodyText}>{body}</Text>
-        </View>
-      )}
+        <Text style={fsStyles.title}>{title}</Text>
+      </View>
+      <Text style={fsStyles.body}>{body}</Text>
     </View>
   );
 }
 
-const sectionStyles = StyleSheet.create({
+const fsStyles = StyleSheet.create({
   wrap: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.border,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
     gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   pill: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   pillEmoji: {
-    fontSize: 16,
+    fontSize: 17,
   },
   title: {
     flex: 1,
     fontFamily: fonts.sans,
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  chevron: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
+    color: colors.text,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   body: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  bodyText: {
     fontFamily: fonts.sans,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 24,
     color: colors.textSoft,
+    paddingLeft: 34 + spacing.sm,
+  },
+});
+
+// ── Role selector strip ────────────────────────────────────────
+function RoleStrip({
+  value,
+  onChange,
+  typeColor,
+}: {
+  value: ProfileRole;
+  onChange: (r: ProfileRole) => void;
+  typeColor: string;
+}) {
+  const roles: ProfileRole[] = ['adulte', 'enfant', 'ado'];
+  return (
+    <View style={roleStyles.strip}>
+      {roles.map(r => {
+        const active = value === r;
+        return (
+          <Pressable
+            key={r}
+            style={[
+              roleStyles.pill,
+              active && { backgroundColor: typeColor, borderColor: typeColor },
+            ]}
+            onPress={() => onChange(r)}
+          >
+            <Text
+              style={[roleStyles.label, active && { color: colors.white }]}
+            >
+              {ROLE_LABELS[r]}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+const roleStyles = StyleSheet.create({
+  strip: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginBottom: spacing.sm,
+  },
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  label: {
+    fontFamily: fonts.sans,
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textMuted,
   },
 });
 
@@ -138,7 +189,7 @@ function TypeGrid({
       <View style={gridStyles.grid}>
         {Array.from({ length: 9 }, (_, i) => {
           const t = i + 1;
-          const isSelected = selected === t;
+          const isSel = selected === t;
           const col = TYPE_COLORS[i];
           return (
             <Pressable
@@ -146,27 +197,19 @@ function TypeGrid({
               style={({ pressed }) => [
                 gridStyles.cell,
                 { borderColor: col },
-                isSelected && { backgroundColor: col },
+                isSel && { backgroundColor: col },
                 pressed && { opacity: 0.75 },
               ]}
               onPress={() => onSelect(t)}
             >
-              <Text
-                style={[
-                  gridStyles.num,
-                  { color: isSelected ? colors.white : col },
-                ]}
-              >
+              <Text style={[gridStyles.num, { color: isSel ? colors.white : col }]}>
                 {t}
               </Text>
               <Text
-                style={[
-                  gridStyles.short,
-                  { color: isSelected ? colors.white + 'cc' : colors.textDim },
-                ]}
+                style={[gridStyles.short, { color: isSel ? 'rgba(255,255,255,0.8)' : colors.textDim }]}
                 numberOfLines={1}
               >
-                {TYPE_SHORT[i]}
+                {TYPE_NAMES[i]}
               </Text>
             </Pressable>
           );
@@ -177,27 +220,26 @@ function TypeGrid({
 }
 
 const gridStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   label: {
-    fontFamily: fonts.serif,
-    fontSize: 13,
+    fontFamily: fonts.sans,
+    fontSize: 11,
     color: colors.textMuted,
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+    fontWeight: '700',
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   cell: {
     width: '30%',
-    aspectRatio: 1,
+    aspectRatio: 1.1,
     borderRadius: radius.sm,
     borderWidth: 1.5,
     alignItems: 'center',
@@ -207,12 +249,12 @@ const gridStyles = StyleSheet.create({
   },
   num: {
     fontFamily: fonts.sans,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
   },
   short: {
     fontFamily: fonts.sans,
-    fontSize: 9,
+    fontSize: 8,
     textAlign: 'center',
     marginTop: 1,
   },
@@ -220,150 +262,34 @@ const gridStyles = StyleSheet.create({
 
 // ── Main screen ────────────────────────────────────────────────
 export default function DuoScreen() {
-  const { width } = useWindowDimensions();
-  const isWide = width >= 768;
-
-  const [context, setContext] = useState<DuoContext>('couple');
+  const [roleA, setRoleA] = useState<ProfileRole>('adulte');
+  const [roleB, setRoleB] = useState<ProfileRole>('adulte');
   const [typeA, setTypeA] = useState<number | null>(null);
   const [typeB, setTypeB] = useState<number | null>(null);
-  const [openSection, setOpenSection] = useState<string | null>('pointsForts');
 
+  const context = deriveContext(roleA, roleB);
   const pair = typeA && typeB ? getDuoPair(typeA, typeB) : null;
 
-  const toggle = (key: string) =>
-    setOpenSection(prev => (prev === key ? null : key));
+  // For 'pairs' context, look up the dedicated peers table
+  const pairsText = (typeA && typeB)
+    ? (DUO_PAIRS_CONTEXT[`${typeA}-${typeB}`] ?? pair?.conseil ?? '')
+    : '';
 
-  // accent = color of type A (or fallback)
-  const accentColor =
-    typeA ? TYPE_COLORS[typeA - 1] : colors.accent;
-  const accentColorB =
-    typeB ? TYPE_COLORS[typeB - 1] : colors.accentLight;
+  const contextBodyText = (ctx: DuoContext): string => {
+    if (!pair) return '';
+    if (ctx === 'pairs') return pairsText;
+    return pair.contexte[ctx as Exclude<DuoContext, 'pairs'>] ?? '';
+  };
 
-  // ── Context tabs ──
-  const contextTabs = (
-    <View style={styles.contextRow}>
-      {CONTEXTS.map(c => (
-        <Pressable
-          key={c}
-          style={[styles.contextTab, context === c && styles.contextTabActive]}
-          onPress={() => setContext(c)}
-        >
-          <Text
-            style={[
-              styles.contextTabText,
-              context === c && styles.contextTabTextActive,
-            ]}
-            numberOfLines={2}
-          >
-            {CONTEXT_LABELS[c]}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-
-  // ── VS badge ──
-  const vsBadge = (
-    <View style={styles.vsWrap}>
-      <View style={styles.vsBadge}>
-        <Text style={styles.vsText}>VS</Text>
-      </View>
-      {typeA && typeB && (
-        <Text style={styles.vsSubText}>
-          Type {typeA} + Type {typeB}
-        </Text>
-      )}
-    </View>
-  );
-
-  // ── Result card ──
-  const resultCard = pair ? (
-    <View style={styles.resultCard}>
-      {/* Header */}
-      <LinearGradient
-        colors={[accentColor + '33', accentColorB + '22']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.resultHeader}
-      >
-        <View style={styles.resultTypeRow}>
-          <View style={[styles.typeBadge, { backgroundColor: accentColor }]}>
-            <Text style={styles.typeBadgeText}>{typeA}</Text>
-          </View>
-          <Text style={styles.resultArrow}>⟷</Text>
-          <View style={[styles.typeBadge, { backgroundColor: accentColorB }]}>
-            <Text style={styles.typeBadgeText}>{typeB}</Text>
-          </View>
-        </View>
-        <Text style={styles.resultContextLabel}>{CONTEXT_LABELS[context]}</Text>
-      </LinearGradient>
-
-      {/* Collapsible sections */}
-      <Section
-        emoji="✨"
-        title="Points forts"
-        body={pair.pointsForts}
-        open={openSection === 'pointsForts'}
-        onToggle={() => toggle('pointsForts')}
-        accentColor={accentColor}
-      />
-      <Section
-        emoji="⚠️"
-        title="Vigilances"
-        body={pair.vigilances}
-        open={openSection === 'vigilances'}
-        onToggle={() => toggle('vigilances')}
-        accentColor={accentColor}
-      />
-      <Section
-        emoji="🎁"
-        title={`Ce que le ${typeA} apporte au ${typeB}`}
-        body={pair.aApporte}
-        open={openSection === 'aApporte'}
-        onToggle={() => toggle('aApporte')}
-        accentColor={accentColor}
-      />
-      <Section
-        emoji="🎁"
-        title={`Ce que le ${typeB} apporte au ${typeA}`}
-        body={pair.bApporte}
-        open={openSection === 'bApporte'}
-        onToggle={() => toggle('bApporte')}
-        accentColor={accentColorB}
-      />
-      <Section
-        emoji="💡"
-        title="Conseil pratique"
-        body={pair.conseil}
-        open={openSection === 'conseil'}
-        onToggle={() => toggle('conseil')}
-        accentColor={accentColor}
-      />
-      <Section
-        emoji="🔍"
-        title="Dans ce contexte"
-        body={pair.contexte[context]}
-        open={openSection === 'contexte'}
-        onToggle={() => toggle('contexte')}
-        accentColor={accentColor}
-      />
-    </View>
-  ) : (
-    <View style={styles.emptyCard}>
-      <Text style={styles.emptyEmoji}>◎</Text>
-      <Text style={styles.emptyTitle}>Sélectionnez deux types</Text>
-      <Text style={styles.emptyDesc}>
-        Choisissez un profil à gauche et un à droite pour découvrir leur dynamique.
-      </Text>
-    </View>
-  );
+  const colorA = typeA ? TYPE_COLORS[typeA - 1] : colors.accent;
+  const colorB = typeB ? TYPE_COLORS[typeB - 1] : colors.accentLight;
 
   return (
     <View style={styles.screen}>
-      {/* Title bar */}
+      {/* ── Title bar ── */}
       <View style={styles.titleBar}>
         <Text style={styles.screenTitle}>Duo</Text>
-        <Text style={styles.screenSub}>Dynamiques entre profils</Text>
+        <Text style={styles.screenSub}>Dynamiques entre profils Ennéagramme</Text>
       </View>
 
       <ScrollView
@@ -371,26 +297,121 @@ export default function DuoScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Context */}
-        {contextTabs}
-
-        {/* Type selectors */}
+        {/* ── Selectors ── */}
         <View style={styles.selectorsRow}>
-          <TypeGrid
-            selected={typeA}
-            onSelect={setTypeA}
-            label="Profil A"
-          />
-          {vsBadge}
-          <TypeGrid
-            selected={typeB}
-            onSelect={setTypeB}
-            label="Profil B"
-          />
+
+          {/* Profil A */}
+          <View style={styles.selectorBlock}>
+            <RoleStrip value={roleA} onChange={setRoleA} typeColor={colorA} />
+            <TypeGrid selected={typeA} onSelect={setTypeA} label="Profil A" />
+          </View>
+
+          {/* VS */}
+          <View style={styles.vsCol}>
+            <View style={[styles.vsBadge, !!(typeA && typeB) && { borderColor: colorA }]}>
+              <Text style={styles.vsText}>VS</Text>
+            </View>
+          </View>
+
+          {/* Profil B */}
+          <View style={styles.selectorBlock}>
+            <RoleStrip value={roleB} onChange={setRoleB} typeColor={colorB} />
+            <TypeGrid selected={typeB} onSelect={setTypeB} label="Profil B" />
+          </View>
         </View>
 
-        {/* Result */}
-        {resultCard}
+        {/* ── Context label ── */}
+        {(typeA || typeB) && (
+          <View style={styles.contextBanner}>
+            <Text style={styles.contextBannerText}>
+              {contextLabel(context, roleA, roleB)}
+            </Text>
+          </View>
+        )}
+
+        {/* ── Result ── */}
+        {pair ? (
+          <View style={styles.resultCard}>
+            {/* Header gradient */}
+            <LinearGradient
+              colors={[colorA + '40', colorB + '28']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.resultHeader}
+            >
+              <View style={styles.resultTypeRow}>
+                <View style={styles.resultTypePill}>
+                  <View style={[styles.typeDot, { backgroundColor: colorA }]}>
+                    <Text style={styles.typeDotNum}>{typeA}</Text>
+                  </View>
+                  <View style={styles.resultTypeMeta}>
+                    <Text style={styles.resultTypeLabel}>Type {typeA}</Text>
+                    <Text style={styles.resultTypeName}>{TYPE_NAMES[typeA! - 1]}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.arrowChar}>⟷</Text>
+
+                <View style={[styles.resultTypePill, { justifyContent: 'flex-end' }]}>
+                  <View style={styles.resultTypeMeta}>
+                    <Text style={[styles.resultTypeLabel, { textAlign: 'right' }]}>Type {typeB}</Text>
+                    <Text style={[styles.resultTypeName, { textAlign: 'right' }]}>{TYPE_NAMES[typeB! - 1]}</Text>
+                  </View>
+                  <View style={[styles.typeDot, { backgroundColor: colorB }]}>
+                    <Text style={styles.typeDotNum}>{typeB}</Text>
+                  </View>
+                </View>
+              </View>
+            </LinearGradient>
+
+            {/* Flat sections */}
+            <FlatSection
+              emoji="✨"
+              title="Ce qui fonctionne bien entre vous"
+              body={pair.pointsForts}
+              colorA={colorA}
+            />
+            <FlatSection
+              emoji="⚠️"
+              title="Points de friction à surveiller"
+              body={pair.vigilances}
+              colorA={'#d4a03c'}
+            />
+            <FlatSection
+              emoji="🤲"
+              title={`Ce que le Type ${typeA} apporte au Type ${typeB}`}
+              body={pair.aApporte}
+              colorA={colorA}
+            />
+            <FlatSection
+              emoji="🎁"
+              title={`Ce que le Type ${typeB} apporte au Type ${typeA}`}
+              body={pair.bApporte}
+              colorA={colorB}
+            />
+            <FlatSection
+              emoji="💡"
+              title="Conseil pour mieux vivre ensemble"
+              body={pair.conseil}
+              colorA={colorA}
+            />
+            <FlatSection
+              emoji="🔍"
+              title="Dans votre situation"
+              body={contextBodyText(context)}
+              colorA={colorA}
+            />
+          </View>
+        ) : (
+          /* Empty state */
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyEmoji}>◎</Text>
+            <Text style={styles.emptyTitle}>Sélectionnez deux profils</Text>
+            <Text style={styles.emptyDesc}>
+              Choisissez un type à gauche et un à droite pour découvrir la dynamique entre ces deux personnalités.
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -402,12 +423,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
 
-  // Title bar
   titleBar: {
     paddingTop: spacing.xxl + spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
-    backgroundColor: colors.bg,
   },
   screenTitle: {
     fontFamily: fonts.serif,
@@ -421,66 +440,31 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  scroll: {
-    flex: 1,
-  },
+  scroll: { flex: 1 },
   scrollContent: {
-    paddingBottom: spacing.xxl + spacing.xl,
     paddingHorizontal: spacing.md,
-    gap: spacing.lg,
+    paddingBottom: spacing.xxl + spacing.xl,
+    gap: spacing.md,
   },
 
-  // Context tabs
-  contextRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  contextTab: {
-    flex: 1,
-    minWidth: '44%',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-  },
-  contextTabActive: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentFill,
-  },
-  contextTabText: {
-    fontFamily: fonts.sans,
-    fontSize: 11,
-    color: colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 15,
-  },
-  contextTabTextActive: {
-    color: colors.accent,
-    fontWeight: '600',
-  },
-
-  // Selectors row
+  // ── Selectors ──
   selectorsRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: spacing.xs,
+    gap: 4,
   },
-
-  // VS badge
-  vsWrap: {
+  selectorBlock: {
+    flex: 1,
+  },
+  vsCol: {
+    width: 40,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 28,
-    width: 44,
+    paddingTop: 30,
   },
   vsBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -489,20 +473,28 @@ const styles = StyleSheet.create({
   },
   vsText: {
     fontFamily: fonts.sans,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: colors.textMuted,
     letterSpacing: 0.5,
   },
-  vsSubText: {
+
+  // ── Context banner ──
+  contextBanner: {
+    backgroundColor: colors.accentFill,
+    borderRadius: radius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+  },
+  contextBannerText: {
     fontFamily: fonts.sans,
-    fontSize: 9,
-    color: colors.textDim,
-    textAlign: 'center',
-    marginTop: 4,
+    fontSize: 12,
+    color: colors.accent,
+    fontWeight: '600',
   },
 
-  // Result card
+  // ── Result card ──
   resultCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -513,38 +505,55 @@ const styles = StyleSheet.create({
   resultHeader: {
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.sm,
   },
   resultTypeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    justifyContent: 'space-between',
   },
-  typeBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  resultTypePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  typeDot: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
-  typeBadgeText: {
+  typeDotNum: {
     fontFamily: fonts.sans,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.white,
   },
-  resultArrow: {
-    fontSize: 20,
-    color: colors.textDim,
+  resultTypeMeta: {
+    flex: 1,
   },
-  resultContextLabel: {
+  resultTypeLabel: {
     fontFamily: fonts.sans,
-    fontSize: 12,
-    color: colors.textSoft,
+    fontSize: 10,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  resultTypeName: {
+    fontFamily: fonts.serif,
+    fontSize: 14,
+    color: colors.text,
+    marginTop: 1,
+  },
+  arrowChar: {
+    fontSize: 16,
+    color: colors.textDim,
+    marginHorizontal: 4,
   },
 
-  // Empty state
+  // ── Empty state ──
   emptyCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -570,6 +579,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 22,
   },
 });

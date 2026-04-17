@@ -1,16 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
 //  Duo — Interactions entre profils Enneagramme
-//  81 paires dirigées (A→B) × 4 contextes
+//  81 paires dirigées (A→B) × 5 contextes
 // ═══════════════════════════════════════════════════════════════
 
-export type DuoContext = 'enfant' | 'ado' | 'couple' | 'adulte';
+export type DuoContext = 'enfant' | 'ado' | 'couple' | 'adulte' | 'pairs';
 
-export const CONTEXT_LABELS: Record<DuoContext, string> = {
+export const CONTEXT_LABELS: Record<BaseContext, string> = {
   enfant:  '👨 Parent · Enfant (5–12)',
   ado:     '🧑 Parent · Ado (13–17)',
   couple:  '💑 Couple',
   adulte:  '👥 Amis · Collègues',
 };
+
+export type BaseContext = Exclude<DuoContext, 'pairs'>; // 'enfant' | 'ado' | 'couple' | 'adulte'
 
 export interface DuoPair {
   pointsForts: string;
@@ -18,7 +20,7 @@ export interface DuoPair {
   aApporte: string;   // ce que le type A apporte à B
   bApporte: string;   // ce que le type B apporte à A
   conseil: string;
-  contexte: Record<DuoContext, string>; // tip spécifique par contexte
+  contexte: Record<BaseContext, string>; // tip spécifique par contexte (hors pairs)
 }
 
 // Clé : "${typeA}-${typeB}"  (ex. "1-4" = type 1 à gauche, type 4 à droite)
@@ -1193,6 +1195,112 @@ export const DUO_DATA: Record<string, DuoPair> = {
       adulte: "Duo harmonieux. Attention à l'évitement systématique des décisions difficiles.",
     },
   },
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  Contexte PAIRS — Enfant-Enfant ou Ado-Ado (entre pairs)
+//  81 paires dirigées, tip dédié aux relations entre peers
+// ═══════════════════════════════════════════════════════════════
+
+export const DUO_PAIRS_CONTEXT: Record<string, string> = {
+  // ── Type 1 ──
+  "1-1": "Deux perfectionnistes : ils se comprennent instinctivement mais risquent de se critiquer mutuellement. Valorisez leur coopération plutôt que la compétition entre eux.",
+  "1-2": "Le 1 pose les règles, le 2 veut plaire et appartenir. Belle amitié si le 1 ne critique pas trop et si le 2 ne s'efface pas pour être accepté.",
+  "1-3": "Duo ambitieux et efficace. Ils se stimulent mais peuvent vite rivaliser — aidez-les à célébrer la réussite de l'autre.",
+  "1-4": "Le 1 trouve le 4 trop émotif, le 4 trouve le 1 trop rigide. Amitié surprenante mais enrichissante si on les aide à voir leurs différences comme une force.",
+  "1-5": "Amitié intellectuelle sérieuse. Deux profils qui respectent la compétence — ils peuvent passer des heures à construire ou débattre ensemble.",
+  "1-6": "Amitié solide et loyale. Le 6 apporte la fidélité, le 1 apporte la rigueur — ils se font confiance et forment un duo très stable.",
+  "1-7": "Le 7 titille le 1 avec son désordre joyeux, le 1 structure le 7. Amitié vivante si on les met ensemble sur un projet créatif avec des règles courtes.",
+  "1-8": "Deux personnalités fortes : soit une grande amitié fondée sur le respect mutuel, soit un rapport de force permanent. Aidez-les à trouver un terrain commun.",
+  "1-9": "Amitié paisible et fiable. Le 9 accepte les règles du 1, le 1 apprécie la douceur du 9. Duo très stable.",
+
+  // ── Type 2 ──
+  "2-1": "Le 2 essaie de prendre soin du 1 qui préfère se débrouiller seul. Belle amitié si le 2 respecte l'autonomie du 1.",
+  "2-2": "Amitié très soudée et très chaleureuse. Attention à la dépendance affective — encouragez-les à avoir aussi d'autres amis.",
+  "2-3": "Le 2 admire le 3 et l'encourage. Le 3 apprécie ce soutien. Amitié fluide si le 3 ne prend pas le 2 pour acquis.",
+  "2-4": "Le 2 veut consoler le 4, le 4 veut être compris en profondeur. Belle amitié émotionnelle si le 2 apprend à écouter sans chercher à résoudre.",
+  "2-5": "Le 2 veut rapprocher, le 5 veut de l'espace. Amitié possible si le 2 respecte les zones de solitude du 5.",
+  "2-6": "Amitié très loyale et rassurante. Ils se soutiennent dans les moments difficiles avec une confiance profonde.",
+  "2-7": "Amitié joyeuse et généreuse. Le 7 entraîne le 2 dans ses aventures, le 2 prend soin du 7. Duo très populaire.",
+  "2-8": "Le 2 adoucit le 8, le 8 protège le 2. Amitié intense fondée sur la loyauté.",
+  "2-9": "Amitié douce et harmonieuse. Deux profils qui évitent le conflit — veillez à ce qu'ils s'expriment aussi quand quelque chose ne va pas.",
+
+  // ── Type 3 ──
+  "3-1": "Le 3 pousse le 1 vers la performance, le 1 rappelle au 3 l'importance de l'intégrité. Amitié stimulante si les deux acceptent de se remettre en question.",
+  "3-2": "Le 3 profite du soutien du 2, le 2 brille dans l'ombre du 3. Amitié à surveiller pour que le 2 ne s'oublie pas.",
+  "3-3": "Duo d'énergie et de réussite. La rivalité peut vite s'installer — aidez-les à coopérer plutôt qu'à se comparer.",
+  "3-4": "Le 3 fonce, le 4 ressent. Amitié surprenante : le 4 aide le 3 à se connecter à lui-même, le 3 aide le 4 à passer à l'action.",
+  "3-5": "Le 3 agit, le 5 analyse. Duo complémentaire si le 3 ne court-circuite pas la réflexion du 5 et si le 5 accepte de se lancer.",
+  "3-6": "Le 3 donne confiance au 6, le 6 rappelle au 3 qu'il ne faut pas foncer tête baissée. Amitié bien équilibrée.",
+  "3-7": "Énergie, enthousiasme, projets ! Deux profils qui évitent la profondeur émotionnelle — aidez-les aussi à parler de ce qu'ils ressentent.",
+  "3-8": "Deux leaders naturels. Ils se respectent si aucun n'essaie de dominer l'autre. Amitié puissante et loyale.",
+  "3-9": "Le 3 dynamise le 9, le 9 calme le 3. Belle complémentarité si le 3 laisse de l'espace au 9.",
+
+  // ── Type 4 ──
+  "4-1": "Le 4 trouve le 1 trop rigide, le 1 trouve le 4 trop dramatique. Leur idéal commun peut les réunir dans des projets créatifs ou engagés.",
+  "4-2": "Amitié émotionnellement intense et profonde. Le 2 soutient le 4, le 4 aide le 2 à se connecter à ses propres émotions.",
+  "4-3": "Le 4 aspire à l'authenticité, le 3 à la performance. Tension possible, mais chacun peut beaucoup apprendre de l'autre.",
+  "4-4": "Amitié très profonde mais potentiellement mélancolique. Encouragez des activités légères — deux 4 ensemble peuvent s'enfermer dans l'intensité.",
+  "4-5": "Duo introverti et intellectuellement riche. Ils se comprennent sans s'expliquer et respectent le besoin d'espace de l'autre.",
+  "4-6": "Le 4 apporte la profondeur, le 6 apporte la loyauté. Amitié solide si le 6 ne s'épuise pas à rassurer le 4 dans ses doutes.",
+  "4-7": "Le 4 plonge, le 7 survole. Contraste fort mais complémentaire : le 7 allège le 4, le 4 donne de la profondeur au 7.",
+  "4-8": "Deux personnalités intenses. Le 8 protège le 4, le 4 aide le 8 à accéder à sa vulnérabilité. Amitié rare et précieuse.",
+  "4-9": "Amitié douce et créative. Le 9 accepte l'intensité du 4, le 4 apprécie la paix totale que lui offre le 9.",
+
+  // ── Type 5 ──
+  "5-1": "Amitié intellectuelle et respectueuse. Ils partagent le goût du travail bien fait et ne se marchent pas dessus.",
+  "5-2": "Le 5 a besoin d'espace, le 2 veut se rapprocher. Amitié possible si le 2 respecte le rythme et les silences du 5.",
+  "5-3": "Le 5 réfléchit, le 3 agit. Ils se complètent si le 3 ne va pas trop vite et si le 5 accepte de partager ses analyses.",
+  "5-4": "Amitié intellectuelle et émotionnellement riche. Ils se respectent et se comprennent à demi-mot.",
+  "5-5": "Deux observateurs discrets qui se respectent mutuellement. Amitié rare et précieuse — veillez cependant à ce qu'ils ne s'isolent pas ensemble.",
+  "5-6": "Le 5 analyse les risques, le 6 les anticipe. Duo très complémentaire sur les projets qui demandent de la réflexion.",
+  "5-7": "Le 5 approfondit, le 7 élargit. Contraste stimulant si le 7 laisse le 5 finir ses pensées.",
+  "5-8": "Le 5 pense, le 8 agit. Respect mutuel possible si le 8 ne bouscule pas le 5 et si le 5 sort de son monde intérieur.",
+  "5-9": "Amitié tranquille et respectueuse. Deux profils qui apprécient le calme — ils peuvent rester côte à côte sans se déranger.",
+
+  // ── Type 6 ──
+  "6-1": "Amitié stable et fiable. Le 6 suit les règles du 1, le 1 rassure le 6. Duo très loyal et prévisible.",
+  "6-2": "Amitié chaleureuse et loyale. Ils prennent soin l'un de l'autre avec une générosité sincère.",
+  "6-3": "Le 6 ramène le 3 à la réalité, le 3 donne confiance au 6. Amitié dynamique et équilibrée.",
+  "6-4": "Le 6 cherche la sécurité, le 4 cherche l'intensité. Amitié possible si le 6 ne trouve pas le 4 trop imprévisible.",
+  "6-5": "Amitié tranquille et analytique. Ils se rassurent mutuellement par la logique et l'anticipation.",
+  "6-6": "Deux profils anxieux qui se soutiennent — ou qui amplifient leurs peurs mutuelles. Aidez-les à cultiver la confiance plutôt que la vigilance.",
+  "6-7": "Le 7 rassure le 6 par sa légèreté, le 6 rappelle au 7 de réfléchir avant de foncer. Belle complémentarité.",
+  "6-8": "Le 6 teste la fiabilité du 8, le 8 protège le 6. Amitié forte fondée sur la loyauté une fois la confiance établie.",
+  "6-9": "Amitié très douce et très stable. Ils évitent les conflits ensemble — veillez à ce qu'ils s'expriment aussi quand quelque chose ne va pas.",
+
+  // ── Type 7 ──
+  "7-1": "Le 7 bouscule les règles du 1, le 1 structure le chaos du 7. Amitié vivante si on les met sur un projet commun avec des règles courtes.",
+  "7-2": "Amitié joyeuse et généreuse. Le 7 emmène le 2 dans ses aventures, le 2 prend soin du 7. Duo populaire et chaleureux.",
+  "7-3": "Duo d'énergie et d'enthousiasme. Ils adorent les projets communs mais peuvent tous les deux éviter les émotions difficiles.",
+  "7-4": "Le 7 allège le 4, le 4 donne de la profondeur au 7. Amitié surprenante et très enrichissante si chacun accepte la différence de l'autre.",
+  "7-5": "Le 7 ouvre le monde du 5, le 5 approfondit les idées du 7. Amitié stimulante intellectuellement si le 7 laisse le 5 respirer.",
+  "7-6": "Le 7 rassure le 6 avec sa légèreté, le 6 amène le 7 à réfléchir avant d'agir. Complémentarité précieuse.",
+  "7-7": "Énergie contagieuse et créativité débordante — mais aussi dispersion ! Aidez-les à finir leurs projets ensemble.",
+  "7-8": "Deux profils qui aiment l'action et le défi. Amitié intense et loyale si le 8 ne domine pas le 7.",
+  "7-9": "Amitié joyeuse et paisible. Le 7 stimule le 9, le 9 calme le 7. Bon équilibre naturel.",
+
+  // ── Type 8 ──
+  "8-1": "Deux personnalités fortes qui se respectent mutuellement. Amitié possible si aucun n'essaie d'imposer ses règles à l'autre.",
+  "8-2": "Le 8 protège le 2, le 2 adoucit le 8. Amitié intense et loyale fondée sur la confiance.",
+  "8-3": "Deux leaders. Ils s'admirent et se tirent vers le haut — mais aussi vers la compétition. Aidez-les à coopérer plutôt que rivaliser.",
+  "8-4": "Le 8 protège le 4, le 4 aide le 8 à accéder à ses émotions. Amitié rare, intense et précieuse.",
+  "8-5": "Le 8 agit, le 5 réfléchit. Respect mutuel possible si le 8 laisse le 5 analyser avant de décider.",
+  "8-6": "Le 8 protège le 6, le 6 est loyalement dévoué au 8. Amitié forte une fois la confiance établie.",
+  "8-7": "Deux aventuriers. Énergie, action, défi — amitié intense et vivante. Veillez à ce qu'ils gèrent aussi leurs émotions.",
+  "8-8": "Rivalité de pouvoir ou loyauté absolue : quand c'est une vraie amitié entre deux 8, elle est pour la vie — mais le chemin peut être chaotique.",
+  "8-9": "Le 8 donne de l'énergie au 9, le 9 calme le 8. Belle amitié si le 8 ne prend pas toute la place.",
+
+  // ── Type 9 ──
+  "9-1": "Amitié tranquille et fiable. Le 9 accepte les règles du 1, le 1 apprécie la douceur du 9. Duo très stable.",
+  "9-2": "Amitié douce et bienveillante. Deux profils qui prennent soin des autres — veillez à ce qu'ils prennent aussi soin d'eux-mêmes.",
+  "9-3": "Le 9 admire l'énergie du 3, le 3 apprécie la sérénité du 9. Belle complémentarité si le 3 laisse de l'espace au 9.",
+  "9-4": "Amitié créative et paisible. Le 9 apprécie la profondeur du 4, le 4 apprécie l'acceptation totale que lui offre le 9.",
+  "9-5": "Amitié calme et respectueuse. Deux profils discrets qui apprécient le silence et l'espace partagé.",
+  "9-6": "Amitié douce et stable. Ils se soutiennent sans se juger et créent un espace de confiance mutuelle.",
+  "9-7": "Le 7 anime le 9, le 9 calme le 7. Amitié joyeuse et équilibrée.",
+  "9-8": "Le 9 adoucit le 8, le 8 aide le 9 à s'affirmer. Belle amitié si le 8 ne prend pas toute la place.",
+  "9-9": "Amitié très paisible et harmonieuse. Deux 9 ensemble évitent tous les conflits — veillez à ce qu'ils s'affirment aussi quand c'est nécessaire.",
 };
 
 // ── Helpers ──────────────────────────────────────────────────
