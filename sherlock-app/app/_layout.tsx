@@ -3,7 +3,10 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import GateScreen from '../components/GateScreen';
-import { onAuthChange, getUserData, updateLastSeen } from '../constants/firebase';
+import GoogleAuthScreen from '../components/GoogleAuthScreen';
+import {
+  onAuthChange, getUserData, updateLastSeen, isGoogleSignedIn,
+} from '../constants/firebase';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,17 +17,20 @@ export default function RootLayout() {
     Inter: require('../assets/fonts/Inter-Regular.ttf'),
   });
 
-  const [unlocked, setUnlocked] = useState(false);
+  // Two-stage gate: code → Google sign-in
+  const [codeAccepted, setCodeAccepted] = useState(false);
+  const [googleAccepted, setGoogleAccepted] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Check if user is already authenticated
+  // On boot: check if user is already Google-authenticated (returning user)
   useEffect(() => {
     const unsubscribe = onAuthChange(async (user) => {
-      if (user) {
-        // User already signed in — check if they have data (= already passed the gate)
+      if (user && isGoogleSignedIn(user)) {
+        // Already Google-signed in → skip both gates
         const data = await getUserData(user.uid).catch(() => null);
         if (data) {
-          setUnlocked(true);
+          setCodeAccepted(true);
+          setGoogleAccepted(true);
           updateLastSeen(user.uid).catch(() => {});
         }
       }
@@ -43,15 +49,18 @@ export default function RootLayout() {
     return null;
   }
 
-  if (!unlocked) {
-    return <GateScreen onUnlock={() => setUnlocked(true)} />;
+  // ── Stage 1: PIN code from the book ──
+  if (!codeAccepted) {
+    return <GateScreen onUnlock={() => setCodeAccepted(true)} />;
   }
 
+  // ── Stage 2: Google sign-in ──
+  if (!googleAccepted) {
+    return <GoogleAuthScreen onSuccess={() => setGoogleAccepted(true)} />;
+  }
+
+  // ── Authenticated: render the app ──
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <Stack screenOptions={{ headerShown: false }} />
   );
 }

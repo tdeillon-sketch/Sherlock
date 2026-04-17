@@ -1,5 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+import {
+  getAuth, signInAnonymously, onAuthStateChanged, User,
+  GoogleAuthProvider, signInWithCredential, signOut as fbSignOut,
+} from 'firebase/auth';
 import {
   getFirestore,
   doc,
@@ -33,6 +36,23 @@ export async function signInAnon(): Promise<User> {
 
 export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
+}
+
+// Sign in with a Google ID token (obtained from expo-auth-session)
+export async function signInWithGoogleIdToken(idToken: string): Promise<User> {
+  const credential = GoogleAuthProvider.credential(idToken);
+  const result = await signInWithCredential(auth, credential);
+  return result.user;
+}
+
+// Returns true if the current user is signed in with Google (vs anonymous)
+export function isGoogleSignedIn(user: User | null): boolean {
+  if (!user) return false;
+  return user.providerData.some(p => p.providerId === 'google.com');
+}
+
+export async function signOut(): Promise<void> {
+  await fbSignOut(auth);
 }
 
 // ── User data types ──

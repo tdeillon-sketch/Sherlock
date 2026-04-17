@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { colors, fonts } from '../constants/theme';
-import { signInAnon, createUserData } from '../constants/firebase';
 
 const ACCESS_CODE = '314159';
 
@@ -29,15 +28,10 @@ export default function GateScreen({ onUnlock }: GateProps) {
     if (loading) return;
 
     if (code.trim() === ACCESS_CODE) {
+      // Code accepted — onUnlock now triggers the Google sign-in step.
+      // No anonymous sign-in here anymore.
       setLoading(true);
-      try {
-        const user = await signInAnon();
-        await createUserData(user.uid);
-        onUnlock();
-      } catch (e) {
-        // Firebase offline? Let them in anyway
-        onUnlock();
-      }
+      onUnlock();
     } else {
       setError(true);
       Animated.sequence([
