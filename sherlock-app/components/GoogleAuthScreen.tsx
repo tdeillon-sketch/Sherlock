@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { ResponseType } from 'expo-auth-session';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   signInWithGoogleIdToken, getUserData, createUserData, updateLastSeen,
@@ -25,6 +26,10 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
     iosClientId:     GOOGLE_OAUTH.iosClientId,
     androidClientId: GOOGLE_OAUTH.androidClientId,
     webClientId:     GOOGLE_OAUTH.webClientId,
+    // Demander explicitement un id_token (sinon on n'a qu'un access_token,
+    // qui n'est pas accepté par Firebase signInWithCredential).
+    responseType: ResponseType.IdToken,
+    scopes: ['openid', 'profile', 'email'],
   });
 
   // Handle response from Google OAuth flow
