@@ -14,7 +14,7 @@
       "backgroundColor": "#0d1f2d"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.thomasdeillon.sherlock",
       "buildNumber": "1",
       "infoPlist": {
