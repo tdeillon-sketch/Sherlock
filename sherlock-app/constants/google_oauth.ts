@@ -16,29 +16,28 @@
 //  6. Coller ci-dessous. Pour Expo Go, utiliser EXPO_CLIENT_ID = WEB_CLIENT_ID.
 // ═══════════════════════════════════════════════════════════════
 
+// Web Client ID (auto-créé par Firebase quand on active Google sign-in).
+// Utilisé par Expo Go, le web, et comme fallback pour iOS/Android tant
+// qu'on n'a pas créé de Client ID natif dédié.
+const WEB_CLIENT_ID = '635336758858-jg7h3s3jl5u43nqbk9s1rnrroam6visb.apps.googleusercontent.com';
+
 export const GOOGLE_OAUTH = {
-  /**
-   * Used by Expo Go (web-based OAuth flow). Same value as WEB_CLIENT_ID.
-   * REQUIRED for the app to function.
-   */
-  expoClientId:    'PASTE_WEB_CLIENT_ID_HERE.apps.googleusercontent.com',
+  /** Used by Expo Go (web-based OAuth flow). */
+  expoClientId:    WEB_CLIENT_ID,
 
   /**
    * Used by the standalone iOS app (after EAS Build).
-   * Optional for Expo Go testing.
+   * Pour l'instant on utilise le Web Client ID, mais quand tu passeras
+   * à EAS Build pour l'App Store, il faudra créer un iOS OAuth Client ID
+   * dans Google Cloud Console (avec ton bundle ID com.thomasdeillon.sherlock).
    */
-  iosClientId:     'PASTE_IOS_CLIENT_ID_HERE.apps.googleusercontent.com',
+  iosClientId:     WEB_CLIENT_ID,
 
-  /**
-   * Used by the standalone Android app (after EAS Build).
-   * Optional if you target only iOS.
-   */
-  androidClientId: 'PASTE_ANDROID_CLIENT_ID_HERE.apps.googleusercontent.com',
+  /** Used by the standalone Android app. Idem, à remplacer plus tard. */
+  androidClientId: WEB_CLIENT_ID,
 
-  /**
-   * Used in the web build (Expo for Web). Same value as expoClientId.
-   */
-  webClientId:     'PASTE_WEB_CLIENT_ID_HERE.apps.googleusercontent.com',
+  /** Used in the web build. */
+  webClientId:     WEB_CLIENT_ID,
 };
 
 export function isGoogleConfigured(): boolean {
