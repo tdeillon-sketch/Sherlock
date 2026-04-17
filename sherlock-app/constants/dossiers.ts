@@ -904,3 +904,73 @@ export const DOSSIERS: Dossier[] = [
     ],
   },
 ];
+
+// ═══════════════════════════════════════════════════════════════
+//  FUN FACTS — "Le saviez-vous ?" pour chaque fiche
+//  Une anecdote courte qui illustre le type Ennéagramme
+// ═══════════════════════════════════════════════════════════════
+
+export const FUN_FACTS: Record<string, string> = {
+  // ── Type 1 — Le Perfectionniste ──
+  mandela:        "En prison, Nelson Mandela apprenait l'afrikaans pour pouvoir mieux argumenter avec ses geôliers — typique d'un Type 1 qui pense que la justice se gagne par la rigueur, pas par la rancœur.",
+  gandhi:         "Gandhi se pesait chaque jour et notait scrupuleusement ce qu'il mangeait. Cette discipline morale poussée à l'extrême — appliquée d'abord à soi-même — est la marque du Type 1.",
+  obama_michelle: "Michelle Obama relisait ses discours dix fois avant de les prononcer. Cette quête du « bien faire » — sans jamais se reposer sur ses acquis — est très révélatrice du Type 1.",
+  marie_curie:    "Marie Curie a refusé toute sa vie de breveter ses découvertes, estimant que la science devait appartenir à tous. Une intégrité morale absolue, signature du Type 1.",
+  confucius:      "Confucius répétait qu'à 70 ans, il pouvait enfin « suivre les désirs de son cœur sans transgresser les règles » — comme si toute sa vie n'avait été qu'un long entraînement à devenir juste.",
+
+  // ── Type 2 — L'Altruiste ──
+  diana:          "Lady Diana serrait les mains des malades du sida à une époque où on les évitait. Sa capacité à se rapprocher de la souffrance des autres — au mépris du protocole — est l'essence du Type 2.",
+  teresa:         "Mère Teresa rappelait que « personne ne peut faire de grandes choses, seulement des petites choses avec un grand amour ». Cette focalisation sur l'attention donnée plutôt que sur l'impact mesuré est typique du Type 2.",
+  oprah:          "Oprah Winfrey a offert des voitures à toute son audience un jour — non pas comme coup de pub, mais parce qu'elle « voulait qu'elles vivent leur meilleure vie ». Générosité spectaculaire, marque du Type 2.",
+  elvis:          "Elvis Presley achetait des Cadillac à des inconnus rencontrés dans la rue. Son besoin compulsif de donner — pour être aimé en retour — est une expression intense du Type 2.",
+  pope_francis:   "Le Pape François lave et embrasse les pieds de prisonniers chaque Jeudi Saint, y compris des femmes et des musulmans. Ce geste de service envers les marginaux est très Type 2.",
+
+  // ── Type 3 — Le Battant ──
+  obama_barack:   "Barack Obama a passé deux ans à perfectionner son discours d'investiture, conscient qu'il devait être « historique ». Cette mise en scène de soi tout en restant authentique est l'art du Type 3.",
+  madonna:        "Madonna se réinvente tous les 5 ans (look, son, époque) — non pas par manque d'identité, mais parce que rester vivant socialement demande de toujours surprendre. Très Type 3.",
+  taylor_swift:   "Taylor Swift a tout réenregistré ses anciens albums pour récupérer le contrôle de ses masters. Cette capacité à transformer un échec public en victoire stratégique est typique du Type 3.",
+  federer:        "Roger Federer a perdu la finale de Wimbledon en 2008 contre Nadal — et a pleuré devant la caméra. Sa capacité à montrer sa fragilité tout en restant l'image de l'élégance est rare chez un Type 3.",
+  elon:           "Elon Musk dort souvent dans ses usines pendant les périodes critiques. Cette obsession de la performance visible — au mépris de tout équilibre personnel — est une expression intense du Type 3.",
+
+  // ── Type 4 — L'Artiste ──
+  frida:          "Frida Kahlo a peint plus d'autoportraits que la quasi-totalité des artistes de son siècle. « Je me peins moi-même parce que je suis le sujet que je connais le mieux. » Pure essence du Type 4.",
+  mj:             "Michael Jackson disait qu'il se sentait « le plus seul quand il était sur scène devant des millions ». Ce paradoxe — être adulé et incompris — est l'expérience profonde du Type 4.",
+  dylan:          "Bob Dylan a refusé d'aller chercher son Prix Nobel pendant des semaines. Cette posture d'artiste qui ne joue pas le jeu — par authenticité plus que par snobisme — est très Type 4.",
+  adele:          "Adèle a annulé sa tournée mondiale parce qu'elle « ne se sentait pas vraiment elle-même ». Mettre la fidélité à soi avant la machine commerciale est typique du Type 4.",
+  virginia:       "Virginia Woolf écrivait debout, à un pupitre, comme sa sœur peintre travaillait à un chevalet. Faire de chaque détail du quotidien une expression de soi : signature du Type 4.",
+
+  // ── Type 5 — L'Investigateur ──
+  einstein:       "Einstein possédait plusieurs costumes identiques pour ne pas avoir à décider quoi porter. Préserver l'énergie mentale pour ce qui compte vraiment : très Type 5.",
+  hawking:        "Stephen Hawking a écrit « Une brève histoire du temps » en se forçant à n'utiliser qu'une seule équation (E=mc²). Cette quête d'élégance dans la transmission du savoir est purement Type 5.",
+  tesla:          "Nikola Tesla pouvait visualiser ses inventions entièrement dans sa tête, les faire « tourner » mentalement pendant des semaines avant de construire un seul prototype. Vision intérieure pure, marque du Type 5.",
+  gates:          "Bill Gates s'isolait deux fois par an dans une cabane pour lire pendant une semaine sans interruption — son fameux « Think Week ». Le besoin de retrait pour penser est central chez le Type 5.",
+  sherlock_h:     "Sherlock Holmes ignorait que la Terre tournait autour du Soleil — il refusait de stocker des informations qu'il ne jugeait pas utiles à son travail. Cette rationalisation extrême du savoir est l'archétype du Type 5.",
+
+  // ── Type 6 — Le Loyaliste ──
+  freud:          "Sigmund Freud refusait de se déplacer sans son fauteuil personnel. Ce besoin de repères familiers — même dans la grande aventure intellectuelle — est typique du Type 6.",
+  tom_hanks:      "Tom Hanks est marié à la même femme depuis 1988 et a refusé pendant des années les rôles de « méchants ». Cette loyauté envers ses choix et son image est très Type 6.",
+  jennifer:       "Jennifer Aniston est restée fidèle à la coupe « Rachel » et à ses amis de Friends pendant toute sa carrière. Son besoin de repères stables est une marque du Type 6.",
+  katniss:        "Katniss Everdeen se porte volontaire à la place de sa sœur — pas par héroïsme, mais par loyauté absolue envers les siens. Action courageuse motivée par la protection : essence du Type 6.",
+  twain:          "Mark Twain écrivait dans son journal qu'il avait « passé sa vie à anticiper des catastrophes qui ne sont jamais arrivées ». Cette ironie sur sa propre anxiété est très Type 6.",
+
+  // ── Type 7 — L'Épicurien ──
+  robin:          "Robin Williams improvisait pendant des heures, transformant chaque interview en spectacle. Cette capacité à fuir le silence par la créativité débordante est typique du Type 7.",
+  mozart:         "Mozart composait souvent en jouant aux dés ou en faisant le clown. Mélanger plaisir et génie — sans hiérarchie entre les deux — est très Type 7.",
+  branson:        "Richard Branson a lancé Virgin Galactic, Virgin Records, Virgin Atlantic, Virgin Mobile… sans aucun lien entre ces business. Le Type 7 ne choisit pas — il essaie tout.",
+  jim:            "Jim Carrey s'est écrit un chèque de 10 millions de dollars en 1985 pour « services rendus en tant qu'acteur », daté de 1995. L'optimisme délirant et fertile du Type 7.",
+  tony_stark:     "Tony Stark construit son armure dans une grotte pour s'évader d'un kidnapping — et en sort en plaisantant. Transformer la souffrance en aventure : pur Type 7.",
+
+  // ── Type 8 — Le Chef ──
+  churchill:      "Churchill recevait ses ministres dans son bain. Cette absence totale de gêne, ce refus du protocole quand il bloque l'action : très Type 8.",
+  mlk:            "Martin Luther King a continué à marcher après avoir été poignardé en 1958 — la lame ayant frôlé l'aorte. Ne pas reculer face à la violence physique : essence du Type 8.",
+  steve_jobs:     "Steve Jobs faisait pleurer ses ingénieurs dans les réunions, puis leur disait quelques jours plus tard qu'ils avaient produit « le meilleur travail de leur vie ». Brutalité et reconnaissance : duo classique du Type 8.",
+  serena:         "Serena Williams a gagné l'Open d'Australie 2017 enceinte de 8 semaines. Refuser que son corps lui dicte ses limites — c'est le Type 8 à l'état pur.",
+  darth_vader:    "Dark Vador étrangle un officier qui le contredit, sans même le toucher. Le Type 8 sous stress — quand le pouvoir devient le seul langage — atteint cette caricature.",
+
+  // ── Type 9 — Le Médiateur ──
+  dalai:          "Le Dalaï-Lama rit à pleins éclats même en parlant de l'invasion de son pays. Cette capacité à tenir la souffrance sans s'y dissoudre est l'expression spirituelle du Type 9.",
+  audrey:         "Audrey Hepburn refusait de regarder ses propres films. « Je ne me trouve pas si intéressante. » Cet effacement de soi sans complexe est très Type 9.",
+  morgan:         "Morgan Freeman a une voix si apaisante qu'elle est utilisée pour les méditations guidées, les documentaires et même Dieu (dans Bruce tout-puissant). La présence calme du Type 9 incarnée dans une voix.",
+  lincoln:        "Lincoln gardait dans sa poche les lettres de ses adversaires politiques — pas pour se venger, mais pour mieux les comprendre. Cette empathie radicale envers tous les camps : signature du Type 9.",
+  walt:           "Walt Disney imaginait Disneyland comme « un endroit où parents et enfants peuvent s'amuser ensemble ». Créer un monde où tout le monde s'entend — l'utopie du Type 9.",
+};
