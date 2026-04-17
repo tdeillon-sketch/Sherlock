@@ -27,9 +27,8 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "TO_BE_FILLED",
-        "ascAppId": "TO_BE_FILLED",
-        "appleTeamId": "TO_BE_FILLED"
+        "appleId": "thomas.deillon@icloud.com",
+        "appleTeamId": "6VXK7BJANY"
       }
     }
   }
