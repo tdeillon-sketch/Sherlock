@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
+import { TYPE_WINGS, getWing } from '../../../constants/wings';
 
 export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const typeIndex = parseInt(id ?? '1', 10) - 1;
   const type = TYPES[typeIndex];
+
+  // ── Wing selection (no persistence — resets on each open) ──
+  // null = base type (no wing); number = wing type number
+  const [selectedWing, setSelectedWing] = useState<number | null>(null);
 
   if (!type) {
     return (
@@ -16,9 +22,21 @@ export default function ProfileDetailScreen() {
     );
   }
 
+  const wingOptions = TYPE_WINGS[type.num]; // [wing1, wing2]
+  const wingVariant = selectedWing !== null ? getWing(type.num, selectedWing) : null;
+
+  // ── Resolved content (wing variant overrides base) ──
+  const displayName = wingVariant
+    ? `${type.name} — ${wingVariant.nickname}`
+    : type.name;
+  const displayShort = wingVariant?.short ?? type.short;
+  const displayMetaphor = wingVariant?.metaphor ?? type.metaphor;
+  const displayAges = wingVariant?.ages ?? type.ages;
+  const displayKeys = wingVariant?.keys ?? type.keys;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header avec bouton retour */}
+      {/* Top bar with back button */}
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
@@ -32,20 +50,73 @@ export default function ProfileDetailScreen() {
         <View style={[styles.typeCircle, { backgroundColor: type.color }]}>
           <Text style={styles.typeCircleText}>{type.num}</Text>
         </View>
-        <Text style={styles.typeName}>{type.name}</Text>
-        <View style={styles.wingTag}>
-          <Text style={styles.wingTagText}>{type.wings}</Text>
+        <Text style={styles.typeName}>{displayName}</Text>
+
+        {/* ── Wing selector (3 pills) ── */}
+        <View style={styles.wingSelector}>
+          <Pressable
+            style={[
+              styles.wingPill,
+              selectedWing === null && [styles.wingPillActive, { borderColor: type.color, backgroundColor: type.color }],
+            ]}
+            onPress={() => setSelectedWing(null)}
+          >
+            <Text
+              style={[
+                styles.wingPillText,
+                selectedWing === null && styles.wingPillTextActive,
+              ]}
+            >
+              Type {type.num}
+            </Text>
+          </Pressable>
+
+          {wingOptions.map((w) => {
+            const active = selectedWing === w;
+            const wingData = getWing(type.num, w);
+            return (
+              <Pressable
+                key={w}
+                style={[
+                  styles.wingPill,
+                  active && [styles.wingPillActive, { borderColor: type.color, backgroundColor: type.color }],
+                ]}
+                onPress={() => setSelectedWing(w)}
+              >
+                <Text
+                  style={[
+                    styles.wingPillText,
+                    active && styles.wingPillTextActive,
+                  ]}
+                >
+                  {type.num}w{w}
+                </Text>
+                {wingData && (
+                  <Text
+                    style={[
+                      styles.wingPillSub,
+                      active && styles.wingPillSubActive,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {wingData.nickname}
+                  </Text>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
-        <Text style={styles.typeShort}>{type.short}</Text>
+
+        <Text style={styles.typeShort}>{displayShort}</Text>
       </View>
 
       {/* Portrait */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Portrait</Text>
-        <Text style={styles.sectionBody}>{type.metaphor}</Text>
+        <Text style={styles.sectionBody}>{displayMetaphor}</Text>
       </View>
 
-      {/* Integration & Désintégration */}
+      {/* Intégration & Désintégration (NON affecté par l'aile — ce sont des dynamiques du type de base) */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Intégration & Désintégration</Text>
         <View style={styles.integrationBox}>
@@ -72,7 +143,7 @@ export default function ProfileDetailScreen() {
         return (
           <View key={ageKey} style={styles.section}>
             <Text style={styles.sectionTitle}>{labels[ageKey]}</Text>
-            <Text style={styles.sectionBody}>{type.ages[ageKey]}</Text>
+            <Text style={styles.sectionBody}>{displayAges[ageKey]}</Text>
           </View>
         );
       })}
@@ -82,7 +153,7 @@ export default function ProfileDetailScreen() {
         <Text style={styles.sectionTitle}>
           Trois clés pour accompagner votre enfant
         </Text>
-        {type.keys.map((key, index) => (
+        {displayKeys.map((key, index) => (
           <View key={index} style={styles.keyCard}>
             <View style={styles.keyNumberCircle}>
               <Text style={styles.keyNumberText}>{index + 1}</Text>
@@ -163,29 +234,61 @@ const styles = StyleSheet.create({
   },
   typeName: {
     fontFamily: fonts.serif,
-    fontSize: 28,
+    fontSize: 24,
     color: colors.text,
     textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  wingTag: {
-    backgroundColor: colors.accentFill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
     marginBottom: spacing.md,
   },
-  wingTagText: {
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    color: colors.accent,
+
+  // ── Wing selector ──
+  wingSelector: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+    width: '100%',
+    justifyContent: 'center',
   },
+  wingPill: {
+    flex: 1,
+    maxWidth: 130,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    alignItems: 'center',
+  },
+  wingPillActive: {
+    // borderColor and backgroundColor injected dynamically
+  },
+  wingPillText: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textSoft,
+  },
+  wingPillTextActive: {
+    color: colors.white,
+  },
+  wingPillSub: {
+    fontFamily: fonts.sans,
+    fontSize: 9,
+    color: colors.textMuted,
+    marginTop: 1,
+    textAlign: 'center',
+  },
+  wingPillSubActive: {
+    color: 'rgba(255,255,255,0.85)',
+  },
+
   typeShort: {
     fontFamily: fonts.serifItalic,
     fontSize: 15,
     lineHeight: 22,
     color: colors.textSoft,
     textAlign: 'center',
+    marginTop: spacing.sm,
   },
 
   // Sections
