@@ -131,3 +131,42 @@ export async function loadDossierProgress(uid: string): Promise<DossierProgressD
   const data = await getUserData(uid);
   return (data as any)?.dossierProgress ?? null;
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  CHILD PROFILES — historique du quiz par enfant
+// ═══════════════════════════════════════════════════════════════
+
+export interface ChildProfileEntry {
+  /** ISO date */
+  date: string;
+  mode: string; // 'enfant' | 'ado' | 'adulte'
+  topType: number;
+  topPercent: number;
+  secondType: number;
+  secondPercent: number;
+  wingType: number | null;
+  scores: Record<number, number>;
+  /** Optional open-ended note from the parent */
+  note?: string;
+}
+
+export interface ChildProfile {
+  /** Stable id (uuid-like) */
+  id: string;
+  name: string;
+  /** Optional age at the time the profile was created */
+  age?: number;
+  history: ChildProfileEntry[];
+}
+
+export async function loadChildProfiles(uid: string): Promise<ChildProfile[]> {
+  const data = await getUserData(uid);
+  return (data as any)?.childProfiles ?? [];
+}
+
+export async function saveChildProfiles(uid: string, profiles: ChildProfile[]): Promise<void> {
+  await updateDoc(userDocRef(uid), {
+    childProfiles: profiles,
+    lastSeen: serverTimestamp(),
+  });
+}

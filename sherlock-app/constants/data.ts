@@ -256,10 +256,13 @@ export const TYPES = [
 
 // ===== QUIZ QUESTIONS =====
 // Hybrid quiz: behavioral 'choice' questions + 'slider' questions
-// Format: type = 'choice' | 'slider', category, situation?, q, a? (for choice), sliderLeft/sliderRight/sliderScores? (for slider)
+// Format: type = 'choice' | 'slider', category, scene?, q, a? (for choice), sliderLeft/sliderRight/sliderScores? (for slider)
 export interface QuizQuestion {
     type: 'choice' | 'slider';
     category: string;
+    /** Rich scene shown above the question — replaces the dry "situation" */
+    scene?: { icon?: string; setup: string };
+    /** Legacy: short situation text (kept for back-compat) */
     situation?: string;
     q: string;
     // For type 'choice':
@@ -271,6 +274,18 @@ export interface QuizQuestion {
 }
 
 export type QuizMode = 'enfant' | 'ado' | 'adulte';
+
+// ── Disambiguation question pool ──
+// Used at the end of the quiz when 2 types are within ~10% of each other.
+// Each question is targeted to disambiguate a specific pair of close types.
+export interface DisambigQuestion {
+    /** Pair of types this question can disambiguate */
+    forTypes: [number, number];
+    scene: { icon?: string; setup: string };
+    q: string;
+    /** Each answer favors one of the two types in `forTypes` */
+    a: { text: string; emoji?: string; favors: number }[];
+}
 
 export const QUIZ_ENFANT: QuizQuestion[] = [
     // --- Bloc A: 12 BEHAVIORAL CHOICE QUESTIONS (parent answers FOR child, 3rd person) ---
@@ -837,6 +852,134 @@ export const QUIZ_ADULTE: QuizQuestion[] = [
         sliderRight: "Vous voulez etre libre",
         sliderScores: { low: {2: 2, 6: 1, 4: 1}, high: {7: 2, 8: 1, 5: 1} }
     }
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  DISAMBIGUATION POOL — questions ciblées pour départager
+//  les types souvent confondus quand le quiz est ambigu.
+// ═══════════════════════════════════════════════════════════════
+
+export const DISAMBIG_POOL: DisambigQuestion[] = [
+    // ── 1 vs 6 (perfectionnisme moral vs anxiété loyale) ──
+    {
+        forTypes: [1, 6],
+        scene: { icon: '🧭', setup: "Quand votre enfant doit prendre une décision importante (choisir une activité, trancher entre deux amis, etc.) :" },
+        q: "Qu'est-ce qui le guide vraiment ?",
+        a: [
+            { text: "Ce qui est juste, moralement bien", emoji: '⚖️', favors: 1 },
+            { text: "Ce qui est sûr, ce qui ne risque pas mal tourner", emoji: '🛡️', favors: 6 },
+        ]
+    },
+    // ── 2 vs 9 (générosité vs effacement) ──
+    {
+        forTypes: [2, 9],
+        scene: { icon: '🤝', setup: "Quand votre enfant aide quelqu'un :" },
+        q: "Qu'est-ce qui motive son geste ?",
+        a: [
+            { text: "Il a vraiment besoin de se sentir aimé pour ce qu'il donne", emoji: '💝', favors: 2 },
+            { text: "Il préfère juste éviter les conflits, peu importe l'attention reçue", emoji: '☮️', favors: 9 },
+        ]
+    },
+    // ── 3 vs 7 (réussite vs amusement) ──
+    {
+        forTypes: [3, 7],
+        scene: { icon: '🚀', setup: "Quand votre enfant lance un nouveau projet enthousiasmant :" },
+        q: "Quel est son vrai moteur ?",
+        a: [
+            { text: "Il veut le réussir et qu'on le remarque", emoji: '🏆', favors: 3 },
+            { text: "Il veut juste s'amuser et explorer, le résultat compte peu", emoji: '🎈', favors: 7 },
+        ]
+    },
+    // ── 4 vs 5 (sensible vs analytique) ──
+    {
+        forTypes: [4, 5],
+        scene: { icon: '🌙', setup: "Quand votre enfant est seul dans sa chambre :" },
+        q: "Que fait-il le plus souvent ?",
+        a: [
+            { text: "Il ressent intensément, il invente, il rêve", emoji: '🎨', favors: 4 },
+            { text: "Il observe, comprend, démonte, classe", emoji: '🔬', favors: 5 },
+        ]
+    },
+    // ── 5 vs 6 (analyse vs anxiété) ──
+    {
+        forTypes: [5, 6],
+        scene: { icon: '🤔', setup: "Face à une situation incertaine :" },
+        q: "Que fait votre enfant en premier ?",
+        a: [
+            { text: "Il prend du recul, observe, analyse seul", emoji: '🔍', favors: 5 },
+            { text: "Il vous cherche, demande votre avis, veut être rassuré", emoji: '🫂', favors: 6 },
+        ]
+    },
+    // ── 6 vs 9 (anxieux loyal vs paisible évitant) ──
+    {
+        forTypes: [6, 9],
+        scene: { icon: '😶', setup: "Quand votre enfant ne dit rien dans une situation tendue :" },
+        q: "Que se passe-t-il intérieurement ?",
+        a: [
+            { text: "Il s'inquiète, scanne les dangers, se méfie", emoji: '😰', favors: 6 },
+            { text: "Il s'apaise, met de la distance, se déconnecte", emoji: '😌', favors: 9 },
+        ]
+    },
+    // ── 7 vs 9 (énergie joyeuse vs paix tranquille) ──
+    {
+        forTypes: [7, 9],
+        scene: { icon: '🛋️', setup: "Un dimanche pluvieux, rien n'est prévu :" },
+        q: "Comment réagit votre enfant ?",
+        a: [
+            { text: "Il invente, propose, s'agite, multiplie les idées", emoji: '⚡', favors: 7 },
+            { text: "Il se laisse porter, accepte le calme, apprécie le rien-faire", emoji: '🌱', favors: 9 },
+        ]
+    },
+    // ── 8 vs 3 (puissance vs ambition) ──
+    {
+        forTypes: [8, 3],
+        scene: { icon: '👊', setup: "Quand votre enfant veut quelque chose et qu'on lui résiste :" },
+        q: "Comment s'y prend-il ?",
+        a: [
+            { text: "Il fonce, confronte, négocie en force", emoji: '🥊', favors: 8 },
+            { text: "Il séduit, contourne, charme pour obtenir", emoji: '✨', favors: 3 },
+        ]
+    },
+    // ── 8 vs 6 (force vs réaction défensive) ──
+    {
+        forTypes: [8, 6],
+        scene: { icon: '🛡️', setup: "Quand votre enfant défend quelqu'un qu'on attaque :" },
+        q: "D'où vient son geste ?",
+        a: [
+            { text: "Il a une force naturelle, il ne supporte pas l'injustice, il fonce", emoji: '🦁', favors: 8 },
+            { text: "Il défend par loyauté envers les siens, presque par devoir", emoji: '🤞', favors: 6 },
+        ]
+    },
+    // ── 4 vs 2 (sensible introverti vs émotif tourné vers les autres) ──
+    {
+        forTypes: [4, 2],
+        scene: { icon: '😢', setup: "Quand votre enfant ressent une émotion forte :" },
+        q: "Que fait-il avec cette émotion ?",
+        a: [
+            { text: "Il la garde pour lui, la cultive, l'exprime peut-être en art", emoji: '🎭', favors: 4 },
+            { text: "Il la partage, cherche à être consolé ou à consoler", emoji: '💞', favors: 2 },
+        ]
+    },
+    // ── 1 vs 3 (perfectionnisme moral vs perfectionnisme d'image) ──
+    {
+        forTypes: [1, 3],
+        scene: { icon: '📝', setup: "Quand votre enfant rend un devoir :" },
+        q: "Qu'est-ce qui compte le plus pour lui ?",
+        a: [
+            { text: "Que ce soit BIEN fait, peu importe la note", emoji: '✅', favors: 1 },
+            { text: "Avoir une bonne note, être reconnu", emoji: '🏆', favors: 3 },
+        ]
+    },
+    // ── 2 vs 6 (chaleur vs loyauté) ──
+    {
+        forTypes: [2, 6],
+        scene: { icon: '👫', setup: "Avec ses amis, votre enfant est :" },
+        q: "Plutôt :",
+        a: [
+            { text: "Celui qui prend soin, qui rend service, qui se rend indispensable", emoji: '🌹', favors: 2 },
+            { text: "Celui qui est fidèle, fiable, présent dans la durée", emoji: '⚓', favors: 6 },
+        ]
+    },
 ];
 
 // ===== CHAPTERS =====
