@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sherlock-app",
+    "name": "Sherlock Parent",
     "slug": "sherlock-app",
     "scheme": "sherlock-app",
     "version": "1.0.0",
@@ -11,26 +11,33 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0d1f2d"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.thomasdeillon.sherlock"
+      "bundleIdentifier": "com.thomasdeillon.sherlock",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0d1f2d"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.thomasdeillon.sherlock",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ]
   }
 }
