@@ -4,7 +4,8 @@ import {
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { ResponseType } from 'expo-auth-session';
+import { ResponseType, makeRedirectUri } from 'expo-auth-session';
+import Constants from 'expo-constants';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   signInWithGoogleIdToken, getUserData, createUserData, updateLastSeen,
@@ -21,11 +22,25 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Detect if running inside Expo Go (vs a standalone build).
+  // In Expo Go, redirect URI must go through the Expo auth proxy because
+  // Google's OAuth 2.0 policy rejects custom `exp://` schemes with a
+  // Web Client ID. In a standalone iOS build, we use the native iOS
+  // Client ID with its reversed URL scheme.
+  const isExpoGo = Constants.appOwnership === 'expo';
+
+  const redirectUri = isExpoGo
+    ? makeRedirectUri({ native: 'https://auth.expo.io/@anonymous/sherlock-app' })
+    : makeRedirectUri({ scheme: 'sherlock-app' });
+
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:        GOOGLE_OAUTH.expoClientId,
     iosClientId:     GOOGLE_OAUTH.iosClientId,
     androidClientId: GOOGLE_OAUTH.androidClientId,
     webClientId:     GOOGLE_OAUTH.webClientId,
+    // Force the redirect URI to the Expo auth proxy in Expo Go so Google
+    // accepts it (HTTPS). In standalone builds, a custom scheme is fine.
+    redirectUri,
     // Demander explicitement un id_token (sinon on n'a qu'un access_token,
     // qui n'est pas accepté par Firebase signInWithCredential).
     responseType: ResponseType.IdToken,
