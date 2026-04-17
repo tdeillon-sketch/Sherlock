@@ -1303,6 +1303,873 @@ export const DUO_PAIRS_CONTEXT: Record<string, string> = {
   "9-9": "Amitié très paisible et harmonieuse. Deux 9 ensemble évitent tous les conflits — veillez à ce qu'ils s'affirment aussi quand c'est nécessaire.",
 };
 
+// ═══════════════════════════════════════════════════════════════
+//  VUE PARENT — Quand A est parent et B est enfant/ado
+//  Reformule pointsForts/vigilances/conseil pour le parent.
+//  Type A = parent, Type B = enfant.
+// ═══════════════════════════════════════════════════════════════
+
+export interface PerspectiveView {
+  pointsForts: string;
+  vigilances: string;
+  conseil: string;
+}
+
+export const DUO_PARENT_VIEW: Record<string, PerspectiveView> = {
+  // ── Parent Type 1 ──
+  "1-1": {
+    pointsForts: "Vous comprenez instinctivement son besoin de bien faire. Vous parlez la même langue de la rigueur et du sens du devoir.",
+    vigilances: "Votre exigence + la sienne = surenchère. Il se critique déjà — il n'a pas besoin que vous en rajoutiez. Le perfectionnisme à deux peut devenir étouffant.",
+    conseil: "Remplacez une critique sur deux par un compliment sincère. Et autorisez l'erreur : la vôtre comme la sienne.",
+  },
+  "1-2": {
+    pointsForts: "Votre cadre rassure votre enfant Type 2 qui aime savoir comment plaire. Il se sent en sécurité avec votre clarté.",
+    vigilances: "Votre rigueur peut couper son élan affectif. Il a besoin de votre approbation, pas de votre correction permanente.",
+    conseil: "Dites « je suis fier de toi » avant « tu peux faire mieux ». Apprenez-lui à demander pour lui-même, pas seulement à donner.",
+  },
+  "1-3": {
+    pointsForts: "Vous valorisez tous les deux la performance et l'effort. Belle alliance autour des résultats et du travail bien fait.",
+    vigilances: "Vous corrigez le processus, lui veut le résultat. Vos « oui mais tu aurais pu mieux » blessent un enfant qui cherche votre admiration.",
+    conseil: "Célébrez ses réussites SANS modération ni « mais ». Aidez-le à trouver sa valeur au-delà des trophées.",
+  },
+  "1-4": {
+    pointsForts: "Vous tenez tous les deux à un idéal élevé — esthétique pour lui, éthique pour vous. Terrain commun fertile pour la création.",
+    vigilances: "Sa sensibilité vous semble excessive, votre rigueur lui semble froide. Risque réel de blessure mutuelle profonde.",
+    conseil: "Ses émotions ne sont pas un problème à résoudre — c'est sa façon d'être au monde. Écoutez avant de cadrer.",
+  },
+  "1-5": {
+    pointsForts: "Vous respectez tous les deux la compétence et le travail bien fait. Relation calme et structurée, peu de drama.",
+    vigilances: "Deux têtes, peu de câlins. Risque que la relation devienne purement fonctionnelle — il se sent jugé en silence.",
+    conseil: "Initiez les moments de tendresse et de jeu — il ne le fera pas. Et respectez ses zones de retrait.",
+  },
+  "1-6": {
+    pointsForts: "Votre cohérence est un cadeau pour son anxiété. Il s'appuie sur vous comme sur un roc qui ne bouge pas.",
+    vigilances: "S'il sent que rien n'est jamais assez bien, son anxiété explose. Vos critiques le terrifient et bloquent son initiative.",
+    conseil: "Rassurez d'abord, corrigez ensuite. Tenez vos promesses : la prévisibilité est sa principale source de sécurité.",
+  },
+  "1-7": {
+    pointsForts: "Son énergie et sa joie peuvent vous sortir de votre sérieux. Il vous rappelle que la vie est aussi pour s'amuser.",
+    vigilances: "Vos règles longues et morales le perdent. Il fuit le cadre rigide en se dispersant ou en jouant au clown.",
+    conseil: "Règles COURTES et claires, pas de longs sermons. Acceptez qu'il commence beaucoup et finisse peu — c'est sa nature.",
+  },
+  "1-8": {
+    pointsForts: "Deux forts caractères qui se respectent quand chacun tient son territoire. Vous êtes son repère solide qui ne plie pas.",
+    vigilances: "Il teste vos limites pour voir si vous tenez. Vos sanctions doivent être justes, jamais humiliantes — il s'en souviendra longtemps.",
+    conseil: "Soyez ferme et calme, jamais réactif. Reconnaissez sa force au lieu d'essayer de la mater.",
+  },
+  "1-9": {
+    pointsForts: "Votre cadre l'aide à structurer sa journée. Il accepte vos règles sans heurts ni rébellion ouverte.",
+    vigilances: "Sa lenteur vous agace, votre pression le fait disparaître. Il devient fantôme sous votre exigence.",
+    conseil: "Donnez-lui du temps pour répondre, pour décider, pour faire. Demandez-lui son avis — il l'a, mais ne le donne pas spontanément.",
+  },
+
+  // ── Parent Type 2 ──
+  "2-1": {
+    pointsForts: "Votre chaleur adoucit son sérieux. Vous voyez sa valeur au-delà de ses performances et c'est un cadeau pour lui.",
+    vigilances: "Il a besoin d'autonomie, pas d'attention envahissante. Vos câlins permanents peuvent l'étouffer.",
+    conseil: "Aimez-le sans le couver. Et apprenez-lui que ses standards élevés sont une force, pas un défaut à consoler.",
+  },
+  "2-2": {
+    pointsForts: "Tendresse mutuelle, complicité affective. Vous vous comprenez sans mots dans le registre du cœur.",
+    vigilances: "Vous risquez de l'élever dans l'idée qu'aimer = se sacrifier. Il oubliera ses propres besoins comme vous oubliez les vôtres.",
+    conseil: "Apprenez-lui à dire « non » et à recevoir. Modélisez-le en prenant soin de vous-même devant lui.",
+  },
+  "2-3": {
+    pointsForts: "Vous adorez son énergie et célébrez ses succès avec un enthousiasme sincère. Il se sent vu et valorisé.",
+    vigilances: "S'il sent qu'il doit performer pour mériter votre amour, il devient un « petit adulte » qui s'oublie.",
+    conseil: "Aimez-le quand il échoue, pas seulement quand il gagne. Et dites-lui que vous l'aimeriez même s'il ne faisait rien de spécial.",
+  },
+  "2-4": {
+    pointsForts: "Vous accueillez ses émotions intenses sans en avoir peur. Il se sent compris dans sa différence.",
+    vigilances: "Vous voulez le consoler, lui veut être entendu dans sa douleur. Vos solutions trop rapides le ferment.",
+    conseil: "Tenez l'espace de ses émotions sans chercher à résoudre. Parfois il a juste besoin d'être avec vous, en silence.",
+  },
+  "2-5": {
+    pointsForts: "Vous voyez sa profondeur derrière sa réserve. Vous pouvez créer un lien intime sans pression.",
+    vigilances: "Il a besoin d'espace pour se ressourcer. Vos élans affectifs trop fréquents l'épuisent et le font fuir.",
+    conseil: "Respectez ses zones de solitude — ce n'est pas un rejet. Approchez-vous par les idées, pas seulement par le câlin.",
+  },
+  "2-6": {
+    pointsForts: "Votre chaleur constante apaise son anxiété. Il sait qu'il peut compter sur vous quoi qu'il arrive.",
+    vigilances: "Si vous montrez vous-même de l'inquiétude, il l'absorbe et la décuple. Votre calme est son ancre.",
+    conseil: "Soyez la « base sûre » qui ne tremble pas. Et encouragez son autonomie progressive — il a besoin d'apprendre qu'il peut s'en sortir seul.",
+  },
+  "2-7": {
+    pointsForts: "Sa joie de vivre vous remplit. Vous savez participer à ses aventures sans étouffer son enthousiasme.",
+    vigilances: "Il fuit les émotions difficiles. Si vous évitez aussi, vous l'aidez à se construire une carapace de gaieté.",
+    conseil: "Aidez-le à nommer la tristesse, la peur, la déception. Restez disponible quand la fête est finie.",
+  },
+  "2-8": {
+    pointsForts: "Vous voyez son cœur tendre derrière la carapace. Avec vous, il peut baisser sa garde.",
+    vigilances: "Il refuse d'être materné. Vos « mon bébé » et vos câlins envahissants déclenchent sa rébellion.",
+    conseil: "Aimez-le avec respect, pas avec mièvrerie. Reconnaissez sa force au lieu de la voir comme un problème à adoucir.",
+  },
+  "2-9": {
+    pointsForts: "Tendresse paisible, foyer doux. Vous vous accordez naturellement sur le rythme et l'harmonie.",
+    vigilances: "Vous deux évitez le conflit. Mais un enfant a besoin d'apprendre à dire ce qui ne va pas.",
+    conseil: "Modélisez le « non » bienveillant. Et provoquez gentiment ses choix — il a tendance à dire « comme tu veux ».",
+  },
+
+  // ── Parent Type 3 ──
+  "3-1": {
+    pointsForts: "Vous reconnaissez son besoin de bien faire et célébrez ses efforts. Belle alliance sur la qualité du travail.",
+    vigilances: "Vous voulez de la performance visible, lui veut faire les choses correctement. Tension sur les moyens vs les résultats.",
+    conseil: "Valorisez son intégrité même quand elle ralentit le projet. Et apprenez-lui que l'image n'est pas tout dans la vie.",
+  },
+  "3-2": {
+    pointsForts: "Vous êtes touché par sa générosité naturelle et savez la valoriser. Il s'épanouit dans votre admiration.",
+    vigilances: "Vous l'utilisez parfois sans vous en rendre compte. Il donne sans rien demander — vous prenez sans rien rendre.",
+    conseil: "Remerciez-le explicitement. Aidez-le à exprimer ses propres besoins, pas seulement à servir les vôtres.",
+  },
+  "3-3": {
+    pointsForts: "Vous comprenez sa quête de réussite et savez la canaliser. Vous parlez la même langue du résultat.",
+    vigilances: "Risque d'élever un « petit performeur » coupé de lui-même. Il vous imite — y compris dans vos angles morts.",
+    conseil: "Montrez-lui que vous l'aimez quand il échoue, pas seulement quand il brille. Modélisez le repos et la vulnérabilité.",
+  },
+  "3-4": {
+    pointsForts: "Sa créativité vous fascine. Vous savez la mettre en valeur sans la dénaturer.",
+    vigilances: "Vous voulez du résultat, lui veut de l'authenticité. Vos accélérations brisent son processus créatif.",
+    conseil: "Respectez son rythme intérieur. Et n'essayez pas de transformer son originalité en produit vendable.",
+  },
+  "3-5": {
+    pointsForts: "Vous respectez sa profondeur intellectuelle et savez l'encourager dans ses passions.",
+    vigilances: "Vous bougez vite, lui réfléchit lentement. Vos demandes d'action immédiate le bloquent.",
+    conseil: "Laissez-lui le temps d'analyser avant d'agir. Et acceptez qu'il ne soit pas démonstratif — son amour passe par l'attention, pas par l'expression.",
+  },
+  "3-6": {
+    pointsForts: "Votre énergie et votre confiance en l'avenir le rassurent. Vous lui montrez qu'on peut avancer malgré les doutes.",
+    vigilances: "Vous foncez, lui anticipe les risques. Si vous écrasez ses craintes, il les enfouit et l'anxiété explose ailleurs.",
+    conseil: "Prenez ses inquiétudes au sérieux avant de les dépasser. Sa prudence n'est pas un frein — c'est une intelligence.",
+  },
+  "3-7": {
+    pointsForts: "Vous adorez son énergie et savez l'embarquer dans des projets stimulants. Duo dynamique et joyeux.",
+    vigilances: "Vous avez tous les deux du mal avec les émotions difficiles. Vous risquez de toujours fuir vers la suite.",
+    conseil: "Apprenez-lui à finir ce qu'il commence. Et osez les conversations sérieuses, même quand c'est inconfortable.",
+  },
+  "3-8": {
+    pointsForts: "Vous reconnaissez sa puissance et savez la canaliser. Il vous respecte parce que vous ne pliez pas.",
+    vigilances: "Deux personnalités fortes peuvent rivaliser. Si vous gagnez toujours, il se braque ; si vous cédez toujours, il vous méprise.",
+    conseil: "Soyez ferme sans être autoritaire. Reconnaissez sa force comme un atout, pas comme un problème.",
+  },
+  "3-9": {
+    pointsForts: "Votre dynamisme le sort doucement de sa torpeur. Sa sérénité vous rappelle de ralentir.",
+    vigilances: "Votre rythme rapide le fait disparaître. Il dit « oui » mais s'absente intérieurement pour se protéger de votre énergie.",
+    conseil: "Ralentissez quand vous lui parlez. Demandez-lui son avis et attendez vraiment la réponse — elle vient lentement.",
+  },
+
+  // ── Parent Type 4 ──
+  "4-1": {
+    pointsForts: "Vous reconnaissez la beauté de sa rigueur et la valorisez. Il se sent vu dans sa singularité.",
+    vigilances: "Votre intensité émotionnelle peut le déstabiliser. Il a besoin de constance, pas de vagues.",
+    conseil: "Stabilisez votre humeur autour de lui. Et célébrez sa différence à votre manière — il est unique, mais à sa façon, pas à la vôtre.",
+  },
+  "4-2": {
+    pointsForts: "Vous accueillez sa générosité avec une vraie reconnaissance. Il sent que vous voyez son cœur.",
+    vigilances: "Votre intensité peut l'écraser. Il met ses propres émotions de côté pour gérer les vôtres.",
+    conseil: "Veillez à ne pas inverser les rôles. C'est à vous de tenir l'espace émotionnel, pas à lui.",
+  },
+  "4-3": {
+    pointsForts: "Vous voyez sa profondeur derrière son besoin de réussir. Vous savez l'aider à se connecter à lui-même.",
+    vigilances: "Vos « tu vaux mieux que la course aux résultats » peuvent être perçus comme un rejet de ce qu'il aime.",
+    conseil: "Honorez son besoin de briller — ce n'est pas un défaut. Aidez-le à trouver l'authenticité DANS la performance, pas contre elle.",
+  },
+  "4-4": {
+    pointsForts: "Vous vous comprenez en profondeur, sans mots. Complicité émotionnelle rare et précieuse.",
+    vigilances: "Risque de cocon mélancolique. Deux 4 ensemble peuvent s'enfermer dans l'intensité et perdre le contact avec le réel.",
+    conseil: "Cultivez la légèreté, le rire, le quotidien banal. Il a besoin de stabilité émotionnelle, pas d'un miroir d'intensité.",
+  },
+  "4-5": {
+    pointsForts: "Vous respectez son besoin d'espace et de profondeur. Relation riche, faite de moments choisis.",
+    vigilances: "Vous deux pouvez vous isoler et créer une bulle où le monde extérieur n'existe plus.",
+    conseil: "Forcez-vous à sortir, à inviter, à montrer le monde large. Il a besoin de stimulation extérieure pour ne pas se renfermer.",
+  },
+  "4-6": {
+    pointsForts: "Vous accueillez ses peurs avec empathie. Il se sent vraiment compris dans ses inquiétudes.",
+    vigilances: "Votre intensité émotionnelle nourrit son anxiété. S'il sent que rien n'est stable, il panique.",
+    conseil: "Stabilisez vos humeurs et tenez vos engagements. La prévisibilité est plus précieuse que la profondeur pour cet enfant.",
+  },
+  "4-7": {
+    pointsForts: "Sa joie vous éclaire. Vous savez aussi reconnaître sa profondeur cachée derrière l'enthousiasme.",
+    vigilances: "Vos états d'âme intenses le poussent à fuir vers le divertissement. Il se construit une carapace joyeuse.",
+    conseil: "Allégez votre intensité quand vous êtes avec lui. Et apprenez-lui à toucher ses émotions difficiles sans les fuir.",
+  },
+  "4-8": {
+    pointsForts: "Vous voyez sa vulnérabilité derrière la force. Avec vous, il peut être tendre sans avoir honte.",
+    vigilances: "Vos vagues émotionnelles le poussent à se durcir pour se protéger. Il devient son propre rempart.",
+    conseil: "Soyez stable et fiable. Sa force ne demande qu'à devenir tendresse — mais seulement dans un cadre sûr.",
+  },
+  "4-9": {
+    pointsForts: "Sa douceur vous apaise. Vous savez ressentir avec lui sans le forcer à parler.",
+    vigilances: "Votre intensité l'efface. Il s'absente pour ne pas porter vos émotions, et vous perdez le contact avec lui.",
+    conseil: "Régulez votre intensité, posez des questions ouvertes, écoutez les silences. Sa parole vient lentement.",
+  },
+
+  // ── Parent Type 5 ──
+  "5-1": {
+    pointsForts: "Vous respectez son sens du devoir et l'accompagnez avec calme. Vous lui apportez la profondeur derrière la rigueur.",
+    vigilances: "Vous êtes peu démonstratif, lui cherche votre approbation. Votre silence est interprété comme une critique.",
+    conseil: "Verbalisez votre fierté — il ne la devine pas. Et offrez-lui des explications de fond, pas juste des évaluations.",
+  },
+  "5-2": {
+    pointsForts: "Vous lui offrez l'espace de penser et d'être seul, ce qu'il sait apprécier mais peu d'enfants reçoivent.",
+    vigilances: "Il a besoin de chaleur affective explicite. Votre retenue émotionnelle peut être vécue comme un rejet.",
+    conseil: "Faites des câlins, dites « je t'aime » à voix haute. La distance n'est pas une option pour cet enfant.",
+  },
+  "5-3": {
+    pointsForts: "Vous tempérez son agitation par votre calme. Il apprend à réfléchir avant d'agir grâce à vous.",
+    vigilances: "Il a besoin de votre admiration enthousiaste. Vos analyses froides de ses succès l'éteignent.",
+    conseil: "Manifestez votre fierté avec des mots et de l'énergie. Et participez à ses victoires au lieu de les commenter.",
+  },
+  "5-4": {
+    pointsForts: "Vous respectez son monde intérieur et sa créativité. Vous savez communiquer en profondeur sans surcharge.",
+    vigilances: "Il a besoin de connexion émotionnelle, pas seulement intellectuelle. Votre froideur apparente le blesse.",
+    conseil: "Asseyez-vous près de lui. Touchez-le, regardez ses créations longuement. La présence physique compte autant que les idées.",
+  },
+  "5-5": {
+    pointsForts: "Vous vous comprenez sans mots. Respect mutuel des silences et de l'espace personnel.",
+    vigilances: "Risque de relation parallèle où chacun vit dans son monde. Il a besoin de plus que vous.",
+    conseil: "Initiez le contact malgré votre nature réservée. Asseyez-vous dans sa chambre, partagez une activité — la présence suffit.",
+  },
+  "5-6": {
+    pointsForts: "Votre calme analytique apaise son anxiété. Vous lui apprenez à comprendre ses peurs au lieu d'y céder.",
+    vigilances: "Il a besoin de chaleur explicite et constante. Votre distance émotionnelle peut alimenter son insécurité.",
+    conseil: "Rassurez avec des mots ET des gestes. Et tenez vos rituels — pour lui, la prévisibilité est sécurisante.",
+  },
+  "5-7": {
+    pointsForts: "Vous savez canaliser son énergie débordante en l'orientant vers la profondeur. Vous lui ouvrez de nouveaux mondes.",
+    vigilances: "Son besoin de stimulation et de jeu peut vous épuiser. Vous risquez de vous retirer dans votre bulle.",
+    conseil: "Acceptez de jouer même quand vous préféreriez lire. Et donnez-lui des règles — son énergie a besoin d'un cadre.",
+  },
+  "5-8": {
+    pointsForts: "Votre calme apaise sa puissance. Vous ne vous laissez pas impressionner par sa force.",
+    vigilances: "Il teste vos limites avec vigueur. Si vous vous retirez face à lui, il prend tout l'espace et perd ses repères.",
+    conseil: "Tenez vos positions calmement. Et engagez-vous corporellement avec lui — bagarres pour rire, sport, action concrète.",
+  },
+  "5-9": {
+    pointsForts: "Deux profils paisibles qui apprécient le calme. Vous ne vous bousculez pas mutuellement.",
+    vigilances: "Risque de vie parallèle dans le silence. Personne n'initie, personne ne demande, personne ne se rencontre vraiment.",
+    conseil: "Forcez le contact régulier — un dîner, une promenade, une activité commune. Sans cela, vous vous éloignez doucement.",
+  },
+
+  // ── Parent Type 6 ──
+  "6-1": {
+    pointsForts: "Vous lui apportez de la sécurité par votre fiabilité. Il s'épanouit dans votre cadre clair et constant.",
+    vigilances: "Votre anxiété alimente son perfectionnisme. Il s'épuise à essayer d'éviter les catastrophes que vous redoutez.",
+    conseil: "Travaillez VOTRE anxiété pour ne pas la lui transmettre. Et faites-lui confiance pour décider seul, à sa mesure.",
+  },
+  "6-2": {
+    pointsForts: "Vous lui offrez chaleur et sécurité. Foyer affectueux et prévisible — il s'y sent profondément aimé.",
+    vigilances: "Votre besoin de protection peut l'étouffer. Il apprend à se sacrifier pour ne pas vous inquiéter.",
+    conseil: "Faites confiance à sa capacité à gérer le monde. Et apprenez-lui à dire « non » — y compris à vos demandes.",
+  },
+  "6-3": {
+    pointsForts: "Vous voyez sa fragilité derrière son énergie. Vous savez l'ancrer quand il s'épuise dans la performance.",
+    vigilances: "Il fuit votre anxiété en surinvestissant la réussite. Plus vous vous inquiétez, plus il performe pour vous rassurer.",
+    conseil: "Détendez-vous visiblement quand il est avec vous. Aimez-le sans condition de réussite, c'est ce qui le libère.",
+  },
+  "6-4": {
+    pointsForts: "Vous accueillez ses émotions intenses avec sérieux. Vous ne les minimisez pas et il vous en est reconnaissant.",
+    vigilances: "Vos angoisses + son intensité = spirale émotionnelle. Vous pouvez vous nourrir mutuellement dans le drame.",
+    conseil: "Restez ancré quand il vacille. Et n'ajoutez pas vos peurs à ses tempêtes — il en a déjà beaucoup à gérer.",
+  },
+  "6-5": {
+    pointsForts: "Vous respectez son besoin d'analyse et de calme. Vous lui apportez la chaleur, il vous apporte la pensée.",
+    vigilances: "Il a besoin d'un parent rassurant, pas inquiet. Vos doutes constants le poussent à se réfugier dans la tête.",
+    conseil: "Affichez votre confiance même quand vous doutez intérieurement. Et autorisez-le à se retirer pour penser — c'est sa façon de gérer.",
+  },
+  "6-6": {
+    pointsForts: "Vous vous comprenez sur le terrain de la vigilance. Loyauté et fiabilité réciproques.",
+    vigilances: "Vos inquiétudes s'amplifient mutuellement. Vous pouvez créer une bulle de peur où le monde extérieur paraît dangereux.",
+    conseil: "Cultivez la confiance en l'avenir. Modélisez le courage face à l'incertitude — il l'apprend en vous regardant.",
+  },
+  "6-7": {
+    pointsForts: "Sa joie de vivre vous rassure : la vie n'est pas que dangers. Vous lui offrez la solidité, il vous offre la légèreté.",
+    vigilances: "Vous voulez le protéger, lui veut explorer. Vos « attention » répétés peuvent éteindre son enthousiasme naturel.",
+    conseil: "Laissez-le prendre des risques mesurés. Sa confiance dans la vie est un cadeau — ne la lui volez pas par excès de protection.",
+  },
+  "6-8": {
+    pointsForts: "Sa force vous rassure : il sait se défendre. Vous savez aussi voir sa vulnérabilité derrière la carapace.",
+    vigilances: "Il teste vos limites avec puissance. Si vous reculez par peur du conflit, il perd ses repères et s'agite davantage.",
+    conseil: "Soyez ferme et calme face à ses débordements. Votre solidité (pas votre dureté) le sécurise.",
+  },
+  "6-9": {
+    pointsForts: "Sa sérénité vous apaise. Foyer doux où chacun trouve sa place sans heurts.",
+    vigilances: "Vous vous évitez mutuellement les conflits, mais ils s'accumulent en silence. Et vos angoisses peuvent perturber son calme.",
+    conseil: "Initiez les conversations difficiles avec douceur. Et rassurez-vous : il va bien — son calme n'est pas un signe d'inquiétude.",
+  },
+
+  // ── Parent Type 7 ──
+  "7-1": {
+    pointsForts: "Votre énergie l'allège. Vous lui montrez qu'on peut vivre sans être parfait à chaque instant.",
+    vigilances: "Votre dispersion peut frustrer son besoin de stabilité. Il a besoin de routine et de tenue des promesses.",
+    conseil: "Tenez vos engagements et vos rituels. Sa rigueur est une force — ne la confondez pas avec de la rigidité.",
+  },
+  "7-2": {
+    pointsForts: "Joie et chaleur réciproques. Foyer pétillant où l'on rit et où l'on aime fort.",
+    vigilances: "Il prend soin de votre humeur. Si vous fuyez les moments difficiles, il apprend à porter seul ses propres tristesses.",
+    conseil: "Restez disponible quand la fête est finie. Et autorisez-vous à montrer la tristesse — il a besoin de voir que c'est OK.",
+  },
+  "7-3": {
+    pointsForts: "Duo dynamique, projets sans fin, énergie contagieuse. Votre admiration mutuelle vous porte.",
+    vigilances: "Vous fuyez tous les deux les émotions difficiles. La famille devient une succession d'activités sans profondeur.",
+    conseil: "Imposez-vous des moments calmes et profonds. Posez la question « comment tu te sens VRAIMENT ? » et écoutez.",
+  },
+  "7-4": {
+    pointsForts: "Sa profondeur vous touche. Il vous apprend à ralentir et à ressentir — c'est précieux pour vous deux.",
+    vigilances: "Vous fuyez vers le positif quand il a besoin de plonger. Votre « allez, ça va passer » le coupe de lui-même.",
+    conseil: "Tenez l'espace de ses émotions sans chercher à les transformer. La présence vaut plus que les solutions.",
+  },
+  "7-5": {
+    pointsForts: "Vous lui ouvrez le monde large par votre énergie. Il vous apprend la profondeur et la concentration.",
+    vigilances: "Votre rythme rapide et vos changements de plan le déstabilisent. Il a besoin d'espace mental pour digérer.",
+    conseil: "Annoncez les changements à l'avance. Et acceptez ses temps de retrait — ce n'est pas de l'antisocial, c'est de la recharge.",
+  },
+  "7-6": {
+    pointsForts: "Votre optimisme rassure ses peurs. Vous lui montrez qu'il y a toujours une porte de sortie.",
+    vigilances: "Vos « ne t'inquiète pas » sans écoute le laissent seul avec ses angoisses. Il n'ose plus en parler.",
+    conseil: "Validez ses peurs avant de les dépasser. « C'est normal d'avoir peur de ça, voilà ce qu'on peut faire ensemble. »",
+  },
+  "7-7": {
+    pointsForts: "Famille pétillante, créative, jamais ennuyeuse. Vous l'aidez à embrasser la vie pleinement.",
+    vigilances: "Vous fuyez ensemble les moments difficiles. Personne ne pose les conversations sérieuses ni ne finit les projets.",
+    conseil: "Forcez-vous à rester quand c'est inconfortable. Et apprenez-lui à finir avant de commencer autre chose.",
+  },
+  "7-8": {
+    pointsForts: "Sa puissance vous stimule. Vous savez transformer son énergie brute en jeu et en aventure.",
+    vigilances: "Il a besoin de cadres clairs. Votre flexibilité naturelle peut être perçue comme un manque de tenue.",
+    conseil: "Tenez les règles essentielles fermement. Soyez flexible sur les détails, ferme sur les principes.",
+  },
+  "7-9": {
+    pointsForts: "Votre énergie le sort doucement de sa torpeur. Sa sérénité vous repose de votre agitation.",
+    vigilances: "Votre vitesse l'efface. Il dit « oui à tout » pour suivre votre rythme, et perd contact avec ses propres envies.",
+    conseil: "Ralentissez régulièrement. Demandez-lui ce qu'IL veut, pas ce qu'il pense que vous voulez qu'il veuille.",
+  },
+
+  // ── Parent Type 8 ──
+  "8-1": {
+    pointsForts: "Vous reconnaissez sa rigueur et la respectez. Vous lui apportez la force quand sa rigidité le bloque.",
+    vigilances: "Vous frontal, lui méthodique : conflit possible. Vos décisions rapides court-circuitent son besoin de bien faire.",
+    conseil: "Laissez-lui le temps de finir avant de bouger. Et reconnaissez son sens du devoir — c'est son moteur, pas une lenteur.",
+  },
+  "8-2": {
+    pointsForts: "Votre force et sa douceur se complètent magnifiquement. Vous le protégez, il vous adoucit.",
+    vigilances: "Votre intensité peut écraser sa sensibilité. Il s'efface pour ne pas vous heurter.",
+    conseil: "Modérez votre énergie face à lui. Et invitez-le à exprimer ses désaccords — il en a, mais les tait.",
+  },
+  "8-3": {
+    pointsForts: "Énergie partagée, ambitions élevées. Vous le poussez à se dépasser, il vous donne du grain à moudre.",
+    vigilances: "Compétition possible. Vos comparaisons (« quand j'avais ton âge... ») le blessent même si vous croyez l'encourager.",
+    conseil: "Célébrez SES réussites sans les comparer aux vôtres. Il a besoin d'être vu pour lui-même.",
+  },
+  "8-4": {
+    pointsForts: "Vous le protégez dans ses tempêtes émotionnelles. Il sait qu'avec vous, il peut tout ressentir sans danger.",
+    vigilances: "Votre force peut sembler insensible à sa fragilité. Vos « arrête de pleurer » écrasent ce qu'il vit.",
+    conseil: "Soyez présent en silence pendant ses émotions. La force ne s'oppose pas à la tendresse — elle peut la contenir.",
+  },
+  "8-5": {
+    pointsForts: "Vous respectez son intelligence et savez le défendre quand il s'isole. Il vous fait confiance pour le protéger.",
+    vigilances: "Votre énergie l'épuise. Il a besoin de calme et de retrait — vous risquez de l'envahir par votre intensité.",
+    conseil: "Modérez votre présence quand il est dans sa bulle. Et engagez-vous corporellement avec lui — sport, jeux d'action.",
+  },
+  "8-6": {
+    pointsForts: "Vous incarnez la solidité dont il a besoin. Sa loyauté envers vous est totale dès qu'il vous fait confiance.",
+    vigilances: "Vos accès de force peuvent terroriser son anxiété. Il se construit sur la peur si vous tonnez trop.",
+    conseil: "Soyez fort SANS être effrayant. Calme + ferme, jamais explosif. Votre voix forte le tétanise plus qu'elle ne l'éduque.",
+  },
+  "8-7": {
+    pointsForts: "Énergie débordante des deux côtés. Aventures, sport, action — vous vous comprenez dans le mouvement.",
+    vigilances: "Vous évitez tous les deux les émotions difficiles via l'action. Personne ne s'arrête pour ressentir.",
+    conseil: "Imposez-vous des moments calmes en duo. Et apprenez-lui à finir ce qu'il commence — votre exemple compte.",
+  },
+  "8-8": {
+    pointsForts: "Respect mutuel des forts caractères. Quand vous êtes alliés, rien ne vous arrête.",
+    vigilances: "Rivalité de pouvoir possible. Si vous êtes toujours le plus fort, il se braque ; si vous cédez, il vous méprise.",
+    conseil: "Choisissez vos batailles. Reconnaissez sa force comme égale à la vôtre — il a besoin que vous la voyiez.",
+  },
+  "8-9": {
+    pointsForts: "Sa douceur vous apaise. Vous incarnez la force qu'il n'ose pas mobiliser.",
+    vigilances: "Votre intensité l'efface. Il dit « comme tu veux » pour éviter le choc avec votre énergie.",
+    conseil: "Demandez-lui son avis et attendez vraiment la réponse. Modérez votre voix, votre rythme, votre intensité.",
+  },
+
+  // ── Parent Type 9 ──
+  "9-1": {
+    pointsForts: "Votre calme l'apaise. Vous l'aidez à relâcher son perfectionnisme et à profiter du moment.",
+    vigilances: "Il a besoin d'un cadre clair. Votre tendance à tout accepter peut le déstabiliser — il cherche des limites.",
+    conseil: "Posez des règles fermes même si ça vous coûte. Sa structure intérieure se construit sur les vôtres.",
+  },
+  "9-2": {
+    pointsForts: "Foyer doux et harmonieux. Vous accueillez sa générosité avec gratitude et calme.",
+    vigilances: "Vous évitez tous les deux les conflits. Il apprend à étouffer ses besoins pour préserver l'harmonie.",
+    conseil: "Modélisez le « non » bienveillant. Et invitez-le à exprimer ses désaccords sans peur de vous décevoir.",
+  },
+  "9-3": {
+    pointsForts: "Vous tempérez son agitation par votre sérénité. Il vous apporte de l'énergie et du mouvement.",
+    vigilances: "Vous risquez de freiner ses élans par votre passivité. Sa quête de réussite se heurte à votre absence d'enthousiasme.",
+    conseil: "Investissez visiblement dans ses projets. Votre soutien actif compte autant que votre acceptation calme.",
+  },
+  "9-4": {
+    pointsForts: "Vous accueillez ses émotions sans les juger ni les surcharger. Il se sent profondément accepté.",
+    vigilances: "Votre passivité peut le laisser seul dans ses tempêtes. Il a besoin que vous engagiez le contact.",
+    conseil: "Allez vers lui activement quand il se renferme. Posez des questions, restez présent — votre silence l'isole.",
+  },
+  "9-5": {
+    pointsForts: "Vous respectez son besoin d'espace et de silence. Coexistence paisible et respectueuse.",
+    vigilances: "Risque de vie parallèle où personne n'initie le contact. Il se replie, vous le laissez se replier.",
+    conseil: "Forcez les moments partagés — repas, sortie, jeu. Sans rituels imposés, vous vous éloignez insensiblement.",
+  },
+  "9-6": {
+    pointsForts: "Votre sérénité apaise son anxiété. Foyer stable où il sait qu'il peut compter sur la constance.",
+    vigilances: "Il a besoin de réponses claires à ses inquiétudes. Vos « ça va aller » sans engagement le laissent seul.",
+    conseil: "Engagez-vous concrètement face à ses peurs : « voilà ce qu'on va faire ensemble ». La présence active rassure.",
+  },
+  "9-7": {
+    pointsForts: "Sa joie vous anime, votre calme l'ancre. Belle complémentarité entre énergie et sérénité.",
+    vigilances: "Son rythme rapide vous épuise. Vous risquez de vous absenter mentalement pour vous protéger.",
+    conseil: "Restez engagé même quand vous voulez vous retirer. Il a besoin de votre présence active, pas seulement physique.",
+  },
+  "9-8": {
+    pointsForts: "Votre douceur adoucit sa puissance. Vous ne le craignez pas, et c'est précieux pour lui.",
+    vigilances: "Il teste vos limites avec force. Si vous cédez systématiquement, il prend toute la place et perd ses repères.",
+    conseil: "Tenez vos positions calmement mais fermement. Votre fermeté tranquille est plus puissante que la confrontation.",
+  },
+  "9-9": {
+    pointsForts: "Calme, harmonie, fluidité. Vous vivez en paix dans le même rythme tranquille.",
+    vigilances: "Vous évitez tous les deux les décisions et les conflits. Personne ne tranche, personne n'avance.",
+    conseil: "Imposez-vous d'être celui qui décide et qui initie. Il a besoin d'apprendre à choisir — par votre exemple actif.",
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  VUE PEERS — Quand A et B sont enfants entre eux ou ados entre eux
+//  Reformule pointsForts/vigilances/conseil pour le parent qui observe.
+// ═══════════════════════════════════════════════════════════════
+
+export const DUO_PEERS_VIEW: Record<string, PerspectiveView> = {
+  // ── Type 1 (frère/ami) avec... ──
+  "1-1": {
+    pointsForts: "Deux petits perfectionnistes qui se comprennent parfaitement. Ils peuvent construire des projets très aboutis ensemble.",
+    vigilances: "Compétition féroce sur « qui fait le mieux ». Les critiques mutuelles peuvent dégénérer en disputes pour des broutilles.",
+    conseil: "Encouragez la coopération plutôt que la comparaison. Et célébrez ce qu'ils font ENSEMBLE, pas individuellement.",
+  },
+  "1-2": {
+    pointsForts: "Le 1 cadre, le 2 réconforte. Le 2 admire la rigueur du 1, le 1 accepte la chaleur du 2. Belle complémentarité.",
+    vigilances: "Le 1 critique, le 2 souffre en silence. Le 2 apprend à se sacrifier pour avoir l'approbation du 1.",
+    conseil: "Apprenez au 1 à valoriser avant de corriger. Et au 2 à dire ce qu'il ressent au lieu de l'absorber.",
+  },
+  "1-3": {
+    pointsForts: "Duo ambitieux, projets sérieux et bien menés. Ils se respectent dans l'effort et la performance.",
+    vigilances: "Le 1 corrige le processus du 3, le 3 trouve le 1 lent. Compétition sur les résultats inévitable.",
+    conseil: "Donnez-leur des projets distincts où chacun peut briller à sa façon. Et apprenez-leur à célébrer la réussite de l'autre.",
+  },
+  "1-4": {
+    pointsForts: "Contraste enrichissant : le 1 structure, le 4 crée. Ensemble ils peuvent produire quelque chose d'unique et d'abouti.",
+    vigilances: "Le 1 trouve le 4 trop dramatique, le 4 trouve le 1 trop froid. Frictions sur les émotions et le rythme.",
+    conseil: "Aidez-les à voir leurs différences comme une richesse. Le 4 a besoin d'espace émotionnel, le 1 a besoin de cadre.",
+  },
+  "1-5": {
+    pointsForts: "Amitié intellectuelle solide. Ils peuvent passer des heures à construire, débattre, expérimenter sans se lasser.",
+    vigilances: "Deux profils peu démonstratifs. Personne n'initie le câlin ou le « j'ai besoin de toi ».",
+    conseil: "Encouragez les moments physiques — sport, jeu, balade. La connexion ne passe pas que par les idées.",
+  },
+  "1-6": {
+    pointsForts: "Loyauté forte, fiabilité réciproque. Le 6 fait confiance au cap du 1, le 1 apprécie la constance du 6.",
+    vigilances: "Le 1 peut juger les peurs du 6, le 6 peut se sentir bousculé par la rigueur du 1.",
+    conseil: "Apprenez au 1 à rassurer avant d'exiger. Et au 6 à exprimer ses craintes au lieu de les cacher.",
+  },
+  "1-7": {
+    pointsForts: "Le 7 décoince le 1, le 1 ancre le 7. S'ils s'acceptent, ils créent ensemble du beau et du joyeux.",
+    vigilances: "Le 1 trouve le 7 irresponsable, le 7 trouve le 1 ennuyeux. Conflits fréquents sur le respect des règles.",
+    conseil: "Donnez-leur des projets COMMUNS avec des règles courtes. Le 1 cadre, le 7 anime — répartition naturelle.",
+  },
+  "1-8": {
+    pointsForts: "Deux personnalités fortes qui se respectent dans la confrontation. Quand ils s'allient, ils sont redoutables.",
+    vigilances: "Affrontements possibles. Le 1 a raison sur les principes, le 8 a raison sur la force — chacun campe sur ses positions.",
+    conseil: "Médiez les conflits sans prendre parti. Aidez-les à voir que leur force commune est plus précieuse que la rivalité.",
+  },
+  "1-9": {
+    pointsForts: "Amitié calme et stable. Le 9 accepte le cadre du 1 sans heurts, le 1 apprécie la sérénité du 9.",
+    vigilances: "Le 1 peut presser le 9 qui s'efface. Le 9 peut frustrer le 1 par sa lenteur à décider.",
+    conseil: "Apprenez au 1 à attendre, au 9 à s'exprimer. Donnez au 9 le temps dont il a besoin.",
+  },
+
+  // ── Type 2 ──
+  "2-1": {
+    pointsForts: "Le 2 chaleureux entoure le 1 sérieux. Le 1 fait gagner du sérieux au 2, le 2 fait gagner de la chaleur au 1.",
+    vigilances: "Le 2 cherche l'approbation du 1, le 1 critique sans s'en rendre compte. Le 2 peut se sentir constamment insuffisant.",
+    conseil: "Apprenez au 1 à exprimer sa gratitude. Et au 2 à ne pas se définir par l'approbation des autres.",
+  },
+  "2-2": {
+    pointsForts: "Tendresse et générosité mutuelles. Ils prennent soin l'un de l'autre avec une douceur rare entre enfants.",
+    vigilances: "Risque de codépendance. Ils s'oublient l'un pour l'autre et excluent les autres amis.",
+    conseil: "Encouragez-les à avoir aussi des amis individuels. Et apprenez-leur à recevoir, pas seulement à donner.",
+  },
+  "2-3": {
+    pointsForts: "Le 2 admire et soutient les ambitions du 3. Le 3 brille avec un fan club fidèle.",
+    vigilances: "Le 3 prend l'aide du 2 pour acquise. Le 2 s'efface dans l'ombre du 3 et oublie ses propres rêves.",
+    conseil: "Apprenez au 3 à remercier explicitement. Et au 2 à briller pour lui-même, pas seulement à servir le succès des autres.",
+  },
+  "2-4": {
+    pointsForts: "Amitié émotionnelle profonde. Le 2 entoure le 4, le 4 offre au 2 sa profondeur.",
+    vigilances: "Le 2 veut consoler, le 4 veut être compris dans la douleur. Le 2 peut se sentir impuissant et coupable.",
+    conseil: "Apprenez au 2 que tenir l'espace ne veut pas dire résoudre. Et au 4 à dire merci pour la présence reçue.",
+  },
+  "2-5": {
+    pointsForts: "Le 2 ouvre le cocon du 5 avec respect. Le 5 offre au 2 sa pensée et sa profondeur.",
+    vigilances: "Le 2 envahit le 5 par excès d'attention, le 5 se replie. Le 2 vit la distance comme un rejet.",
+    conseil: "Apprenez au 2 à respecter les zones de retrait du 5. Et au 5 à manifester sa présence quand il revient.",
+  },
+  "2-6": {
+    pointsForts: "Amitié très loyale et chaleureuse. Ils se soutiennent dans les moments difficiles avec une fidélité rare.",
+    vigilances: "Ils peuvent s'enfermer dans une bulle d'inquiétude mutuelle. Le 2 alimente les peurs du 6 en voulant le rassurer.",
+    conseil: "Encouragez-les à explorer le monde extérieur. Et invitez d'autres amis dans leur duo pour aérer la relation.",
+  },
+  "2-7": {
+    pointsForts: "Le 7 entraîne le 2 dans la joie, le 2 prend soin du 7 dans ses débordements. Duo populaire et chaleureux.",
+    vigilances: "Le 7 court partout, le 2 s'épuise à le suivre. Et tous deux fuient les émotions difficiles.",
+    conseil: "Apprenez-leur à s'arrêter ensemble. Et invitez-les à parler de ce qui ne va pas, pas seulement de ce qui pétille.",
+  },
+  "2-8": {
+    pointsForts: "Le 2 adoucit le 8, le 8 protège le 2. Loyauté profonde une fois la confiance installée.",
+    vigilances: "Le 8 peut écraser le 2 sans le vouloir. Le 2 absorbe l'intensité du 8 et oublie de s'affirmer.",
+    conseil: "Apprenez au 8 à modérer sa force avec ses amis. Et au 2 à se respecter assez pour dire « stop ».",
+  },
+  "2-9": {
+    pointsForts: "Amitié douce et harmonieuse. Ils prennent soin l'un de l'autre dans le calme et la bienveillance.",
+    vigilances: "Aucun ne dit ce qui ne va pas. Les non-dits s'accumulent jusqu'à un éloignement silencieux.",
+    conseil: "Encouragez-les à exprimer leurs désaccords. Sans frictions verbalisées, leur amitié peut s'étioler sans bruit.",
+  },
+
+  // ── Type 3 ──
+  "3-1": {
+    pointsForts: "Ambition et rigueur partagées. Ils se tirent mutuellement vers le haut sur les projets sérieux.",
+    vigilances: "Le 3 veut briller, le 1 veut bien faire. Conflit possible sur les méthodes (raccourci vs travail de fond).",
+    conseil: "Apprenez-leur à respecter le mode de l'autre. Et à reconnaître que les deux approches sont valides.",
+  },
+  "3-2": {
+    pointsForts: "Le 2 soutient le 3, le 3 fait briller le 2 par association. Amitié fluide où chacun trouve son compte.",
+    vigilances: "Le 3 utilise le 2 sans s'en rendre compte. Le 2 s'efface pour servir l'image du 3.",
+    conseil: "Aidez le 2 à briller pour lui-même. Et apprenez au 3 à inclure le 2 dans ses succès, pas à le mettre en arrière-plan.",
+  },
+  "3-3": {
+    pointsForts: "Énergie débordante, projets ambitieux, succès partagés. Ils se comprennent dans la quête de réussite.",
+    vigilances: "Compétition féroce. La comparaison constante peut détruire leur amitié et créer des blessures durables.",
+    conseil: "Donnez-leur des projets distincts. Encouragez-les à célébrer la réussite de l'autre comme la leur.",
+  },
+  "3-4": {
+    pointsForts: "Le 3 entraîne le 4 vers l'action, le 4 ramène le 3 à lui-même. Apprentissages mutuels précieux.",
+    vigilances: "Le 3 trouve le 4 trop lent et trop intense. Le 4 trouve le 3 superficiel et déconnecté.",
+    conseil: "Aidez-les à voir ce que l'autre apporte. Le 4 a besoin du dynamisme du 3, le 3 a besoin de la profondeur du 4.",
+  },
+  "3-5": {
+    pointsForts: "Le 3 met en action les analyses du 5. Duo très efficace sur les projets qui demandent réflexion ET exécution.",
+    vigilances: "Le 3 court-circuite la pensée du 5, le 5 freine l'élan du 3. Tension sur le rythme.",
+    conseil: "Définissez les rôles : le 5 réfléchit, le 3 exécute. Et respectez le temps dont chacun a besoin.",
+  },
+  "3-6": {
+    pointsForts: "Le 3 donne confiance au 6, le 6 ramène le 3 à la prudence. Belle alliance pour des projets bien préparés.",
+    vigilances: "Le 3 fonce, le 6 anticipe les catastrophes. Tension sur les risques à prendre.",
+    conseil: "Apprenez au 3 à écouter les craintes du 6 (souvent justifiées). Et au 6 à faire confiance à l'élan du 3.",
+  },
+  "3-7": {
+    pointsForts: "Énergie, projets, enthousiasme à deux. Ils peuvent monter des choses incroyables ensemble.",
+    vigilances: "Vous fuyez tous les deux les émotions difficiles. Vos amitiés peuvent rester en surface.",
+    conseil: "Apprenez-leur à parler de ce qui ne va pas. La profondeur vient quand on partage les difficultés, pas seulement les succès.",
+  },
+  "3-8": {
+    pointsForts: "Deux leaders ambitieux qui se respectent. Quand ils s'allient, ils peuvent emmener le groupe.",
+    vigilances: "Rivalité de pouvoir possible. Compétition sur qui décide, qui mène, qui réussit.",
+    conseil: "Aidez-les à coopérer plutôt qu'à s'affronter. Définir des territoires distincts évite les frictions.",
+  },
+  "3-9": {
+    pointsForts: "Le 3 dynamise le 9, le 9 calme le 3. Belle complémentarité entre énergie et sérénité.",
+    vigilances: "Le 3 trouve le 9 trop passif, le 9 trouve le 3 trop agité. Le 9 disparaît sous la pression du 3.",
+    conseil: "Apprenez au 3 à respecter le rythme du 9. Et au 9 à exprimer ses envies avant que le 3 ne décide pour lui.",
+  },
+
+  // ── Type 4 ──
+  "4-1": {
+    pointsForts: "Esthétique et rigueur unies. Ils peuvent créer des œuvres ou projets très aboutis ensemble.",
+    vigilances: "Le 4 trouve le 1 froid, le 1 trouve le 4 dramatique. Frictions sur l'expression émotionnelle.",
+    conseil: "Aidez-les à voir leurs différences comme complémentaires. Et à respecter le besoin émotionnel de chacun.",
+  },
+  "4-2": {
+    pointsForts: "Profondeur émotionnelle partagée. Le 2 console, le 4 révèle des couches que peu osent toucher.",
+    vigilances: "Le 4 absorbe l'attention du 2 par son intensité. Le 2 s'épuise à essayer de réparer ce qui n'est pas cassé.",
+    conseil: "Apprenez au 2 à être présent sans résoudre. Et au 4 à apprécier la présence sans toujours plonger.",
+  },
+  "4-3": {
+    pointsForts: "Le 4 offre la profondeur, le 3 offre l'action. Ensemble ils peuvent produire du sens ET du résultat.",
+    vigilances: "Le 4 trouve le 3 superficiel, le 3 trouve le 4 lent. Conflit sur ce qui compte vraiment.",
+    conseil: "Aidez-les à voir ce que l'autre apporte. Et à respecter leurs visions différentes du succès.",
+  },
+  "4-4": {
+    pointsForts: "Compréhension émotionnelle profonde, amitié intense. Ils se voient mutuellement dans leur vraie nature.",
+    vigilances: "Risque de cocon mélancolique. Deux 4 ensemble peuvent s'enfermer dans l'intensité et perdre le contact avec le réel.",
+    conseil: "Encouragez les activités légères, joyeuses, physiques. Et invitez d'autres amis pour aérer leur bulle.",
+  },
+  "4-5": {
+    pointsForts: "Amitié intellectuelle et émotionnelle riche. Ils respectent mutuellement leur monde intérieur.",
+    vigilances: "Risque d'isolement à deux. Personne n'invite, personne ne sort, le monde extérieur s'éloigne.",
+    conseil: "Forcez l'ouverture vers d'autres relations. Leur amitié gagne à être nourrie par le monde large.",
+  },
+  "4-6": {
+    pointsForts: "Le 4 offre la profondeur, le 6 offre la loyauté. Belle complémentarité émotionnelle.",
+    vigilances: "Le 4 nourrit les peurs du 6 avec son intensité. Le 6 s'épuise à rassurer le 4 dans ses doutes.",
+    conseil: "Apprenez au 4 à modérer ses tempêtes. Et au 6 à ne pas se sentir responsable du bonheur du 4.",
+  },
+  "4-7": {
+    pointsForts: "Le 4 plonge, le 7 survole — leurs différences sont enrichissantes si chacun s'ouvre à l'autre.",
+    vigilances: "Le 7 fuit l'intensité du 4, le 4 trouve le 7 superficiel. Tension sur ce qui mérite attention.",
+    conseil: "Aidez le 7 à rester quand c'est inconfortable. Et le 4 à apprécier la légèreté sans la juger.",
+  },
+  "4-8": {
+    pointsForts: "Intensité partagée. Le 8 protège le 4, le 4 aide le 8 à toucher sa vulnérabilité.",
+    vigilances: "Le 8 peut écraser le 4 par sa force. Le 4 peut frustrer le 8 par ses tempêtes émotionnelles.",
+    conseil: "Apprenez au 8 à respecter la sensibilité du 4. Et au 4 à recevoir la protection sans la dramatiser.",
+  },
+  "4-9": {
+    pointsForts: "Le 9 accueille toutes les émotions du 4 sans les juger. Le 4 apprécie cette acceptation totale.",
+    vigilances: "Le 4 peut envahir le 9 par son intensité. Le 9 disparaît pour ne pas porter les émotions du 4.",
+    conseil: "Apprenez au 4 à respecter la paix du 9. Et au 9 à dire quand c'est trop, au lieu de s'absenter.",
+  },
+
+  // ── Type 5 ──
+  "5-1": {
+    pointsForts: "Amitié intellectuelle solide, rigoureuse, fiable. Ils respectent mutuellement leur sérieux.",
+    vigilances: "Peu de chaleur explicite, peu de spontanéité. La relation peut devenir purement fonctionnelle.",
+    conseil: "Encouragez les moments de jeu, de sport, d'expression corporelle. La connexion ne passe pas que par la tête.",
+  },
+  "5-2": {
+    pointsForts: "Le 5 offre sa pensée, le 2 offre sa chaleur. Si les deux respectent le rythme de l'autre, belle amitié.",
+    vigilances: "Le 2 envahit le 5, le 5 se replie. Le 2 vit la distance comme un rejet et redouble d'attention.",
+    conseil: "Apprenez au 2 à laisser de l'espace. Et au 5 à manifester sa présence quand il revient de sa bulle.",
+  },
+  "5-3": {
+    pointsForts: "Le 5 réfléchit, le 3 agit. Duo efficace si chacun respecte le rythme de l'autre.",
+    vigilances: "Le 3 court-circuite la pensée du 5, le 5 freine l'élan du 3. Tension sur le tempo.",
+    conseil: "Apprenez-leur à valoriser ce que l'autre apporte. Et à se laisser mutuellement le temps nécessaire.",
+  },
+  "5-4": {
+    pointsForts: "Profondeur intellectuelle ET émotionnelle. Amitié rare où l'on peut tout partager sans superficialité.",
+    vigilances: "Risque de bulle hermétique. Deux profils introvertis qui s'isolent ensemble du reste du monde.",
+    conseil: "Encouragez l'ouverture vers d'autres amis. Et les activités physiques pour les sortir du mental.",
+  },
+  "5-5": {
+    pointsForts: "Respect mutuel des silences et de l'espace. Amitié calme, sans drame, profondément stable.",
+    vigilances: "Personne n'initie le contact. Ils peuvent rester côte à côte sans jamais vraiment se rencontrer.",
+    conseil: "Encouragez les rituels concrets — un projet commun, une activité régulière. Sans cela, ils se perdent de vue.",
+  },
+  "5-6": {
+    pointsForts: "Le 5 analyse, le 6 anticipe. Duo très complémentaire pour les projets qui demandent prudence et réflexion.",
+    vigilances: "Risque de spirale d'inquiétude analytique. Ils peuvent voir des dangers partout et se paralyser.",
+    conseil: "Encouragez l'action et le risque calculé. Et invitez d'autres profils dans leur duo pour aérer la pensée.",
+  },
+  "5-7": {
+    pointsForts: "Le 5 approfondit, le 7 ouvre. Apprentissages mutuels riches si chacun s'ouvre à l'autre.",
+    vigilances: "Le 7 épuise le 5 par son agitation. Le 5 frustre le 7 par sa lenteur et son retrait.",
+    conseil: "Apprenez au 7 à respecter les zones de retrait du 5. Et au 5 à participer à l'énergie du 7 par moments.",
+  },
+  "5-8": {
+    pointsForts: "Respect mutuel possible : le 8 protège le 5, le 5 conseille le 8. Duo intéressant si chacun respecte l'autre.",
+    vigilances: "Le 8 bouscule le 5 par sa force. Le 5 frustre le 8 par sa retenue.",
+    conseil: "Apprenez au 8 à modérer son intensité. Et au 5 à s'engager corporellement, pas juste mentalement.",
+  },
+  "5-9": {
+    pointsForts: "Calme partagé, respect des silences, coexistence paisible. Amitié sans drame.",
+    vigilances: "Personne n'initie. Ils peuvent rester très proches dans le silence et finir par se perdre.",
+    conseil: "Encouragez les rituels concrets — sport, jeu, projet commun. Sans cela, leur amitié s'éteint doucement.",
+  },
+
+  // ── Type 6 ──
+  "6-1": {
+    pointsForts: "Loyauté et rigueur partagées. Amitié fiable, respectueuse, sur laquelle on peut compter.",
+    vigilances: "Le 1 critique les hésitations du 6, le 6 se sent jugé. Risque d'amitié sous tension permanente.",
+    conseil: "Apprenez au 1 à rassurer avant d'exiger. Et au 6 à faire confiance aux intentions du 1.",
+  },
+  "6-2": {
+    pointsForts: "Tendresse et loyauté. Ils prennent soin l'un de l'autre avec une fidélité touchante.",
+    vigilances: "Le 2 nourrit les peurs du 6 en voulant le rassurer. Ils peuvent s'enfermer dans une bulle d'inquiétude.",
+    conseil: "Encouragez-les à explorer le monde extérieur. Et à inviter d'autres amis dans leur duo.",
+  },
+  "6-3": {
+    pointsForts: "Le 3 donne confiance au 6, le 6 ancre le 3. Belle complémentarité entre prudence et énergie.",
+    vigilances: "Le 3 minimise les peurs du 6, le 6 freine l'élan du 3. Tension sur les risques.",
+    conseil: "Apprenez au 3 à écouter les craintes du 6 avant de les dépasser. Et au 6 à oser malgré l'inquiétude.",
+  },
+  "6-4": {
+    pointsForts: "Le 6 offre la fiabilité, le 4 offre la profondeur. Complémentarité émotionnelle riche.",
+    vigilances: "L'intensité du 4 alimente l'anxiété du 6. Le 6 peut s'épuiser à essayer de stabiliser le 4.",
+    conseil: "Apprenez au 4 à modérer ses tempêtes. Et au 6 à ne pas se sentir responsable du bonheur du 4.",
+  },
+  "6-5": {
+    pointsForts: "Amitié calme et analytique. Ils se rassurent mutuellement par la pensée et l'anticipation.",
+    vigilances: "Risque de spirale de doute et d'inquiétude intellectuelle. Ils peuvent se paralyser à deux.",
+    conseil: "Encouragez l'action et le risque mesuré. Et invitez d'autres profils dans leur duo pour aérer.",
+  },
+  "6-6": {
+    pointsForts: "Loyauté absolue, soutien mutuel face aux peurs. Quand l'un doute, l'autre rassure.",
+    vigilances: "Risque d'amplification des angoisses. Ils peuvent se nourrir mutuellement dans l'inquiétude.",
+    conseil: "Cultivez la confiance, le risque calculé, l'aventure. Et modélisez (vous, parent) le courage face à l'incertitude.",
+  },
+  "6-7": {
+    pointsForts: "Le 7 rassure le 6 par sa légèreté, le 6 ancre le 7 par sa prudence. Belle complémentarité.",
+    vigilances: "Le 7 minimise les peurs du 6, le 6 freine l'élan du 7. Tension récurrente.",
+    conseil: "Apprenez au 7 à valider les peurs du 6 avant de les dépasser. Et au 6 à oser malgré les doutes.",
+  },
+  "6-8": {
+    pointsForts: "Le 8 protège le 6, le 6 est loyalement dévoué au 8. Amitié forte une fois la confiance installée.",
+    vigilances: "Le 8 peut intimider le 6 par sa force. Le 6 peut frustrer le 8 par ses hésitations.",
+    conseil: "Apprenez au 8 à modérer sa puissance. Et au 6 à ne pas se laisser écraser — son avis compte.",
+  },
+  "6-9": {
+    pointsForts: "Amitié douce et stable. Le 9 apaise les peurs du 6 par sa sérénité naturelle.",
+    vigilances: "Aucun n'aborde les conflits. Les non-dits s'accumulent et peuvent éroder la relation.",
+    conseil: "Encouragez-les à exprimer leurs désaccords. Et à prendre des décisions claires ensemble — ils tergiversent à deux.",
+  },
+
+  // ── Type 7 ──
+  "7-1": {
+    pointsForts: "Le 7 décoince le 1, le 1 ancre le 7. Si les deux s'acceptent, ils créent du joyeux ET du structuré.",
+    vigilances: "Le 1 critique le désordre du 7, le 7 fuit la rigidité du 1. Conflits récurrents sur les règles.",
+    conseil: "Donnez-leur des projets communs avec règles courtes. Et apprenez-leur à respecter ce que l'autre apporte.",
+  },
+  "7-2": {
+    pointsForts: "Joie et chaleur partagées. Le 7 emmène le 2 dans ses aventures, le 2 prend soin du 7.",
+    vigilances: "Le 7 court partout, le 2 s'épuise à le suivre. Tous deux fuient les émotions difficiles.",
+    conseil: "Apprenez-leur à s'arrêter ensemble. Et à parler de ce qui ne va pas, pas seulement de ce qui pétille.",
+  },
+  "7-3": {
+    pointsForts: "Énergie débordante, projets joyeux, succès partagés. Ils se boostent mutuellement avec enthousiasme.",
+    vigilances: "Vous fuyez tous les deux la profondeur émotionnelle. Vos amitiés peuvent rester en surface.",
+    conseil: "Apprenez-leur à parler de ce qui les touche vraiment. La profondeur enrichit l'amitié sans la plomber.",
+  },
+  "7-4": {
+    pointsForts: "Le 4 offre la profondeur, le 7 offre la légèreté. Apprentissages mutuels précieux.",
+    vigilances: "Le 7 fuit l'intensité du 4, le 4 trouve le 7 superficiel. Frictions sur ce qui mérite attention.",
+    conseil: "Aidez le 7 à rester quand c'est inconfortable. Et le 4 à apprécier la joie sans la dévaluer.",
+  },
+  "7-5": {
+    pointsForts: "Le 7 ouvre, le 5 approfondit. Duo intéressant si chacun respecte le rythme de l'autre.",
+    vigilances: "Le 7 épuise le 5 par son agitation. Le 5 frustre le 7 par sa lenteur et son retrait.",
+    conseil: "Apprenez au 7 à respecter les zones de retrait du 5. Et au 5 à participer à l'énergie du 7 par moments.",
+  },
+  "7-6": {
+    pointsForts: "Le 7 rassure le 6, le 6 ancre le 7. Belle complémentarité entre joie et prudence.",
+    vigilances: "Le 7 minimise les peurs du 6, le 6 freine l'élan du 7. Tension récurrente.",
+    conseil: "Apprenez au 7 à valider les peurs du 6. Et au 6 à oser malgré les doutes — souvent c'est OK.",
+  },
+  "7-7": {
+    pointsForts: "Énergie contagieuse, créativité débordante, projets sans fin. Amitié pétillante et joyeuse.",
+    vigilances: "Dispersion, projets jamais finis, fuite des émotions difficiles. Personne ne s'arrête.",
+    conseil: "Apprenez-leur à finir UN projet avant d'en commencer un autre. Et à parler de ce qu'ils ressentent vraiment.",
+  },
+  "7-8": {
+    pointsForts: "Énergie et action partagées. Aventures, sport, défis — ils se comprennent dans le mouvement.",
+    vigilances: "Vous évitez tous les deux les émotions difficiles via l'action. Personne ne s'arrête pour ressentir.",
+    conseil: "Imposez-leur des moments calmes. Et apprenez-leur à parler de ce qui ne va pas, pas seulement à agir.",
+  },
+  "7-9": {
+    pointsForts: "Le 7 anime le 9, le 9 calme le 7. Belle complémentarité entre énergie et sérénité.",
+    vigilances: "Le 7 entraîne le 9 dans son rythme, le 9 dit oui mais s'absente. Risque de désengagement silencieux.",
+    conseil: "Apprenez au 7 à demander vraiment l'avis du 9. Et au 9 à exprimer ses propres envies.",
+  },
+
+  // ── Type 8 ──
+  "8-1": {
+    pointsForts: "Force et rigueur partagées. Quand ils s'allient, ils sont redoutables sur les projets sérieux.",
+    vigilances: "Le 8 frontal, le 1 méthodique : conflits possibles sur le rythme et les règles.",
+    conseil: "Aidez-les à voir leur force commune. Le 1 cadre, le 8 propulse — répartition naturelle si chacun respecte l'autre.",
+  },
+  "8-2": {
+    pointsForts: "Le 8 protège le 2, le 2 adoucit le 8. Loyauté et tendresse mutuelles.",
+    vigilances: "Le 8 peut écraser le 2 sans le vouloir. Le 2 absorbe l'intensité du 8 et oublie de s'affirmer.",
+    conseil: "Apprenez au 8 à modérer sa force. Et au 2 à se respecter assez pour dire « stop ».",
+  },
+  "8-3": {
+    pointsForts: "Deux leaders ambitieux qui se respectent. Quand ils coopèrent, ils peuvent tout entreprendre.",
+    vigilances: "Rivalité de pouvoir possible. Compétition sur qui décide, qui mène, qui réussit.",
+    conseil: "Aidez-les à coopérer plutôt qu'à s'affronter. Définir des territoires distincts évite les frictions.",
+  },
+  "8-4": {
+    pointsForts: "Intensité partagée. Le 8 protège le 4, le 4 aide le 8 à toucher sa vulnérabilité.",
+    vigilances: "Le 8 peut écraser le 4 par sa force. Le 4 peut frustrer le 8 par ses tempêtes émotionnelles.",
+    conseil: "Apprenez au 8 à respecter la sensibilité du 4. Et au 4 à recevoir la protection sans la dramatiser.",
+  },
+  "8-5": {
+    pointsForts: "Respect mutuel : le 8 protège le 5, le 5 conseille le 8. Duo intéressant et stable.",
+    vigilances: "Le 8 bouscule le 5 par son énergie. Le 5 frustre le 8 par sa retenue.",
+    conseil: "Apprenez au 8 à modérer son intensité. Et au 5 à participer corporellement, pas juste mentalement.",
+  },
+  "8-6": {
+    pointsForts: "Le 8 protège le 6, le 6 est loyalement dévoué au 8. Amitié forte une fois la confiance installée.",
+    vigilances: "Le 8 peut intimider le 6. Le 6 peut frustrer le 8 par ses hésitations.",
+    conseil: "Apprenez au 8 à modérer sa puissance. Et au 6 à ne pas se laisser écraser — son avis compte.",
+  },
+  "8-7": {
+    pointsForts: "Énergie partagée, action, aventure. Amitié intense et vivante, jamais ennuyeuse.",
+    vigilances: "Vous évitez tous les deux les émotions difficiles via l'action. Personne ne s'arrête pour ressentir.",
+    conseil: "Imposez-leur des moments calmes. Et apprenez-leur à parler de ce qui ne va pas, pas seulement à foncer.",
+  },
+  "8-8": {
+    pointsForts: "Quand deux 8 sont alliés, ils sont indestructibles. Loyauté absolue et respect mutuel total.",
+    vigilances: "Quand ils s'affrontent, c'est explosif. La rivalité de pouvoir peut détruire leur amitié.",
+    conseil: "Aidez-les à reconnaître la force de l'autre comme un atout, pas un défi. Le respect mutuel est la clé.",
+  },
+  "8-9": {
+    pointsForts: "Le 8 protège le 9, le 9 apaise le 8. Belle complémentarité si l'équilibre est respecté.",
+    vigilances: "Le 8 prend toute la place, le 9 disparaît pour éviter le conflit. Le 9 perd sa voix.",
+    conseil: "Apprenez au 8 à demander vraiment l'avis du 9. Et au 9 à s'affirmer face au 8 — il en est capable.",
+  },
+
+  // ── Type 9 ──
+  "9-1": {
+    pointsForts: "Amitié calme, le 9 accepte le cadre du 1, le 1 apprécie la sérénité du 9. Stabilité bienvenue.",
+    vigilances: "Le 1 peut presser le 9 qui s'efface. Le 9 peut frustrer le 1 par sa lenteur.",
+    conseil: "Apprenez au 1 à attendre. Et au 9 à exprimer ses envies au lieu de toujours s'adapter.",
+  },
+  "9-2": {
+    pointsForts: "Amitié douce et bienveillante. Ils prennent soin l'un de l'autre dans le calme.",
+    vigilances: "Aucun ne dit ce qui ne va pas. Les non-dits s'accumulent jusqu'à l'éloignement silencieux.",
+    conseil: "Encouragez-les à exprimer leurs désaccords. Sans frictions verbalisées, leur amitié s'éteint.",
+  },
+  "9-3": {
+    pointsForts: "Le 9 calme le 3, le 3 dynamise le 9. Belle complémentarité entre énergie et sérénité.",
+    vigilances: "Le 3 entraîne le 9 dans son rythme, le 9 dit oui mais s'absente. Risque de désengagement.",
+    conseil: "Apprenez au 3 à demander vraiment l'avis du 9. Et au 9 à exprimer ses propres envies clairement.",
+  },
+  "9-4": {
+    pointsForts: "Le 9 accueille toutes les émotions du 4 sans les juger. Le 4 apprécie cette acceptation totale.",
+    vigilances: "Le 4 peut envahir le 9 par son intensité. Le 9 disparaît pour ne pas porter les émotions du 4.",
+    conseil: "Apprenez au 4 à respecter la paix du 9. Et au 9 à dire « stop » au lieu de s'absenter silencieusement.",
+  },
+  "9-5": {
+    pointsForts: "Calme partagé, respect des silences, coexistence paisible. Amitié sans drame.",
+    vigilances: "Personne n'initie. Ils peuvent rester très proches dans le silence et finir par se perdre.",
+    conseil: "Encouragez les rituels concrets — sport, jeu, projet commun. Sans cela, leur amitié s'éteint doucement.",
+  },
+  "9-6": {
+    pointsForts: "Amitié douce et stable. Le 9 apaise les peurs du 6 par sa sérénité naturelle.",
+    vigilances: "Aucun n'aborde les conflits. Les non-dits s'accumulent et peuvent éroder la relation.",
+    conseil: "Encouragez-les à exprimer leurs désaccords. Et à prendre des décisions claires ensemble.",
+  },
+  "9-7": {
+    pointsForts: "Le 9 calme le 7, le 7 anime le 9. Belle complémentarité entre énergie et sérénité.",
+    vigilances: "Le 7 entraîne le 9 dans son rythme, le 9 dit oui mais s'absente. Risque de désengagement.",
+    conseil: "Apprenez au 7 à demander vraiment l'avis du 9. Et au 9 à exprimer ses propres envies.",
+  },
+  "9-8": {
+    pointsForts: "Le 8 protège le 9, le 9 apaise le 8. Belle complémentarité si l'équilibre est respecté.",
+    vigilances: "Le 8 prend toute la place, le 9 disparaît pour éviter le conflit. Le 9 perd sa voix.",
+    conseil: "Apprenez au 8 à demander vraiment l'avis du 9. Et au 9 à s'affirmer face au 8.",
+  },
+  "9-9": {
+    pointsForts: "Calme, harmonie, fluidité. Ils vivent en paix dans le même rythme tranquille.",
+    vigilances: "Personne ne décide, personne ne tranche. L'amitié peut s'enliser dans la passivité mutuelle.",
+    conseil: "Encouragez-les à prendre des initiatives, à choisir, à proposer. Et à exprimer leurs désaccords sans peur.",
+  },
+};
+
 // ── Helpers ──────────────────────────────────────────────────
 
 export function getDuoPair(typeA: number, typeB: number): DuoPair | null {

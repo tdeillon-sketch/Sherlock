@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT } from '../../constants/duo';
+import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT, DUO_PARENT_VIEW, DUO_PEERS_VIEW } from '../../constants/duo';
 
 // ── Type metadata ──────────────────────────────────────────────
 const TYPE_COLORS = [
@@ -269,8 +269,25 @@ export default function DuoScreen() {
 
   const context = deriveContext(roleA, roleB);
   const pair = typeA && typeB ? getDuoPair(typeA, typeB) : null;
+  const pairKey = typeA && typeB ? `${typeA}-${typeB}` : '';
 
-  // For 'pairs' context, look up the dedicated peers table
+  // ── Choose the right perspective view for the 5 main sections ──
+  // Parent-child context → DUO_PARENT_VIEW (parent perspective)
+  // Peers context → DUO_PEERS_VIEW (parent observing two kids/teens)
+  // Adult/couple → original DUO_DATA content
+  const perspectiveView = (() => {
+    if (!pair) return null;
+    if (context === 'pairs') return DUO_PEERS_VIEW[pairKey] ?? null;
+    if (context === 'enfant' || context === 'ado') return DUO_PARENT_VIEW[pairKey] ?? null;
+    return null;
+  })();
+
+  // Resolved section content (perspective overrides default)
+  const pointsForts = perspectiveView?.pointsForts ?? pair?.pointsForts ?? '';
+  const vigilances  = perspectiveView?.vigilances  ?? pair?.vigilances  ?? '';
+  const conseil     = perspectiveView?.conseil     ?? pair?.conseil     ?? '';
+
+  // For 'pairs' context, look up the dedicated peers table for the bottom tip
   const pairsText = (typeA && typeB)
     ? (DUO_PAIRS_CONTEXT[`${typeA}-${typeB}`] ?? pair?.conseil ?? '')
     : '';
@@ -364,17 +381,25 @@ export default function DuoScreen() {
               </View>
             </LinearGradient>
 
-            {/* Flat sections */}
+            {/* Flat sections — perspective-aware */}
             <FlatSection
               emoji="✨"
-              title="Ce qui fonctionne bien entre vous"
-              body={pair.pointsForts}
+              title={
+                context === 'pairs' ? 'Ce qui les rapproche' :
+                context === 'enfant' || context === 'ado' ? 'Ce qui fonctionne entre vous' :
+                'Ce qui fonctionne bien entre vous'
+              }
+              body={pointsForts}
               colorA={colorA}
             />
             <FlatSection
               emoji="⚠️"
-              title="Points de friction à surveiller"
-              body={pair.vigilances}
+              title={
+                context === 'pairs' ? 'Sources de friction entre eux' :
+                context === 'enfant' || context === 'ado' ? 'Points de vigilance pour vous, parent' :
+                'Points de friction à surveiller'
+              }
+              body={vigilances}
               colorA={'#d4a03c'}
             />
             <FlatSection
@@ -391,8 +416,12 @@ export default function DuoScreen() {
             />
             <FlatSection
               emoji="💡"
-              title="Conseil pour mieux vivre ensemble"
-              body={pair.conseil}
+              title={
+                context === 'pairs' ? 'Conseil pour vous, parent qui observe' :
+                context === 'enfant' || context === 'ado' ? 'Conseil pratique pour vous, parent' :
+                'Conseil pour mieux vivre ensemble'
+              }
+              body={conseil}
               colorA={colorA}
             />
             <FlatSection
