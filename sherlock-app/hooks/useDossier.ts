@@ -6,7 +6,8 @@ import { saveDossierProgress, loadDossierProgress } from '../constants/firebase'
 // ── Types ──────────────────────────────────────────────────────
 
 export interface DossierProgress {
-  completedCases: string[];
+  completedCases: string[];   // cases the user has answered CORRECTLY at least once
+  wrongCases: string[];       // cases the user has answered WRONG and not yet redeemed
   unlockedFiches: string[];
   totalXP: number;
   dailyLastDate: string | null;
@@ -60,6 +61,7 @@ export interface SessionSummary {
 
 const DEFAULT_PROGRESS: DossierProgress = {
   completedCases: [],
+  wrongCases: [],
   unlockedFiches: [],
   totalXP: 0,
   dailyLastDate: null,
@@ -94,19 +96,48 @@ function getAllCases(): { dossier: Dossier; caseIndex: number }[] {
   return DOSSIERS.flatMap(d => d.cases.map((_, ci) => ({ dossier: d, caseIndex: ci })));
 }
 
-// Pick a random case, preferring not-yet-completed ones.
-function pickSmartCase(completed: string[], avoidIds: string[] = []): { dossier: Dossier; caseIndex: number } | null {
+// Pick a case using a weighted strategy across 3 buckets:
+//   - tier "new"      : never seen by the user           (target ~70%)
+//   - tier "wrong"    : seen but answered wrong (to redo) (target ~25%)
+//   - tier "mastered" : already answered correctly        (target  ~5%)
+// If the chosen tier is empty, falls back to the next non-empty tier so the
+// user always gets a case as long as the global pool isn't exhausted.
+function pickSmartCase(
+  completed: string[],
+  wrongCases: string[],
+  avoidIds: string[] = [],
+): { dossier: Dossier; caseIndex: number } | null {
   const all = getAllCases();
   const avoid = new Set(avoidIds);
-  const newCases = all.filter(({ dossier, caseIndex }) =>
-    !completed.includes(dossier.cases[caseIndex].id) && !avoid.has(dossier.cases[caseIndex].id)
-  );
-  const pool = newCases.length > 0
-    ? newCases
-    : all.filter(({ dossier, caseIndex }) => !avoid.has(dossier.cases[caseIndex].id));
-  if (pool.length === 0) return null;
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-  return pick;
+  const completedSet = new Set(completed);
+  const wrongSet = new Set(wrongCases);
+
+  type Item = { dossier: Dossier; caseIndex: number };
+  const tierNew: Item[] = [];
+  const tierWrong: Item[] = [];
+  const tierMastered: Item[] = [];
+
+  for (const item of all) {
+    const id = item.dossier.cases[item.caseIndex].id;
+    if (avoid.has(id)) continue;
+    if (wrongSet.has(id)) tierWrong.push(item);
+    else if (completedSet.has(id)) tierMastered.push(item);
+    else tierNew.push(item);
+  }
+
+  // Weighted pick: 70% new / 25% wrong / 5% mastered.
+  const r = Math.random();
+  const order: Item[][] =
+    r < 0.70 ? [tierNew, tierWrong, tierMastered] :
+    r < 0.95 ? [tierWrong, tierNew, tierMastered] :
+               [tierMastered, tierNew, tierWrong];
+
+  for (const tier of order) {
+    if (tier.length > 0) {
+      return tier[Math.floor(Math.random() * tier.length)];
+    }
+  }
+  return null;
 }
 
 // Deterministic daily case based on the date (same case for everyone, every day)
@@ -144,6 +175,7 @@ export function useDossier() {
             ...DEFAULT_PROGRESS,
             ...p,
             bestCombo: (p as any).bestCombo ?? 0,
+            wrongCases: (p as any).wrongCases ?? [],
           });
         }
       })
@@ -205,18 +237,18 @@ export function useDossier() {
     setSessionXP(0);
     setSessionMaxCombo(0);
     setSessionPlayedIds([]);
-    const pick = pickSmartCase(progress.completedCases);
+    const pick = pickSmartCase(progress.completedCases, progress.wrongCases);
     if (pick) launchCase('rapide', pick.dossier, pick.caseIndex, 0, 0);
-  }, [progress.completedCases, launchCase]);
+  }, [progress.completedCases, progress.wrongCases, launchCase]);
 
   const startEntrainement = useCallback(() => {
     setSessionCorrect(0);
     setSessionXP(0);
     setSessionMaxCombo(0);
     setSessionPlayedIds([]);
-    const pick = pickSmartCase(progress.completedCases);
+    const pick = pickSmartCase(progress.completedCases, progress.wrongCases);
     if (pick) launchCase('entrainement', pick.dossier, pick.caseIndex, 0, 0);
-  }, [progress.completedCases, launchCase]);
+  }, [progress.completedCases, progress.wrongCases, launchCase]);
 
   const startDaily = useCallback(() => {
     const pick = getDeterministicDailyCase();
@@ -295,9 +327,18 @@ export function useDossier() {
 
     // Persist progress
     setProgress(prev => {
-      const newCompleted = prev.completedCases.includes(c.id)
-        ? prev.completedCases
-        : [...prev.completedCases, c.id];
+      // Mastery tracking:
+      //  - On correct: add to completedCases, REMOVE from wrongCases (redeemed).
+      //  - On wrong:   add to wrongCases (if not already), do NOT add to
+      //    completedCases — so it stays in the "to redo" tier of pickSmartCase.
+      let newCompleted = prev.completedCases;
+      let newWrong = prev.wrongCases;
+      if (isCorrect) {
+        if (!newCompleted.includes(c.id)) newCompleted = [...newCompleted, c.id];
+        if (newWrong.includes(c.id)) newWrong = newWrong.filter(id => id !== c.id);
+      } else {
+        if (!newWrong.includes(c.id)) newWrong = [...newWrong, c.id];
+      }
       const newFiches =
         ficheId && isCorrect && !prev.unlockedFiches.includes(ficheId)
           ? [...prev.unlockedFiches, ficheId]
@@ -322,6 +363,7 @@ export function useDossier() {
 
       const updated: DossierProgress = {
         completedCases: newCompleted,
+        wrongCases: newWrong,
         unlockedFiches: newFiches,
         totalXP: newXP,
         dailyLastDate: newDailyLastDate,
@@ -369,10 +411,10 @@ export function useDossier() {
     if (playState.mode === 'daily') { goHub(); return; }
 
     // Entrainement or rapide < 3: pick next case (avoid already-played in this session)
-    const pick = pickSmartCase(progress.completedCases, sessionPlayedIds);
+    const pick = pickSmartCase(progress.completedCases, progress.wrongCases, sessionPlayedIds);
     if (!pick) { goHub(); return; }
     launchCase(playState.mode, pick.dossier, pick.caseIndex, playState.comboCount, newPlayedCount);
-  }, [playState, sessionMaxCombo, sessionCorrect, sessionXP, sessionPlayedIds, progress.completedCases, launchCase, persistProgress, goHub]);
+  }, [playState, sessionMaxCombo, sessionCorrect, sessionXP, sessionPlayedIds, progress.completedCases, progress.wrongCases, launchCase, persistProgress, goHub]);
 
   // Quit the current session early (returns to hub)
   const quitSession = useCallback(() => {
