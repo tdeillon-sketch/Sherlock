@@ -244,6 +244,12 @@ export function useAdaptiveQuiz() {
   const [adaptiveAsked, setAdaptiveAsked] = useState(0);
   /** Si l'utilisateur a déjà cliqué "préciser" pour ne pas pouvoir rajouter à l'infini. */
   const [precisionRound, setPrecisionRound] = useState(0);
+  /**
+   * Plafond courant de questions adaptatives.
+   * Commence à NB_ADAPTIVE_MAX, relevé de NB_PRECISE_EXTRA à chaque "Préciser".
+   * C'est la clé qui permet au bouton "Préciser" d'ajouter vraiment 3 Q.
+   */
+  const [effectiveAdaptiveMax, setEffectiveAdaptiveMax] = useState(NB_ADAPTIVE_MAX);
 
   // ── Résultat ──
   const [result, setResult] = useState<AdaptiveResult | null>(null);
@@ -334,11 +340,15 @@ export function useAdaptiveQuiz() {
     }
 
     // ── Phase 2 : adaptive ──
-    // On continue tant qu'on n'a pas atteint le min, OU si la confiance est trop basse jusqu'au max
+    // On continue tant qu'on n'a pas atteint le min, OU si la confiance est trop basse
+    // jusqu'au plafond courant (qui est relevé à chaque "Préciser").
     const conf = computeConfidence(newScores);
     const shouldContinueAdaptive =
       adaptiveAskedNow < NB_ADAPTIVE_BASE ||
-      (adaptiveAskedNow < NB_ADAPTIVE_MAX && conf < CONFIDENCE_TARGET);
+      (adaptiveAskedNow < effectiveAdaptiveMax && conf < CONFIDENCE_TARGET) ||
+      // En mode précision, on force la consommation des questions supplémentaires
+      // même si la confiance a déjà grimpé, pour honorer le "+3 questions de plus".
+      (precisionRound > 0 && adaptiveAskedNow < effectiveAdaptiveMax);
 
     if (shouldContinueAdaptive) {
       const next = pickNextAdaptive(bank, newScores, newAskedIds, newAskedCats);
@@ -368,7 +378,7 @@ export function useAdaptiveQuiz() {
     setResult(r);
     setPhase('result');
     setCurrentQuestion(null);
-  }, [bank]);
+  }, [bank, effectiveAdaptiveMax, precisionRound]);
 
   // ═══════════════════════════════════════════════════════════════
   //  RÉPONSES
@@ -457,6 +467,17 @@ export function useAdaptiveQuiz() {
   /** "Préciser" : ajoute 3 questions adaptatives + 1 validation (si possible) */
   const refineResult = useCallback(() => {
     if (!bank || !result || precisionRound >= 2) return;
+
+    // Combien d'adaptives déjà posées jusqu'ici ?
+    const adaptiveAskedNow = Array.from(askedIds).filter(id => {
+      const q = bank.find(qq => qq.id === id);
+      return q?.phase === 'adaptive';
+    }).length;
+
+    // On relève le plafond pour garantir NB_PRECISE_EXTRA questions supplémentaires,
+    // en partant du nombre d'adaptives déjà posées (pas seulement +3 sur l'ancien max).
+    const newMax = Math.max(effectiveAdaptiveMax, adaptiveAskedNow) + NB_PRECISE_EXTRA;
+    setEffectiveAdaptiveMax(newMax);
     setPrecisionRound(r => r + 1);
     setResult(null);
     setPhase('questions');
@@ -481,21 +502,7 @@ export function useAdaptiveQuiz() {
         setPhase('result');
       }
     }
-  }, [bank, result, precisionRound, scores, askedIds, askedCategories]);
-
-  /**
-   * Pendant la phase de précision, après chaque réponse on vérifie
-   * si on a posé NB_PRECISE_EXTRA adaptatives de plus → validation puis fin.
-   */
-  // (La logique d'avance gère déjà ça via les compteurs ; pour le mode précision,
-  //  on incrémente NB_ADAPTIVE_MAX implicitement via les conditions de continue.
-  //  Ici on n'a pas besoin de logique séparée — `advance` continue tant que
-  //  conf < target ET adaptiveAsked < NB_ADAPTIVE_MAX. Pour la précision, on
-  //  élargit dynamiquement le max.)
-
-  // Adapter dynamiquement NB_ADAPTIVE_MAX si on est en précision
-  // Astuce : on remplace `pickNextAdaptive` mais ici on garde simple :
-  // si precisionRound > 0, on pose +NB_PRECISE_EXTRA questions adaptatives min.
+  }, [bank, result, precisionRound, scores, askedIds, askedCategories, effectiveAdaptiveMax]);
 
   // ── Reset complet ──
   const reset = useCallback(() => {
@@ -511,6 +518,7 @@ export function useAdaptiveQuiz() {
     setEstimatedTotal(NB_POSITIONING + NB_ADAPTIVE_BASE + 1);
     setAdaptiveAsked(0);
     setPrecisionRound(0);
+    setEffectiveAdaptiveMax(NB_ADAPTIVE_MAX);
     setResult(null);
   }, []);
 
@@ -524,6 +532,7 @@ export function useAdaptiveQuiz() {
     setEstimatedTotal(NB_POSITIONING + NB_ADAPTIVE_BASE + 1);
     setAdaptiveAsked(0);
     setPrecisionRound(0);
+    setEffectiveAdaptiveMax(NB_ADAPTIVE_MAX);
     setResult(null);
     setPhase('questions');
   }, []);
