@@ -30,10 +30,12 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
 
   // In Expo Go, force the Expo auth proxy URL (HTTPS) because Google's
   // OAuth 2.0 policy rejects custom `exp://` schemes with a Web Client ID.
-  // In standalone builds, we use the app's custom scheme + iOS Client ID.
+  // In standalone builds, we let expo-auth-session derive the redirect URI
+  // automatically from the iOS Client ID (reverse client ID scheme),
+  // which is what Google's iOS OAuth client expects.
   const redirectUri = isExpoGo
     ? 'https://auth.expo.io/@anonymous/sherlock-app'
-    : makeRedirectUri({ scheme: 'sherlock-app' });
+    : undefined;
 
   // Log once at mount for debugging
   useEffect(() => {
@@ -45,12 +47,16 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
     iosClientId:     GOOGLE_OAUTH.iosClientId,
     androidClientId: GOOGLE_OAUTH.androidClientId,
     webClientId:     GOOGLE_OAUTH.webClientId,
-    // Force the redirect URI to the Expo auth proxy in Expo Go so Google
-    // accepts it (HTTPS). In standalone builds, a custom scheme is fine.
+    // In Expo Go: force the Expo auth proxy URL.
+    // In standalone: let expo-auth-session derive the redirect URI from the
+    // iOS Client ID (reverse client ID scheme).
     redirectUri,
-    // Demander explicitement un id_token (sinon on n'a qu'un access_token,
-    // qui n'est pas accepté par Firebase signInWithCredential).
-    responseType: ResponseType.IdToken,
+    // NOTE: do NOT force responseType: ResponseType.IdToken.
+    // iOS native Google OAuth clients don't support the implicit id_token
+    // flow — they require the authorization code flow (with PKCE).
+    // expo-auth-session picks the right flow per client; the id_token is
+    // returned in response.authentication.idToken because we request the
+    // `openid` scope.
     scopes: ['openid', 'profile', 'email'],
   });
 
