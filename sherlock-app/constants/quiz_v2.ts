@@ -81,6 +81,100 @@ const w = (...pairs: [EnneaType, number][]): TypeWeights => {
 };
 
 // ═══════════════════════════════════════════════════════════════
+//  VALIDATION QUESTIONS — descriptions par type
+//  Format : « Cette description vous parle ? »
+//  Réponses : Oui (+5 sur le type) / À peu près (+2) / Non (-3)
+//  ⚠️  Doit être déclaré AVANT les banques qui appellent
+//      buildValidationsForChild / buildValidationsForAdulte
+// ═══════════════════════════════════════════════════════════════
+
+interface ValidationDescription {
+  type: EnneaType;
+  text: string;
+}
+
+const VALIDATIONS_CHILD: Record<AgeBand, ValidationDescription[]> = {
+  '5-8': [
+    { type: 1, text: "C'est un petit juge : il remarque les injustices, il aime quand c'est fait « bien », il a déjà des règles à lui sur ce qui se fait ou pas." },
+    { type: 2, text: "C'est un petit cœur : il vous fait des cadeaux, il console les copains, il sent quand vous êtes triste et insiste pour vous aider." },
+    { type: 3, text: "C'est un petit champion : il aime briller, montrer ce qu'il sait faire, et il est très sensible aux compliments comme aux comparaisons." },
+    { type: 4, text: "C'est un petit poète : il a un monde imaginaire très riche, des sentiments intenses, et il se sent souvent un peu différent des autres." },
+    { type: 5, text: "C'est un petit savant : il s'occupe seul, il observe en silence, il pose des questions précises sur comment marchent les choses." },
+    { type: 6, text: "C'est un petit prudent : il a beaucoup de questions « et si… », il a besoin de rituels rassurants, il vérifie souvent que vous êtes là." },
+    { type: 7, text: "C'est un petit aventurier : toujours en mouvement, plein d'idées, il enchaîne les activités et déteste s'ennuyer ou rester en place." },
+    { type: 8, text: "C'est un petit chef : il sait ce qu'il veut, il défend les plus faibles, il dit non haut et fort et n'a pas peur de l'autorité." },
+    { type: 9, text: "C'est un petit sage : il est facile, accommodant, il évite les conflits, il s'adapte au groupe et a parfois du mal à choisir." },
+  ],
+  '9-12': [
+    { type: 1, text: "Il a un fort sens du juste et de l'injuste, il s'applique beaucoup en classe, il peut être dur avec lui-même quand il rate quelque chose." },
+    { type: 2, text: "Il est attentif aux autres, généreux, il aime aider et plaire — mais il peut aussi en vouloir quand on ne reconnaît pas son aide." },
+    { type: 3, text: "Il aime réussir, briller, être valorisé. Il sait s'adapter à différents groupes pour y trouver sa place et soigne son image." },
+    { type: 4, text: "Il a un monde intérieur très riche, des émotions intenses, il se sent souvent décalé et a quelques amis très proches plutôt qu'une bande." },
+    { type: 5, text: "Il est plutôt solitaire, observateur, il a une passion qu'il approfondit beaucoup et n'aime pas qu'on entre dans sa bulle." },
+    { type: 6, text: "Il est loyal et inquiet : il pose beaucoup de questions « et si », il a besoin d'être rassuré et de comprendre les règles." },
+    { type: 7, text: "Il est enthousiaste, drôle, plein d'idées et de projets, mais il a du mal à finir et peut éviter ce qui le contrarie." },
+    { type: 8, text: "Il a un fort caractère, il assume son désaccord, il défend son territoire et peut prendre la place du chef dans son groupe." },
+    { type: 9, text: "Il est doux, conciliant, il évite les conflits et s'adapte au groupe — parfois au point d'oublier ce qu'il veut vraiment." },
+  ],
+  '13-17': [
+    { type: 1, text: "Il a un sens aigu du devoir et de la justice. Il peut être très dur avec lui-même, militant, et critique envers les incohérences des adultes." },
+    { type: 2, text: "Il est tourné vers les autres, généreux, sensible aux relations. Il peut s'oublier pour aider et en vouloir secrètement quand on ne le reconnaît pas." },
+    { type: 3, text: "Il vise haut, sait s'adapter, soigne son image. Sa valeur passe par la performance ; il cache ses fragilités et déteste l'échec." },
+    { type: 4, text: "Il vit ses émotions de manière très intense, se sent profond et différent. Il oscille entre éclats créatifs et phases sombres / mélancoliques." },
+    { type: 5, text: "Il est cérébral, indépendant, observateur. Il protège sa bulle, ses passions, son énergie ; les contacts sociaux le fatiguent vite." },
+    { type: 6, text: "Il est loyal, prudent, parfois angoissé. Il analyse les risques, doute, cherche des figures de référence ou peut au contraire les contester." },
+    { type: 7, text: "Il est dynamique, plein de projets et d'envies. Il fuit l'ennui et la douleur en multipliant les options et a du mal à se poser." },
+    { type: 8, text: "Il est fort, frontal, autonome. Il défend les siens, n'a pas peur du conflit et peut être autoritaire ou intimidant sans s'en rendre compte." },
+    { type: 9, text: "Il est calme, accommodant, il évite les conflits. Il peut s'effacer, procrastiner, être présent corporellement mais absent émotionnellement." },
+  ],
+  'adulte': [], // Non utilisé — adulte a sa propre fonction
+};
+
+const VALIDATIONS_ADULTE: ValidationDescription[] = [
+  { type: 1, text: "Vous avez une exigence forte d'intégrité et de justesse. Une voix critique intérieure scrute ce qui n'est pas droit en vous et autour. Vous pouvez vivre votre colère sous forme de tension contenue plutôt que d'éclat." },
+  { type: 2, text: "Vous êtes attentif aux besoins des autres, vous donnez naturellement, vous vous sentez utile dans la relation. Mais vous pouvez vous oublier — et en vouloir secrètement quand on ne reconnaît pas ce que vous donnez." },
+  { type: 3, text: "Vous êtes orienté résultats, vous savez vous adapter à différents publics, vous soignez l'image que vous renvoyez. Vous accédez plus facilement à la performance qu'à vos émotions profondes." },
+  { type: 4, text: "Vous vivez intensément, vous vous sentez différent, sensible, profond. Vous oscillez entre élans créatifs et mélancolie ; vous cherchez l'authentique et fuyez le superficiel." },
+  { type: 5, text: "Vous êtes cérébral, observateur, économe de votre énergie. Vous protégez votre intimité, vous accumulez des connaissances, vous préférez observer avant d'agir." },
+  { type: 6, text: "Vous êtes loyal, vigilant, parfois anxieux. Vous anticipez ce qui pourrait mal tourner, vous cherchez des points d'ancrage (cadre, autorité, équipe) — ou au contraire vous contestez ces autorités par méfiance." },
+  { type: 7, text: "Vous êtes enthousiaste, multi-tâches, en quête d'expériences. Vous fuyez l'ennui et la douleur en gardant des options ouvertes ; vous avez du mal à vous engager dans la durée." },
+  { type: 8, text: "Vous êtes direct, énergique, autonome. Vous protégez les vôtres, vous n'avez pas peur du conflit, vous prenez naturellement les commandes — parfois trop." },
+  { type: 9, text: "Vous êtes calme, conciliant, vous cherchez l'harmonie. Vous évitez les conflits, vous vous adaptez aux autres, parfois au point d'oublier ou de ne plus savoir ce que VOUS voulez vraiment." },
+];
+
+function buildValidationsForChild(ageBand: AgeBand): AdaptiveQuestion[] {
+  return VALIDATIONS_CHILD[ageBand].map((v): AdaptiveQuestion => ({
+    id: `v_${ageBand}_t${v.type}`,
+    ageBand,
+    phase: 'validation',
+    format: 'validation',
+    category: 'Validation',
+    prompt: 'Cette description vous parle pour votre enfant ?',
+    setup: undefined,
+    icon: '🔍',
+    validationType: v.type,
+    validationText: v.text,
+    discriminates: [v.type],
+  }));
+}
+
+function buildValidationsForAdulte(): AdaptiveQuestion[] {
+  return VALIDATIONS_ADULTE.map((v): AdaptiveQuestion => ({
+    id: `v_adulte_t${v.type}`,
+    ageBand: 'adulte',
+    phase: 'validation',
+    format: 'validation',
+    category: 'Validation',
+    prompt: 'Cette description vous parle ?',
+    setup: undefined,
+    icon: '🔍',
+    validationType: v.type,
+    validationText: v.text,
+    discriminates: [v.type],
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  BANQUE 5-8 ANS (parent répond pour l'enfant)
 // ═══════════════════════════════════════════════════════════════
 
@@ -1167,98 +1261,6 @@ export const BANK_ADULTE: AdaptiveQuestion[] = [
   // ── VALIDATION (9) ───────────────────────────────────────────
   ...buildValidationsForAdulte(),
 ];
-
-// ═══════════════════════════════════════════════════════════════
-//  VALIDATION QUESTIONS — descriptions par type
-//  Format : « Cette description vous parle ? »
-//  Réponses : Oui (+5 sur le type) / À peu près (+2) / Non (-3)
-// ═══════════════════════════════════════════════════════════════
-
-interface ValidationDescription {
-  type: EnneaType;
-  text: string;
-}
-
-const VALIDATIONS_CHILD: Record<AgeBand, ValidationDescription[]> = {
-  '5-8': [
-    { type: 1, text: "C'est un petit juge : il remarque les injustices, il aime quand c'est fait « bien », il a déjà des règles à lui sur ce qui se fait ou pas." },
-    { type: 2, text: "C'est un petit cœur : il vous fait des cadeaux, il console les copains, il sent quand vous êtes triste et insiste pour vous aider." },
-    { type: 3, text: "C'est un petit champion : il aime briller, montrer ce qu'il sait faire, et il est très sensible aux compliments comme aux comparaisons." },
-    { type: 4, text: "C'est un petit poète : il a un monde imaginaire très riche, des sentiments intenses, et il se sent souvent un peu différent des autres." },
-    { type: 5, text: "C'est un petit savant : il s'occupe seul, il observe en silence, il pose des questions précises sur comment marchent les choses." },
-    { type: 6, text: "C'est un petit prudent : il a beaucoup de questions « et si… », il a besoin de rituels rassurants, il vérifie souvent que vous êtes là." },
-    { type: 7, text: "C'est un petit aventurier : toujours en mouvement, plein d'idées, il enchaîne les activités et déteste s'ennuyer ou rester en place." },
-    { type: 8, text: "C'est un petit chef : il sait ce qu'il veut, il défend les plus faibles, il dit non haut et fort et n'a pas peur de l'autorité." },
-    { type: 9, text: "C'est un petit sage : il est facile, accommodant, il évite les conflits, il s'adapte au groupe et a parfois du mal à choisir." },
-  ],
-  '9-12': [
-    { type: 1, text: "Il a un fort sens du juste et de l'injuste, il s'applique beaucoup en classe, il peut être dur avec lui-même quand il rate quelque chose." },
-    { type: 2, text: "Il est attentif aux autres, généreux, il aime aider et plaire — mais il peut aussi en vouloir quand on ne reconnaît pas son aide." },
-    { type: 3, text: "Il aime réussir, briller, être valorisé. Il sait s'adapter à différents groupes pour y trouver sa place et soigne son image." },
-    { type: 4, text: "Il a un monde intérieur très riche, des émotions intenses, il se sent souvent décalé et a quelques amis très proches plutôt qu'une bande." },
-    { type: 5, text: "Il est plutôt solitaire, observateur, il a une passion qu'il approfondit beaucoup et n'aime pas qu'on entre dans sa bulle." },
-    { type: 6, text: "Il est loyal et inquiet : il pose beaucoup de questions « et si », il a besoin d'être rassuré et de comprendre les règles." },
-    { type: 7, text: "Il est enthousiaste, drôle, plein d'idées et de projets, mais il a du mal à finir et peut éviter ce qui le contrarie." },
-    { type: 8, text: "Il a un fort caractère, il assume son désaccord, il défend son territoire et peut prendre la place du chef dans son groupe." },
-    { type: 9, text: "Il est doux, conciliant, il évite les conflits et s'adapte au groupe — parfois au point d'oublier ce qu'il veut vraiment." },
-  ],
-  '13-17': [
-    { type: 1, text: "Il a un sens aigu du devoir et de la justice. Il peut être très dur avec lui-même, militant, et critique envers les incohérences des adultes." },
-    { type: 2, text: "Il est tourné vers les autres, généreux, sensible aux relations. Il peut s'oublier pour aider et en vouloir secrètement quand on ne le reconnaît pas." },
-    { type: 3, text: "Il vise haut, sait s'adapter, soigne son image. Sa valeur passe par la performance ; il cache ses fragilités et déteste l'échec." },
-    { type: 4, text: "Il vit ses émotions de manière très intense, se sent profond et différent. Il oscille entre éclats créatifs et phases sombres / mélancoliques." },
-    { type: 5, text: "Il est cérébral, indépendant, observateur. Il protège sa bulle, ses passions, son énergie ; les contacts sociaux le fatiguent vite." },
-    { type: 6, text: "Il est loyal, prudent, parfois angoissé. Il analyse les risques, doute, cherche des figures de référence ou peut au contraire les contester." },
-    { type: 7, text: "Il est dynamique, plein de projets et d'envies. Il fuit l'ennui et la douleur en multipliant les options et a du mal à se poser." },
-    { type: 8, text: "Il est fort, frontal, autonome. Il défend les siens, n'a pas peur du conflit et peut être autoritaire ou intimidant sans s'en rendre compte." },
-    { type: 9, text: "Il est calme, accommodant, il évite les conflits. Il peut s'effacer, procrastiner, être présent corporellement mais absent émotionnellement." },
-  ],
-  'adulte': [], // Non utilisé — adulte a sa propre fonction
-};
-
-const VALIDATIONS_ADULTE: ValidationDescription[] = [
-  { type: 1, text: "Vous avez une exigence forte d'intégrité et de justesse. Une voix critique intérieure scrute ce qui n'est pas droit en vous et autour. Vous pouvez vivre votre colère sous forme de tension contenue plutôt que d'éclat." },
-  { type: 2, text: "Vous êtes attentif aux besoins des autres, vous donnez naturellement, vous vous sentez utile dans la relation. Mais vous pouvez vous oublier — et en vouloir secrètement quand on ne reconnaît pas ce que vous donnez." },
-  { type: 3, text: "Vous êtes orienté résultats, vous savez vous adapter à différents publics, vous soignez l'image que vous renvoyez. Vous accédez plus facilement à la performance qu'à vos émotions profondes." },
-  { type: 4, text: "Vous vivez intensément, vous vous sentez différent, sensible, profond. Vous oscillez entre élans créatifs et mélancolie ; vous cherchez l'authentique et fuyez le superficiel." },
-  { type: 5, text: "Vous êtes cérébral, observateur, économe de votre énergie. Vous protégez votre intimité, vous accumulez des connaissances, vous préférez observer avant d'agir." },
-  { type: 6, text: "Vous êtes loyal, vigilant, parfois anxieux. Vous anticipez ce qui pourrait mal tourner, vous cherchez des points d'ancrage (cadre, autorité, équipe) — ou au contraire vous contestez ces autorités par méfiance." },
-  { type: 7, text: "Vous êtes enthousiaste, multi-tâches, en quête d'expériences. Vous fuyez l'ennui et la douleur en gardant des options ouvertes ; vous avez du mal à vous engager dans la durée." },
-  { type: 8, text: "Vous êtes direct, énergique, autonome. Vous protégez les vôtres, vous n'avez pas peur du conflit, vous prenez naturellement les commandes — parfois trop." },
-  { type: 9, text: "Vous êtes calme, conciliant, vous cherchez l'harmonie. Vous évitez les conflits, vous vous adaptez aux autres, parfois au point d'oublier ou de ne plus savoir ce que VOUS voulez vraiment." },
-];
-
-function buildValidationsForChild(ageBand: AgeBand): AdaptiveQuestion[] {
-  return VALIDATIONS_CHILD[ageBand].map((v): AdaptiveQuestion => ({
-    id: `v_${ageBand}_t${v.type}`,
-    ageBand,
-    phase: 'validation',
-    format: 'validation',
-    category: 'Validation',
-    prompt: 'Cette description vous parle pour votre enfant ?',
-    setup: undefined,
-    icon: '🔍',
-    validationType: v.type,
-    validationText: v.text,
-    discriminates: [v.type],
-  }));
-}
-
-function buildValidationsForAdulte(): AdaptiveQuestion[] {
-  return VALIDATIONS_ADULTE.map((v): AdaptiveQuestion => ({
-    id: `v_adulte_t${v.type}`,
-    ageBand: 'adulte',
-    phase: 'validation',
-    format: 'validation',
-    category: 'Validation',
-    prompt: 'Cette description vous parle ?',
-    setup: undefined,
-    icon: '🔍',
-    validationType: v.type,
-    validationText: v.text,
-    discriminates: [v.type],
-  }));
-}
 
 // ═══════════════════════════════════════════════════════════════
 //  PUBLIC API
