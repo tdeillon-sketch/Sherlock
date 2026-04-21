@@ -6,17 +6,24 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { QuizMode, TYPES } from '../../constants/data';
-import { useQuiz } from '../../hooks/useQuiz';
+import { TYPES } from '../../constants/data';
+import { useAdaptiveQuiz } from '../../hooks/useAdaptiveQuiz';
 import RadarChart from '../../components/RadarChart';
-import QuizQuestion from '../../components/QuizQuestion';
+import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
+import ConfidenceBar from '../../components/ConfidenceBar';
 import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
+import type { QuizSubject } from '../../constants/quiz_v2';
 
-const MODES: { key: QuizMode; emoji: string; title: string; desc: string }[] = [
-  { key: 'enfant', emoji: '🧒', title: 'Mon enfant', desc: '5-12 ans — vous répondez pour lui' },
-  { key: 'ado',    emoji: '🎧', title: 'Mon ado',    desc: '13-17 ans — il répond lui-même' },
-  { key: 'adulte', emoji: '🪞', title: 'Moi-même',   desc: 'Découvrez votre propre profil' },
+const SUBJECTS: { key: QuizSubject; emoji: string; title: string; desc: string }[] = [
+  { key: 'enfant', emoji: '🧒', title: 'Mon enfant', desc: 'Vous répondez pour votre enfant ou votre ado' },
+  { key: 'self',   emoji: '🪞', title: 'Moi-même',   desc: 'Auto-évaluation pour adulte' },
+];
+
+const AGE_BANDS: { min: number; emoji: string; title: string; desc: string }[] = [
+  { min: 5,  emoji: '🧸', title: '5 - 8 ans',   desc: "Petite enfance / début d'école élémentaire" },
+  { min: 9,  emoji: '🎒', title: '9 - 12 ans',  desc: 'Fin d\'élémentaire / début de collège' },
+  { min: 13, emoji: '🎧', title: '13 - 17 ans', desc: 'Adolescence' },
 ];
 
 const TYPE_COLORS: Record<number, string> = {
@@ -29,24 +36,24 @@ export default function QuizScreen() {
   const isWide = width >= 768;
 
   const {
-    phase, mode, currentQuestion, questions, scores, result,
-    currentDisambig, disambigIndex, disambigTotal,
-    childProfiles, openNote, setOpenNote,
-    startQuiz, selectAnswer, selectSlider, skipQuestion,
-    answerDisambig, skipDisambig,
+    phase, subject, ageBand, currentQuestion, scores,
+    stepIndex, estimatedTotal, result, childProfiles, precisionRound,
+    selectSubject, selectAge,
+    answerChoice, answerSlider, answerValidation, skip,
+    refineResult, reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
-    saveChildResult, startNewQuizSameMode, reset,
-  } = useQuiz();
+    saveChildResult,
+  } = useAdaptiveQuiz();
 
-  // Save quiz result to Firebase when reaching 'result' phase
+  // Save quiz result to Firebase au passage en 'result'
   const savedRef = useRef(false);
   useEffect(() => {
-    if (phase === 'result' && mode && !savedRef.current) {
+    if (phase === 'result' && subject && result && !savedRef.current) {
       savedRef.current = true;
       const uid = auth.currentUser?.uid;
       if (uid) {
         saveQuizResult(uid, {
-          mode,
+          mode: subject === 'self' ? 'adulte' : (ageBand ?? 'enfant'),
           topType: result.topType,
           wingType: result.wingType,
           scores,
@@ -55,28 +62,31 @@ export default function QuizScreen() {
       }
     }
     if (phase !== 'result') savedRef.current = false;
-  }, [phase, mode, result, scores]);
+  }, [phase, subject, ageBand, result, scores]);
 
-  // ── PHASE: select mode ──
-  if (phase === 'select_mode') {
+  // ─────────────────────────────────────────────
+  //  PHASE: select_subject
+  // ─────────────────────────────────────────────
+  if (phase === 'select_subject') {
     return (
       <View style={styles.selectContainer}>
         <View style={styles.selectInner}>
           <Text style={styles.selectTitle}>Quel test souhaitez-vous faire ?</Text>
           <Text style={styles.selectSub}>
-            Chaque quiz est adapté à l'âge et au point de vue du répondant.
+            Le quiz s'adapte au fur et à mesure de vos réponses pour identifier
+            le profil le plus probable.
           </Text>
 
-          {MODES.map((m) => (
+          {SUBJECTS.map((s) => (
             <Pressable
-              key={m.key}
+              key={s.key}
               style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
-              onPress={() => startQuiz(m.key)}
+              onPress={() => selectSubject(s.key)}
             >
-              <Text style={styles.modeEmoji}>{m.emoji}</Text>
+              <Text style={styles.modeEmoji}>{s.emoji}</Text>
               <View style={styles.modeText}>
-                <Text style={styles.modeTitle}>{m.title}</Text>
-                <Text style={styles.modeDesc}>{m.desc}</Text>
+                <Text style={styles.modeTitle}>{s.title}</Text>
+                <Text style={styles.modeDesc}>{s.desc}</Text>
               </View>
             </Pressable>
           ))}
@@ -84,7 +94,7 @@ export default function QuizScreen() {
           {childProfiles.length > 0 && (
             <Pressable style={styles.historyBtn} onPress={goToHistory}>
               <Text style={styles.historyBtnText}>
-                📊 Voir l'historique ({childProfiles.length} enfant{childProfiles.length > 1 ? 's' : ''})
+                📊 Voir l'historique ({childProfiles.length} profil{childProfiles.length > 1 ? 's' : ''})
               </Text>
             </Pressable>
           )}
@@ -93,17 +103,53 @@ export default function QuizScreen() {
     );
   }
 
-  // ── PHASE: history ──
+  // ─────────────────────────────────────────────
+  //  PHASE: age_picker (mode enfant uniquement)
+  // ─────────────────────────────────────────────
+  if (phase === 'age_picker') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Pressable onPress={reset} style={styles.backLink}>
+            <Text style={styles.backLinkText}>‹ Retour</Text>
+          </Pressable>
+          <Text style={styles.selectTitle}>Quel âge a votre enfant ?</Text>
+          <Text style={styles.selectSub}>
+            Les questions et le langage seront adaptés à sa tranche d'âge.
+          </Text>
+
+          {AGE_BANDS.map((b) => (
+            <Pressable
+              key={b.min}
+              style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+              onPress={() => selectAge(b.min)}
+            >
+              <Text style={styles.modeEmoji}>{b.emoji}</Text>
+              <View style={styles.modeText}>
+                <Text style={styles.modeTitle}>{b.title}</Text>
+                <Text style={styles.modeDesc}>{b.desc}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: history
+  // ─────────────────────────────────────────────
   if (phase === 'history') {
     return <HistoryScreen profiles={childProfiles} onBack={reset} />;
   }
 
-  // ── PHASE: save_profile ──
+  // ─────────────────────────────────────────────
+  //  PHASE: save_profile
+  // ─────────────────────────────────────────────
   if (phase === 'save_profile') {
     return (
       <SaveProfileScreen
         existingProfiles={childProfiles}
-        suggestedNote={openNote}
         onCancel={backToResult}
         onSave={async (name, age, existingId) => {
           await saveChildResult(name, age, existingId);
@@ -113,23 +159,25 @@ export default function QuizScreen() {
     );
   }
 
-  // ── Common header for active flow ──
+  // ── Common header pour le flow actif ──
   const handleBack = () => {
-    if (phase === 'questions' || phase === 'disambiguation' || phase === 'result') {
-      reset();
-    }
+    reset();
   };
+
+  const subjectLabel =
+    subject === 'self'
+      ? '🪞 Moi-même'
+      : `🧒 Mon enfant${ageBand ? ` · ${ageBand} ans` : ''}`;
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
     <View style={[styles.radarSection, isWide && styles.radarSectionWide]}>
-      <RadarChart scores={scores} size={radarSize} />
+      <RadarChart scores={scores as unknown as Record<number, number>} size={radarSize} />
       {phase === 'result' && (
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
           <Text style={styles.legendText}>
-            {mode === 'enfant' ? 'Profil de votre enfant' :
-             mode === 'ado' ? 'Ton profil' : 'Votre profil'}
+            {subject === 'self' ? 'Votre profil' : 'Profil de votre enfant'}
           </Text>
         </View>
       )}
@@ -141,19 +189,15 @@ export default function QuizScreen() {
       <Pressable onPress={handleBack} style={styles.quizBackBtn}>
         <Text style={styles.quizBackBtnText}>‹</Text>
       </Pressable>
-      <Text style={styles.quizTopBarTitle}>
-        {mode === 'enfant' ? '🧒 Mon enfant' : mode === 'ado' ? '🎧 Mon ado' : '🪞 Moi-même'}
-      </Text>
+      <Text style={styles.quizTopBarTitle}>{subjectLabel}</Text>
       <View style={styles.quizBackBtn} />
     </View>
   );
 
-  // Progress: total = main questions + disambig
-  const mainProgress = currentQuestion / Math.max(1, questions.length);
-  const disambigProgress = phase === 'disambiguation'
-    ? (disambigIndex / Math.max(1, disambigTotal)) * 0.15  // disambig = last 15% of bar
-    : 0;
-  const progress = phase === 'result' ? 1 : Math.min(mainProgress * 0.85 + disambigProgress, 1);
+  // Progression : stepIndex / estimatedTotal
+  const progress =
+    phase === 'result' ? 1 :
+    Math.min(stepIndex / Math.max(1, estimatedTotal), 0.98);
 
   const progressBar = (
     <View style={styles.progressTrack}>
@@ -166,97 +210,62 @@ export default function QuizScreen() {
     </View>
   );
 
-  // ── PHASE: questions ──
+  // ─────────────────────────────────────────────
+  //  Contenu central selon la phase
+  // ─────────────────────────────────────────────
   let mainContent: React.ReactNode = null;
-  if (phase === 'questions' && mode) {
+
+  // Questions et validation utilisent le même composant
+  if ((phase === 'questions' || phase === 'validation') && currentQuestion) {
     mainContent = (
-      <QuizQuestion
-        question={questions[currentQuestion]}
-        questionNum={currentQuestion + 1}
-        totalQuestions={questions.length}
-        mode={mode}
-        questionIndex={currentQuestion}
-        onAnswer={(aIdx) => selectAnswer(currentQuestion, aIdx)}
-        onSlider={(value) => selectSlider(currentQuestion, value)}
-        onSkip={skipQuestion}
+      <AdaptiveQuestion
+        question={currentQuestion}
+        stepIndex={stepIndex}
+        estimatedTotal={estimatedTotal}
+        onChoice={answerChoice}
+        onSlider={answerSlider}
+        onValidation={answerValidation}
+        onSkip={skip}
       />
     );
   }
 
-  // ── PHASE: disambiguation ──
-  if (phase === 'disambiguation' && currentDisambig) {
-    mainContent = (
-      <View style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.md }}>
-        <View style={styles.disambigBanner}>
-          <Text style={styles.disambigBannerLabel}>🤔 Affinons un peu</Text>
-          <Text style={styles.disambigBannerText}>
-            On hésite entre deux profils. Question {disambigIndex + 1}/{disambigTotal} pour mieux trancher.
-          </Text>
-        </View>
+  // Résultat
+  if (phase === 'result' && result) {
+    // Adapter du résultat adaptatif vers le format attendu par QuizResult
+    const adaptedResult = {
+      topType: result.topType,
+      topPercent: result.topPercent,
+      secondType: result.secondType,
+      secondPercent: result.secondPercent,
+      thirdType: result.thirdType,
+      thirdPercent: result.thirdPercent,
+      wingType: result.wingType,
+      isAmbiguous: result.confidence < 60,
+      ambiguousPair: null as [number, number] | null,
+      insight: result.insight,
+    };
+    // mode pour QuizResult : 'enfant' si subject=enfant, 'adulte' si self
+    const legacyMode = subject === 'self' ? 'adulte' : 'enfant';
 
-        <View style={styles.disambigSceneBox}>
-          {currentDisambig.scene.icon && (
-            <Text style={styles.disambigSceneIcon}>{currentDisambig.scene.icon}</Text>
-          )}
-          <Text style={styles.disambigSceneSetup}>{currentDisambig.scene.setup}</Text>
-        </View>
-
-        <Text style={styles.disambigQ}>{currentDisambig.q}</Text>
-
-        <View style={{ gap: spacing.sm }}>
-          {currentDisambig.a.map((opt, idx) => (
-            <Pressable
-              key={idx}
-              onPress={() => answerDisambig(opt.favors)}
-              style={({ pressed }) => [
-                styles.disambigOption,
-                pressed && styles.disambigOptionPressed,
-              ]}
-            >
-              <Text style={styles.disambigOptionText}>
-                {opt.emoji ? `${opt.emoji}  ` : ''}{opt.text}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Pressable onPress={skipDisambig} style={styles.skipBtn}>
-          <Text style={styles.skipBtnText}>Je ne sais pas — passer</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  // ── PHASE: result ──
-  if (phase === 'result' && mode) {
     mainContent = (
       <>
         <QuizResult
-          result={result}
-          mode={mode}
+          result={adaptedResult}
+          mode={legacyMode}
           onViewProfile={() => router.push(`/profile/${result.topType}` as never)}
           onSaveProfile={goToSaveProfile}
-          onNewChild={startNewQuizSameMode}
+          onNewChild={restartSameSubject}
           onReset={reset}
         />
 
-        {/* Open question (BONUS) */}
-        {mode === 'enfant' && (
-          <View style={styles.openNoteBox}>
-            <Text style={styles.openNoteLabel}>📝 Une situation qui vous intrigue ?</Text>
-            <Text style={styles.openNoteHint}>
-              Notez ici une scène concrète avec votre enfant (sera sauvegardée avec le profil, pour vous).
-            </Text>
-            <TextInput
-              value={openNote}
-              onChangeText={setOpenNote}
-              placeholder="Ex : « Quand je le presse, il fait l'inverse... »"
-              placeholderTextColor={colors.textDim}
-              multiline
-              style={styles.openNoteInput}
-            />
-          </View>
-        )}
+        {/* Score de confiance + bouton préciser */}
+        <ConfidenceBar
+          confidence={result.confidence}
+          label={result.confidenceLabel}
+          onRefine={refineResult}
+          canRefine={precisionRound < 2}
+        />
       </>
     );
   }
@@ -300,14 +309,13 @@ export default function QuizScreen() {
 }
 
 // ─────────────────────────────────────────────
-//  Save Profile screen (modal-like)
+//  Save Profile screen
 // ─────────────────────────────────────────────
 
 function SaveProfileScreen({
-  existingProfiles, suggestedNote, onCancel, onSave,
+  existingProfiles, onCancel, onSave,
 }: {
   existingProfiles: ChildProfile[];
-  suggestedNote: string;
   onCancel: () => void;
   onSave: (name: string, age: number | undefined, existingId: string | undefined) => void;
 }) {
@@ -334,7 +342,7 @@ function SaveProfileScreen({
 
       {existingProfiles.length > 0 && (
         <>
-          <Text style={styles.saveSectionLabel}>Ajouter à un enfant existant</Text>
+          <Text style={styles.saveSectionLabel}>Ajouter à un profil existant</Text>
           {existingProfiles.map(p => (
             <Pressable
               key={p.id}
@@ -371,13 +379,6 @@ function SaveProfileScreen({
         style={styles.saveInput}
       />
 
-      {suggestedNote && (
-        <View style={styles.savePreviewNote}>
-          <Text style={styles.savePreviewLabel}>📝 Note qui sera sauvegardée :</Text>
-          <Text style={styles.savePreviewText}>{suggestedNote}</Text>
-        </View>
-      )}
-
       <Pressable
         onPress={() => {
           const age = ageStr ? parseInt(ageStr, 10) : undefined;
@@ -401,7 +402,7 @@ function SaveProfileScreen({
 }
 
 // ─────────────────────────────────────────────
-//  History screen — evolution per child
+//  History screen
 // ─────────────────────────────────────────────
 
 function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack: () => void }) {
@@ -469,7 +470,6 @@ function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack:
 // ─────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  // Selection
   selectContainer: {
     flex: 1, backgroundColor: colors.bg,
     justifyContent: 'center', alignItems: 'center', padding: spacing.lg,
@@ -494,6 +494,11 @@ const styles = StyleSheet.create({
   modeText: { flex: 1 },
   modeTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.text, marginBottom: 2 },
   modeDesc: { fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted },
+
+  backLink: {
+    alignSelf: 'flex-start', marginBottom: spacing.md, padding: spacing.xs,
+  },
+  backLinkText: { fontFamily: fonts.sans, fontSize: 14, color: colors.accent },
 
   historyBtn: {
     marginTop: spacing.lg, padding: spacing.md,
@@ -534,62 +539,10 @@ const styles = StyleSheet.create({
   scrollFlex: { flex: 1 },
   scrollContent: { paddingBottom: spacing.xxl },
 
-  // Disambiguation
-  disambigBanner: {
-    backgroundColor: colors.accentFill, borderWidth: 1, borderColor: colors.accent,
-    borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.md,
-  },
-  disambigBannerLabel: {
-    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
-    color: colors.accent, marginBottom: 4, letterSpacing: 0.5,
-  },
-  disambigBannerText: { fontFamily: fonts.sans, fontSize: 13, color: colors.textSoft, lineHeight: 19 },
-  disambigSceneBox: {
-    backgroundColor: colors.surface, borderRadius: radius.md,
-    borderLeftWidth: 3, borderLeftColor: colors.accent,
-    padding: spacing.md, marginBottom: spacing.md,
-    flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md,
-  },
-  disambigSceneIcon: { fontSize: 28 },
-  disambigSceneSetup: {
-    flex: 1, fontFamily: fonts.serifItalic, fontSize: 14, lineHeight: 22, color: colors.textSoft,
-  },
-  disambigQ: {
-    fontFamily: fonts.serif, fontSize: 19, color: colors.text,
-    lineHeight: 27, marginBottom: spacing.md,
-  },
-  disambigOption: {
-    backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border,
-    borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.md,
-  },
-  disambigOptionPressed: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
-  disambigOptionText: {
-    fontFamily: fonts.sans, fontSize: 15, color: colors.textSoft, lineHeight: 22,
-  },
-
   skipBtn: { padding: spacing.md, alignItems: 'center', marginTop: spacing.sm },
   skipBtnText: {
     fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted,
     textDecorationLine: 'underline',
-  },
-
-  // Open note
-  openNoteBox: {
-    margin: spacing.md, padding: spacing.md,
-    backgroundColor: colors.surface, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  openNoteLabel: {
-    fontFamily: fonts.serif, fontSize: 16, color: colors.text, marginBottom: 4,
-  },
-  openNoteHint: {
-    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginBottom: spacing.sm, lineHeight: 18,
-  },
-  openNoteInput: {
-    backgroundColor: colors.bg, borderRadius: radius.sm,
-    borderWidth: 1, borderColor: colors.border,
-    padding: spacing.sm, fontFamily: fonts.sans, fontSize: 14, color: colors.text,
-    minHeight: 80, textAlignVertical: 'top',
   },
 
   // Save Profile
@@ -623,14 +576,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
     fontFamily: fonts.sans, fontSize: 14, color: colors.text,
   },
-
-  savePreviewNote: {
-    marginHorizontal: spacing.lg, marginBottom: spacing.md,
-    padding: spacing.md, backgroundColor: colors.surface,
-    borderRadius: radius.sm, borderLeftWidth: 3, borderLeftColor: colors.accent,
-  },
-  savePreviewLabel: { fontFamily: fonts.sans, fontSize: 12, fontWeight: '600', color: colors.accent, marginBottom: 4 },
-  savePreviewText: { fontFamily: fonts.serifItalic, fontSize: 13, color: colors.textSoft, lineHeight: 19 },
 
   saveBtn: {
     marginHorizontal: spacing.lg, marginTop: spacing.md,
