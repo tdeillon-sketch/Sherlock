@@ -38,7 +38,11 @@ function XpChip({ value }: { value: number }) {
   );
 }
 
-// ── Thin progress bar to Sherlock (stays at the top) ──
+// ── Rank + XP progression card (hero block at the top of the hub).
+//
+// Now gets more visual weight (bigger emoji, serif title, thicker bar,
+// explicit "next rank" preview) because the hub only has 2 play cards,
+// leaving room for progression to shine. ──
 function SherlockBar({ xp }: { xp: number }) {
   const info = getRankInfo(xp);
   const animWidth = useRef(new Animated.Value(0)).current;
@@ -46,22 +50,42 @@ function SherlockBar({ xp }: { xp: number }) {
     Animated.timing(animWidth, { toValue: info.progress, duration: 800, useNativeDriver: false }).start();
   }, [info.progress]);
 
+  const xpToNext = info.next ? info.next.xpRequired - xp : 0;
+
   return (
     <View style={styles.sherlockBarWrap}>
       <View style={styles.sherlockBarHeader}>
-        <Text style={styles.sherlockBarRank}>
-          {info.current.emoji} {info.current.title}
-        </Text>
-        <Text style={styles.sherlockBarXP}>
-          {xp} XP{info.next ? ` · ${info.next.xpRequired - xp} avant ${info.next.title}` : ' · Rang Max !'}
-        </Text>
+        <View style={styles.sherlockBarRankRow}>
+          <Text style={styles.sherlockBarEmoji}>{info.current.emoji}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sherlockBarRankLabel}>Rang actuel</Text>
+            <Text style={styles.sherlockBarRankName}>{info.current.title}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={styles.sherlockBarXPLabel}>XP Sherlock</Text>
+            <Text style={styles.sherlockBarXPValue}>{xp}</Text>
+          </View>
+        </View>
       </View>
+
       <View style={styles.sherlockBarTrack}>
         <Animated.View
           style={[styles.sherlockBarFill, {
             width: animWidth.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
           }]}
         />
+      </View>
+
+      <View style={styles.sherlockBarFooter}>
+        {info.next ? (
+          <Text style={styles.sherlockBarNext}>
+            <Text style={{ color: colors.accent, fontWeight: '700' }}>{xpToNext} XP</Text>
+            {' avant '}
+            <Text style={{ color: colors.text }}>{info.next.emoji} {info.next.title}</Text>
+          </Text>
+        ) : (
+          <Text style={styles.sherlockBarNext}>🏆 Rang maximum atteint !</Text>
+        )}
       </View>
     </View>
   );
@@ -373,15 +397,14 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
   const answerType = c.format === 'faux_amis' ? null : (c as any).answer as number;
   const funFact = ficheId ? FUN_FACTS[ficheId] : null;
 
-  const mode = playState.mode as 'rapide' | 'entrainement' | 'daily';
-  const showCombo = mode === 'rapide' && playState.comboCount >= 2;
-  const isLastInRapide = mode === 'rapide' && playState.casesPlayedInSession + 1 >= 3;
-  const isDailyOneShot = mode === 'daily';
-  const nextLabel = isDailyOneShot
-    ? 'Retour à l\'accueil'
-    : isLastInRapide
-      ? 'Voir le bilan →'
-      : 'Cas suivant →';
+  const mode = playState.mode as 'entrainement' | 'daily';
+  // Combo banner shows during the daily mission (which is the only mode that
+  // now accumulates a combo with a bonus payout at the end).
+  const showCombo = mode === 'daily' && playState.comboCount >= 2;
+  const isLastInDaily = mode === 'daily' && playState.casesPlayedInSession + 1 >= 3;
+  const nextLabel = isLastInDaily
+    ? 'Voir le bilan →'
+    : 'Cas suivant →';
 
   return (
     <View style={{ flex: 1 }}>
@@ -390,7 +413,7 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
         <Text style={styles.screenTitle}>
-          {mode === 'daily' ? '🎯 Mission du jour' : mode === 'rapide' ? '⚡ Mode rapide' : '🎓 Entraînement'}
+          {mode === 'daily' ? '🎯 Mission du jour' : '🎓 Entraînement'}
         </Text>
         <View style={{ width: 44 }} />
       </View>
@@ -408,7 +431,7 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
           </View>
         </View>
 
-        {/* Combo indicator (rapide only) */}
+        {/* Combo indicator (daily mission only — the combo bonus lives there) */}
         {showCombo && (
           <View style={styles.comboBanner}>
             <Text style={styles.comboBannerText}>
@@ -465,24 +488,29 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
 }
 
 // ─────────────────────────────────────────────
-//  SessionSummary — bilan de fin de mode rapide
+//  SessionSummary — bilan de fin de Mission du jour (3 cas)
 // ─────────────────────────────────────────────
 
-function SessionSummaryScreen({ summary, onHome, onAgain }: {
-  summary: any; onHome: () => void; onAgain: () => void;
+// Shown at the end of the daily mission (3 cases).
+// Daily is one-shot per day — no "refaire" button; user is invited to come
+// back tomorrow, or to keep playing in Entrainement.
+function SessionSummaryScreen({ summary, onHome, onEntrainement }: {
+  summary: any; onHome: () => void; onEntrainement: () => void;
 }) {
   const allCorrect = summary.correct === summary.cases;
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.screenHeader}>
         <View style={{ width: 44 }} />
-        <Text style={styles.screenTitle}>⚡ Bilan</Text>
+        <Text style={styles.screenTitle}>🎯 Mission du jour</Text>
         <View style={{ width: 44 }} />
       </View>
       <ScrollView contentContainerStyle={styles.summaryContent}>
         {allCorrect && <CelebrationBurst />}
-        <Text style={styles.summaryEmoji}>{allCorrect ? '🏆' : '⚡'}</Text>
-        <Text style={styles.summaryTitle}>{allCorrect ? 'Sans-faute !' : 'Bien joué'}</Text>
+        <Text style={styles.summaryEmoji}>{allCorrect ? '🏆' : '✓'}</Text>
+        <Text style={styles.summaryTitle}>
+          {allCorrect ? 'Sans-faute !' : 'Mission validée'}
+        </Text>
         <Text style={styles.summaryScore}>{summary.correct} / {summary.cases} bonnes réponses</Text>
 
         <View style={styles.summaryStats}>
@@ -500,10 +528,18 @@ function SessionSummaryScreen({ summary, onHome, onAgain }: {
             <Text style={styles.summaryStatLabel}>Meilleur combo</Text>
             <Text style={styles.summaryStatValue}>× {summary.bestCombo}</Text>
           </View>
+          <View style={styles.summaryStatRow}>
+            <Text style={styles.summaryStatLabel}>🔥 Streak</Text>
+            <Text style={[styles.summaryStatValue, { color: colors.accent }]}>+1 jour</Text>
+          </View>
         </View>
 
-        <Pressable onPress={onAgain} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
-          <Text style={styles.nextBtnText}>Refaire un round →</Text>
+        <Text style={styles.summaryTomorrow}>
+          Revenez demain pour une nouvelle mission. D'ici là, vous pouvez continuer en Entraînement.
+        </Text>
+
+        <Pressable onPress={onEntrainement} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
+          <Text style={styles.nextBtnText}>🎓 Continuer en entraînement</Text>
         </Pressable>
         <Pressable onPress={onHome} style={styles.quitBtn}>
           <Text style={styles.quitBtnText}>Retour à l'accueil</Text>
@@ -667,16 +703,17 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
 }
 
 // ─────────────────────────────────────────────
-//  HUB — nouveau design : 3 modes + barre fine + Pokédex
+//  HUB — Mission du jour (3 cas) + Entraînement + Pokédex
+//  (Le mode "rapide" a été fusionné dans la Mission du jour : simplification
+//   demandée pour ne garder qu'un rituel quotidien + un mode libre.)
 // ─────────────────────────────────────────────
 
 function HubScreen({
-  progress, isDailyAvailable, onStartDaily, onStartRapide, onStartEntrainement, onCollection,
+  progress, isDailyAvailable, onStartDaily, onStartEntrainement, onCollection,
 }: {
   progress: any;
   isDailyAvailable: boolean;
   onStartDaily: () => void;
-  onStartRapide: () => void;
   onStartEntrainement: () => void;
   onCollection: () => void;
 }) {
@@ -688,7 +725,7 @@ function HubScreen({
         <Text style={styles.hubHeroSub}>Apprenez à reconnaître les profils en jouant</Text>
       </View>
 
-      {/* Sherlock progression bar (thin) */}
+      {/* Sherlock rank card — XP progression + next rank preview */}
       <SherlockBar xp={progress.totalXP} />
 
       {/* Streak (if active) */}
@@ -706,7 +743,8 @@ function HubScreen({
         </View>
       )}
 
-      {/* Daily mission */}
+      {/* Daily mission — NOW the 3-case ritual (ex "Mode rapide" fused in).
+          Combo ×3 = bonus XP, streak +1 once the mission is attempted. */}
       <Pressable
         onPress={onStartDaily}
         disabled={!isDailyAvailable}
@@ -729,35 +767,18 @@ function HubScreen({
               <Text style={styles.modeTitle}>Mission du jour</Text>
               <Text style={styles.modeDesc}>
                 {isDailyAvailable
-                  ? "Une enquête. Bonus XP. Streak +1 si vous trouvez."
+                  ? "3 cas enchaînés · combo ×3 = bonus · streak +1"
                   : "✓ Validée pour aujourd'hui — revenez demain"}
               </Text>
+              {isDailyAvailable && progress.bestCombo > 0 && (
+                <Text style={[styles.modeStat, { color: colors.white }]}>
+                  🔥 Meilleur combo : × {progress.bestCombo}
+                </Text>
+              )}
             </View>
             {isDailyAvailable && <Text style={styles.modeChevron}>→</Text>}
           </View>
         </LinearGradient>
-      </Pressable>
-
-      {/* Mode Rapide */}
-      <Pressable
-        onPress={onStartRapide}
-        style={({ pressed }) => [styles.modeCard, pressed && { opacity: 0.85 }]}
-      >
-        <View style={styles.modeBody}>
-          <View style={styles.modeRow}>
-            <View style={[styles.modeIconBox, { backgroundColor: '#e07b5422', borderColor: '#e07b5455' }]}>
-              <Text style={styles.modeEmoji}>⚡</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>Mode rapide</Text>
-              <Text style={styles.modeDesc}>3 cas enchaînés. Combo × 3 = bonus XP. 2 minutes.</Text>
-              {progress.bestCombo > 0 && (
-                <Text style={styles.modeStat}>🔥 Meilleur combo : × {progress.bestCombo}</Text>
-              )}
-            </View>
-            <Text style={[styles.modeChevron, { color: '#e07b54' }]}>→</Text>
-          </View>
-        </View>
       </Pressable>
 
       {/* Mode Entraînement */}
@@ -804,7 +825,7 @@ function HubScreen({
 }
 
 // ─────────────────────────────────────────────
-//  PlayingScreen — header simplifié + combo pour mode rapide
+//  PlayingScreen — header simplifié + combo pendant la mission du jour
 // ─────────────────────────────────────────────
 
 function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfirm, onBack }: {
@@ -816,13 +837,13 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
   onBack: () => void;
 }) {
   const c = playState.currentCase;
-  const mode = playState.mode as 'rapide' | 'entrainement' | 'daily';
+  const mode = playState.mode as 'entrainement' | 'daily';
 
+  // Daily shows "Cas X / 3" progress (the mission is a 3-case session).
+  // Entrainement is continuous so we just show the static title.
   const headerTitle = mode === 'daily'
-    ? '🎯 Mission du jour'
-    : mode === 'rapide'
-      ? `⚡ Cas ${playState.casesPlayedInSession + 1} / 3`
-      : '🎓 Entraînement';
+    ? `🎯 Cas ${playState.casesPlayedInSession + 1} / 3`
+    : '🎓 Entraînement';
 
   return (
     <View style={styles.playingContainer}>
@@ -831,7 +852,7 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
         <Text style={styles.playingTitle} numberOfLines={1}>{headerTitle}</Text>
-        {mode === 'rapide' && playState.comboCount > 0 ? (
+        {mode === 'daily' && playState.comboCount > 0 ? (
           <Text style={styles.playingCombo}>🔥 ×{playState.comboCount}</Text>
         ) : (
           <View style={{ width: 44 }} />
@@ -870,7 +891,7 @@ export default function CelebritiesScreen() {
   const {
     screen, progress, playState, sessionSummary, selectedFicheId, loading,
     openCollection, openFiche, goBack, goHub,
-    startRapide, startEntrainement, startDaily, isDailyAvailable,
+    startEntrainement, startDaily, isDailyAvailable,
     revealNextIndice, submitAnswer, submitFauxAmis, confirmAndReveal, nextCase, quitSession,
   } = useDossier();
 
@@ -889,7 +910,6 @@ export default function CelebritiesScreen() {
           progress={progress}
           isDailyAvailable={isDailyAvailable()}
           onStartDaily={startDaily}
-          onStartRapide={startRapide}
           onStartEntrainement={startEntrainement}
           onCollection={openCollection}
         />
@@ -932,7 +952,7 @@ export default function CelebritiesScreen() {
         <SessionSummaryScreen
           summary={sessionSummary}
           onHome={goHub}
-          onAgain={startRapide}
+          onEntrainement={startEntrainement}
         />
       </View>
     );
@@ -977,16 +997,40 @@ const styles = StyleSheet.create({
   hubHeroTitle: { fontFamily: fonts.serif, fontSize: 28, color: colors.text, marginBottom: 4 },
   hubHeroSub: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
 
-  // Sherlock thin bar
+  // ── Sherlock rank card (enlarged from the thin bar it used to be) ──
   sherlockBarWrap: {
-    backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    backgroundColor: colors.surface, borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.md,
+    gap: spacing.sm,
   },
-  sherlockBarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  sherlockBarRank: { fontFamily: fonts.sans, fontSize: 13, fontWeight: '700', color: colors.text },
-  sherlockBarXP: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted },
-  sherlockBarTrack: { height: 4, backgroundColor: colors.border, borderRadius: 2, overflow: 'hidden' },
-  sherlockBarFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  sherlockBarHeader: { marginBottom: 2 },
+  sherlockBarRankRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+  },
+  sherlockBarEmoji: { fontSize: 36 },
+  sherlockBarRankLabel: {
+    fontFamily: fonts.sans, fontSize: 10, fontWeight: '700',
+    color: colors.textMuted, letterSpacing: 1, textTransform: 'uppercase',
+  },
+  sherlockBarRankName: {
+    fontFamily: fonts.serif, fontSize: 20, color: colors.text, marginTop: 2,
+  },
+  sherlockBarXPLabel: {
+    fontFamily: fonts.sans, fontSize: 10, fontWeight: '700',
+    color: colors.textMuted, letterSpacing: 1, textTransform: 'uppercase',
+  },
+  sherlockBarXPValue: {
+    fontFamily: fonts.serif, fontSize: 20, color: colors.accent, marginTop: 2, fontWeight: '700',
+  },
+  sherlockBarTrack: {
+    height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden',
+  },
+  sherlockBarFill: { height: 8, backgroundColor: colors.accent, borderRadius: 4 },
+  sherlockBarFooter: { alignItems: 'center' },
+  sherlockBarNext: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
+  },
 
   // Streak
   streakWrap: {
@@ -1225,6 +1269,10 @@ const styles = StyleSheet.create({
   summaryStatRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   summaryStatLabel: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
   summaryStatValue: { fontFamily: fonts.sans, fontSize: 16, fontWeight: '700', color: colors.text },
+  summaryTomorrow: {
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textMuted,
+    textAlign: 'center', fontStyle: 'italic', paddingHorizontal: spacing.md, marginTop: spacing.xs,
+  },
 
   // ── Pokédex ──
   collectionScroll: { flex: 1 },
