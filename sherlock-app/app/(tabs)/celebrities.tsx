@@ -1148,24 +1148,28 @@ const styles = StyleSheet.create({
   fauxAmisTypes: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   fauxAmisTypeBtn: { padding: spacing.xs, borderRadius: radius.sm },
   fauxAmisTypeBtnSelected: { backgroundColor: colors.accentFill },
-  // New: big choice button (Option A — pastille colorée + nom du type)
+  // Big choice button (Option A — pastille colorée + nom du type).
+  // Sizing compromise: the two buttons sit side-by-side and must fit the
+  // longest type name ("L'Investigateur", 15 chars). We keep a readable
+  // size while making the circle smaller and padding tighter so the label
+  // doesn't wrap mid-word on narrow screens.
   fauxAmisChoiceBtn: {
     flex: 1,
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.sm,
     borderRadius: radius.md, borderWidth: 1,
-    minHeight: 64,
+    minHeight: 56,
   },
   fauxAmisChoiceNum: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 30, height: 30, borderRadius: 15,
     alignItems: 'center', justifyContent: 'center',
   },
   fauxAmisChoiceNumText: {
-    fontFamily: fonts.sans, fontSize: 18, fontWeight: '800', color: colors.white,
+    fontFamily: fonts.sans, fontSize: 15, fontWeight: '800', color: colors.white,
   },
   fauxAmisChoiceName: {
     flex: 1,
-    fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', lineHeight: 18,
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '600', lineHeight: 15,
   },
   keyDiffBox: { padding: spacing.md, backgroundColor: colors.accentFill, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.accent },
   keyDiffLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, marginBottom: spacing.xs },

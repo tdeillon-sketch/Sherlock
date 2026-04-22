@@ -13,7 +13,7 @@ export const RANKS = [
 export const TYPE_NAMES: Record<number, string> = {
   1: 'Le Perfectionniste',
   2: "L'Altruiste",
-  3: 'Le Battant',
+  3: 'Le Gagneur',
   4: 'Le Romantique',
   5: "L'Investigateur",
   6: 'Le Loyaliste',
@@ -939,7 +939,7 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 's3', format: 'citation', ficheId: 'taylor_swift', quote: "Long story short, I survived.", author: 'Taylor Swift', answer: 3,
         wrongOptions: [4, 6],
-        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Battant, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
+        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Gagneur, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
       },
       {
         id: 's4', format: 'citation', ficheId: 'federer', quote: "Je joue pour gagner. C'est tout.", author: 'Roger Federer', answer: 3,
