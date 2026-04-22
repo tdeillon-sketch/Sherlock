@@ -903,6 +903,177 @@ export const DOSSIERS: Dossier[] = [
       },
     ],
   },
+
+  // ══════════════════════════════════════════════
+  //  DOSSIER 6 — Les Stars
+  // ══════════════════════════════════════════════
+  {
+    id: 'stars',
+    title: 'Les Stars',
+    emoji: '⭐',
+    desc: 'Célébrités du grand écran, de la musique et du sport',
+    color: '#e07b54',
+    cases: [
+      {
+        id: 's1', format: 'enquete', ficheId: 'oprah', answer: 2,
+        indices: [
+          "Cette personne se sent vraiment elle-même quand elle peut transformer la vie des autres.",
+          "Elle pleure régulièrement à l'écran avec ses invités — son empathie semble physique.",
+          "Un jour, elle a offert une voiture à chaque personne dans son public, parce qu'elle « voulait qu'elles vivent leur meilleure vie ».",
+          "Première femme afro-américaine milliardaire grâce à son talk-show empathique de plus de 25 ans.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Oprah incarne le Type 2 : générosité spectaculaire, lecture émotionnelle hors-norme et besoin profond d'être un catalyseur de transformation pour les autres. L'Altruiste se nourrit de connexion.",
+      },
+      {
+        id: 's2', format: 'enquete', ficheId: 'elvis', answer: 2,
+        indices: [
+          "Cette personne avait un besoin compulsif d'être aimée — chaque applaudissement la nourrissait comme une drogue.",
+          "Elle achetait des voitures, des maisons et des bijoux à des inconnus rencontrés dans la rue.",
+          "Sa mère était la personne la plus importante de sa vie — il a fait peindre sa maison en rose pour elle.",
+          "Le « King » du rock 'n' roll, mort à 42 ans dans sa résidence de Graceland.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Elvis est un Type 2 dans sa version dépendante : besoin permanent d'amour et de validation, générosité compulsive envers ses proches (la 'Memphis Mafia') et incapacité à survivre quand l'adoration faiblit.",
+      },
+      {
+        id: 's3', format: 'citation', ficheId: 'taylor_swift', quote: "Long story short, I survived.", author: 'Taylor Swift', answer: 3,
+        wrongOptions: [4, 6],
+        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Battant, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
+      },
+      {
+        id: 's4', format: 'citation', ficheId: 'federer', quote: "Je joue pour gagner. C'est tout.", author: 'Roger Federer', answer: 3,
+        wrongOptions: [8, 1],
+        explanation: "Cette phrase épurée illustre le Type 3 dans sa version la plus élégante. Federer a maintenu son statut au sommet pendant deux décennies par cette focalisation totale sur le résultat — sans drame, sans excuse.",
+      },
+      {
+        id: 's5', format: 'enquete', ficheId: 'jennifer', answer: 6,
+        indices: [
+          "Cette actrice est restée fidèle des années à la même coupe de cheveux et à la même bande d'amis.",
+          "Elle parle souvent de sa peur d'être abandonnée et de sa difficulté à faire confiance à de nouvelles personnes.",
+          "Sa carrière entière s'est construite autour du même groupe d'amis acteurs des années 90.",
+          "Star de la sitcom Friends, devenue icône mondiale dans le rôle de Rachel Green.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Jennifer Aniston incarne le Type 6 : loyauté absolue envers son cercle proche, méfiance des changements et besoin de repères stables. Le Loyaliste préfère un terrain connu, même imparfait, à l'aventure.",
+      },
+      {
+        id: 's6', format: 'detail', ficheId: 'morgan',
+        scene: "Quand on lui demande son avis sur les sujets brûlants, il répond souvent par une phrase qui désamorce le conflit. À la question « Comment se débarrasser du racisme ? », sa réponse a fait scandale par sa simplicité : arrêtons d'en parler. Sur les plateaux, sa présence calme et sa voix grave apaisent toute tension. Il accepte des rôles très divers — Dieu, un président, un évadé de prison — sans jamais se laisser enfermer dans une image.",
+        keyDetail: "Désamorcer le conflit par la simplicité plutôt que d'en débattre — préserver l'harmonie avant la victoire d'un argument.",
+        answer: 9,
+        explanation: "Morgan Freeman incarne le Type 9 : éviter les divisions inutiles, chercher l'unité plutôt que la confrontation et incarner une présence apaisante. Le Médiateur préserve la paix avant de trancher.",
+        xp: 300,
+      },
+      {
+        id: 's7', format: 'enquete', ficheId: 'mj', answer: 4,
+        indices: [
+          "Cette personne disait se sentir « la plus seule quand elle était sur scène devant des millions ».",
+          "Elle a transformé son corps de façon radicale au fil des années, comme une quête identitaire physique.",
+          "Sa musique parle constamment de douleur, d'enfance perdue et d'altérité absolue.",
+          "Le « roi de la pop », auteur de Thriller, l'album le plus vendu de l'histoire.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Michael Jackson est un Type 4 archétypal : sentiment d'être radicalement différent depuis l'enfance, transformations corporelles comme quêtes identitaires et art profondément personnel teinté de mélancolie. Le Romantique vit la solitude au cœur de l'adulation.",
+      },
+      {
+        id: 's8', format: 'enquete', ficheId: 'twain', answer: 6,
+        indices: [
+          "Cet écrivain a passé sa vie à anticiper des catastrophes qui ne sont jamais arrivées — et l'a écrit lui-même.",
+          "Son humour mordant servait à dénoncer les hypocrisies des autorités et des institutions.",
+          "Il a perdu et reconstruit sa fortune plusieurs fois — l'argent était une obsession anxieuse.",
+          "Auteur américain des Aventures de Tom Sawyer et de Huckleberry Finn.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Mark Twain est un Type 6 contre-phobique : son ironie mordante était une arme contre l'anxiété sociale, sa méfiance des autorités est typique du Loyaliste, et son humour permettait de dire les vérités gênantes sans s'exposer directement.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════
+  //  DOSSIER 7 — Les Maîtres
+  // ══════════════════════════════════════════════
+  {
+    id: 'maitres',
+    title: 'Les Maîtres',
+    emoji: '🎯',
+    desc: 'Stratèges, scientifiques & guides spirituels',
+    color: '#5b9e8f',
+    cases: [
+      {
+        id: 'm1', format: 'enquete', ficheId: 'obama_michelle', answer: 1,
+        indices: [
+          "Cette personne relit ses discours dix fois avant de les prononcer — la perfection du message est un devoir.",
+          "Sa philosophie publique se résume à une formule : « Quand ils descendent, nous montons. »",
+          "Elle a mené un projet national contre l'obésité infantile par discipline et conviction morale.",
+          "Première dame des États-Unis de 2009 à 2017, ex-avocate diplômée de Princeton et Harvard.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Michelle Obama est un Type 1 : auto-discipline rigoureuse, sens aigu du devoir, capacité à canaliser la colère en énergie constructive (« we go high »). Le Perfectionniste se mesure d'abord à ses propres standards.",
+      },
+      {
+        id: 'm2', format: 'citation', ficheId: 'teresa', quote: "Si tu juges les gens, tu n'as plus le temps de les aimer.", author: 'Mère Teresa', answer: 2,
+        wrongOptions: [9, 1],
+        explanation: "Cette citation révèle l'essence du Type 2 : choisir l'amour comme posture première, refuser la distance critique. Mère Teresa a fait de cette phrase une règle de vie — typique d'un 2 qui écarte le jugement comme obstacle au don.",
+      },
+      {
+        id: 'm3', format: 'enquete', ficheId: 'pope_francis', answer: 2,
+        indices: [
+          "Ce chef religieux a refusé d'habiter le palais traditionnel pour rester dans une chambre d'hôte modeste.",
+          "Chaque Jeudi Saint, il lave et embrasse les pieds de prisonniers — y compris des femmes et des musulmans.",
+          "Sa réponse célèbre à une question sur l'homosexualité dans l'Église : « Qui suis-je pour juger ? »",
+          "Premier pape jésuite et premier pape latino-américain, élu en 2013.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Le Pape François incarne le Type 2 : refus du faste, proximité physique avec les pauvres et rejet du jugement comme barrière au don. L'Altruiste se définit par le service — pas par la position hiérarchique.",
+      },
+      {
+        id: 'm4', format: 'faux_amis', typeA: 1, typeB: 2,
+        descA: "Vit selon des principes moraux stricts. Cherche à améliorer le monde par la rigueur. Donne par devoir, pas par besoin d'être aimé.",
+        descB: "Donne aux autres avec une chaleur immédiate. Cherche à être aimé en retour, même si cela reste inconscient. Le don est aussi une stratégie d'attachement.",
+        keyDiff: "Le 1 donne par principe — il ferait la même chose même seul. Le 2 donne pour créer un lien — il a besoin que cela soit reçu.",
+        xp: 400,
+      },
+      {
+        id: 'm5', format: 'enquete', ficheId: 'branson', answer: 7,
+        indices: [
+          "Cette personne a lancé des dizaines d'entreprises sans aucun lien entre elles — musique, avion, train, espace, mobile.",
+          "Sa philosophie est simple : « Le business doit être amusant. Sinon, change-le. »",
+          "Il a fait de chaque échec une nouvelle aventure médiatique — voler en montgolfière, en bateau, en fusée.",
+          "Fondateur du groupe Virgin, milliardaire britannique connu pour ses cascades publicitaires.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Richard Branson est un Type 7 entrepreneurial pur : besoin de nouveauté permanente, optimisme inébranlable, rejet de l'ennui et capacité à transformer chaque échec en aventure stimulante. L'Épicurien se nourrit d'options multiples.",
+      },
+      {
+        id: 'm6', format: 'citation', ficheId: 'dalai', quote: "Si tu veux que les autres soient heureux, pratique la compassion. Si tu veux être heureux, pratique la compassion.", author: 'Dalaï-Lama', answer: 9,
+        wrongOptions: [2, 4],
+        explanation: "Cette citation révèle le Type 9 dans sa dimension spirituelle : voir l'unité fondamentale entre soi et les autres. Pour le Médiateur, il n'y a pas de paix individuelle séparée de la paix collective.",
+      },
+      {
+        id: 'm7', format: 'enquete', ficheId: 'hawking', answer: 5,
+        indices: [
+          "Cette personne a vu son corps disparaître progressivement à cause d'une maladie incurable.",
+          "Plus son corps se figeait, plus il s'est réfugié dans la pensée pure et l'astrophysique.",
+          "Il a écrit son livre le plus célèbre en se forçant à n'utiliser qu'une seule équation, par souci d'élégance.",
+          "Astrophysicien britannique atteint de SLA, auteur d'Une brève histoire du temps.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Stephen Hawking incarnait la résilience du Type 5 : face à la disparition de son corps, il a doublé son investissement dans l'intellect. Pour l'Investigateur, la pensée est le territoire le plus sûr — et parfois le dernier qui reste.",
+      },
+      {
+        id: 'm8', format: 'enquete', ficheId: 'gates', answer: 5,
+        indices: [
+          "Cette personne s'isole deux fois par an dans une cabane pour lire pendant une semaine, sans interruption.",
+          "Sa stratégie philanthropique est purement analytique : il optimise les vies sauvées par dollar dépensé.",
+          "Jeune, il avait pour habitude de lire l'encyclopédie entière par curiosité personnelle.",
+          "Cofondateur de Microsoft et de la fondation philanthropique la plus active au monde.",
+        ],
+        xpValues: [500, 350, 200, 50],
+        explanation: "Bill Gates est un Type 5 intégré : besoin de retrait pour penser (ses fameuses Think Weeks), accumulation systématique de connaissances et approche analytique appliquée même à la générosité. L'Investigateur applique la rigueur intellectuelle à tous les domaines.",
+      },
+    ],
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════
