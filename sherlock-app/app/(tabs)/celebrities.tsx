@@ -277,7 +277,12 @@ function FauxAmisChoiceBtn({
       <View style={[styles.fauxAmisChoiceNum, { backgroundColor: color }]}>
         <Text style={styles.fauxAmisChoiceNumText}>{typeNum}</Text>
       </View>
-      <Text style={[styles.fauxAmisChoiceName, { color }]} numberOfLines={2}>
+      <Text
+        style={[styles.fauxAmisChoiceName, { color }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
         {TYPE_NAMES[typeNum]}
       </Text>
     </Pressable>
@@ -1149,27 +1154,27 @@ const styles = StyleSheet.create({
   fauxAmisTypeBtn: { padding: spacing.xs, borderRadius: radius.sm },
   fauxAmisTypeBtnSelected: { backgroundColor: colors.accentFill },
   // Big choice button (Option A — pastille colorée + nom du type).
-  // Sizing compromise: the two buttons sit side-by-side and must fit the
-  // longest type name ("L'Investigateur", 15 chars). We keep a readable
-  // size while making the circle smaller and padding tighter so the label
-  // doesn't wrap mid-word on narrow screens.
+  // With the articles stripped from TYPE_NAMES the labels now fit on a
+  // single line at a comfortable size; adjustsFontSizeToFit on the <Text>
+  // is the belt-and-suspenders for the longest name ("Perfectionniste"
+  // at 15 chars) on narrow screens.
   fauxAmisChoiceBtn: {
     flex: 1,
-    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
-    paddingVertical: spacing.sm, paddingHorizontal: spacing.sm,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.sm,
     borderRadius: radius.md, borderWidth: 1,
-    minHeight: 56,
+    minHeight: 60,
   },
   fauxAmisChoiceNum: {
-    width: 30, height: 30, borderRadius: 15,
+    width: 34, height: 34, borderRadius: 17,
     alignItems: 'center', justifyContent: 'center',
   },
   fauxAmisChoiceNumText: {
-    fontFamily: fonts.sans, fontSize: 15, fontWeight: '800', color: colors.white,
+    fontFamily: fonts.sans, fontSize: 17, fontWeight: '800', color: colors.white,
   },
   fauxAmisChoiceName: {
     flex: 1,
-    fontFamily: fonts.sans, fontSize: 12, fontWeight: '600', lineHeight: 15,
+    fontFamily: fonts.sans, fontSize: 15, fontWeight: '700',
   },
   keyDiffBox: { padding: spacing.md, backgroundColor: colors.accentFill, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.accent },
   keyDiffLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, marginBottom: spacing.xs },

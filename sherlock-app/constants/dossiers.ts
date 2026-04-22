@@ -10,16 +10,20 @@ export const RANKS = [
   { id: 4, title: 'Sherlock',        emoji: '🦅', xpRequired: 3000 },
 ];
 
+// Articles ("Le / L'") volontairement omis : dans les UI où ces labels
+// apparaissent côte-à-côte sur des boutons étroits (faux amis, type grid),
+// l'article sautait une ligne et cassait la lisibilité. La forme nue se lit
+// bien dans tous les contextes ("Type 2 — Altruiste" reste naturel).
 export const TYPE_NAMES: Record<number, string> = {
-  1: 'Le Perfectionniste',
-  2: "L'Altruiste",
-  3: 'Le Gagneur',
-  4: 'Le Romantique',
-  5: "L'Investigateur",
-  6: 'Le Loyaliste',
-  7: "L'Épicurien",
-  8: 'Le Chef',
-  9: 'Le Médiateur',
+  1: 'Perfectionniste',
+  2: 'Altruiste',
+  3: 'Gagneur',
+  4: 'Romantique',
+  5: 'Investigateur',
+  6: 'Loyaliste',
+  7: 'Épicurien',
+  8: 'Chef',
+  9: 'Médiateur',
 };
 
 export const TYPE_COLORS: Record<number, string> = {
