@@ -285,6 +285,10 @@ export default function DuoScreen() {
   const pointsForts = perspectiveView?.pointsForts ?? pair?.pointsForts ?? '';
   const vigilances  = perspectiveView?.vigilances  ?? pair?.vigilances  ?? '';
   const conseil     = perspectiveView?.conseil     ?? pair?.conseil     ?? '';
+  // Parent-child specific sections: only set when context === 'enfant' (since
+  // DUO_PARENT_VIEW is the only view that populates these fields).
+  const parentSoutien   = perspectiveView?.parentSoutien   ?? '';
+  const parentChallenge = perspectiveView?.parentChallenge ?? '';
 
   // For 'pairs' context, look up the dedicated peers table for the bottom tip
   const pairsText = (typeA && typeB)
@@ -401,18 +405,42 @@ export default function DuoScreen() {
               body={vigilances}
               colorA={'#d4a03c'}
             />
-            <FlatSection
-              emoji="🤲"
-              title={`Ce que le Type ${typeA} apporte au Type ${typeB}`}
-              body={pair.aApporte}
-              colorA={colorA}
-            />
-            <FlatSection
-              emoji="🎁"
-              title={`Ce que le Type ${typeB} apporte au Type ${typeA}`}
-              body={pair.bApporte}
-              colorA={colorB}
-            />
+            {/* Middle sections — swap based on context:
+                - Parent-child: "comment l'aider" + "comment il vous challenge"
+                  (parent-centric, specific to this parent-child type pair)
+                - Otherwise (couple / peers / adult-adult): the generic
+                  symmetric "ce que X apporte à Y" / "Y apporte à X" */}
+            {context === 'enfant' ? (
+              <>
+                <FlatSection
+                  emoji="🌱"
+                  title="Comment vous pouvez l'aider"
+                  body={parentSoutien}
+                  colorA={colorA}
+                />
+                <FlatSection
+                  emoji="🪞"
+                  title="En quoi cet enfant vous challenge"
+                  body={parentChallenge}
+                  colorA={colorB}
+                />
+              </>
+            ) : (
+              <>
+                <FlatSection
+                  emoji="🤲"
+                  title={`Ce que le Type ${typeA} apporte au Type ${typeB}`}
+                  body={pair.aApporte}
+                  colorA={colorA}
+                />
+                <FlatSection
+                  emoji="🎁"
+                  title={`Ce que le Type ${typeB} apporte au Type ${typeA}`}
+                  body={pair.bApporte}
+                  colorA={colorB}
+                />
+              </>
+            )}
             <FlatSection
               emoji="💡"
               title={
