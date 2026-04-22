@@ -1,14 +1,24 @@
+// ═══════════════════════════════════════════════════════════════
+//  AUTH SCREEN — Sign in with Google AND Sign in with Apple
+//
+//  Apple Store guideline 4.8 requires that any third-party sign-in
+//  option (Google, Facebook, etc.) be matched by an "equivalent"
+//  login service. Sign in with Apple satisfies this requirement.
+// ═══════════════════════════════════════════════════════════════
+
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView,
+  View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Platform,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { ResponseType, makeRedirectUri } from 'expo-auth-session';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  signInAnon, signInWithGoogleIdToken, getUserData, createUserData, updateLastSeen,
+  signInAnon, signInWithGoogleIdToken, signInWithAppleIdToken,
+  getUserData, createUserData, updateLastSeen,
 } from '../constants/firebase';
 import { GOOGLE_OAUTH, isGoogleConfigured } from '../constants/google_oauth';
 
@@ -18,73 +28,82 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function GoogleAuthScreen({ onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// Generate a cryptographically random nonce string for Apple Sign In.
+// We pass the SHA-256 hash to Apple, but Firebase needs the raw value
+// to verify the returned identity token.
+async function generateAppleNonce(): Promise<{ raw: string; hashed: string }> {
+  const randomBytes = await Crypto.getRandomBytesAsync(32);
+  const raw = Array.from(randomBytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  const hashed = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    raw,
+  );
+  return { raw, hashed };
+}
 
-  // Detect if running inside Expo Go (vs a standalone build).
-  // `executionEnvironment` is more reliable than `appOwnership` on SDK 54+.
+export default function AuthScreen({ onSuccess }: Props) {
+  const [loading, setLoading] = useState<null | 'google' | 'apple'>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  // Detect Expo Go vs standalone build
   const isExpoGo =
     Constants.executionEnvironment === 'storeClient' ||
     Constants.appOwnership === 'expo';
 
-  // In Expo Go, force the Expo auth proxy URL (HTTPS) because Google's
-  // OAuth 2.0 policy rejects custom `exp://` schemes with a Web Client ID.
-  // In standalone builds, we let expo-auth-session derive the redirect URI
-  // automatically from the iOS Client ID (reverse client ID scheme),
-  // which is what Google's iOS OAuth client expects.
+  // Check that Apple Sign In is available on this device.
+  // Only iOS 13+ supports it.
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      AppleAuthentication.isAvailableAsync()
+        .then(setAppleAvailable)
+        .catch(() => setAppleAvailable(false));
+    }
+  }, []);
+
+  // ── Google OAuth setup ──
   const redirectUri = isExpoGo
     ? 'https://auth.expo.io/@anonymous/sherlock-app'
     : undefined;
-
-  // Log once at mount for debugging
-  useEffect(() => {
-    console.log('[GoogleAuth] isExpoGo=', isExpoGo, 'redirectUri=', redirectUri);
-  }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:        GOOGLE_OAUTH.expoClientId,
     iosClientId:     GOOGLE_OAUTH.iosClientId,
     androidClientId: GOOGLE_OAUTH.androidClientId,
     webClientId:     GOOGLE_OAUTH.webClientId,
-    // In Expo Go: force the Expo auth proxy URL.
-    // In standalone: let expo-auth-session derive the redirect URI from the
-    // iOS Client ID (reverse client ID scheme).
     redirectUri,
-    // NOTE: do NOT force responseType: ResponseType.IdToken.
-    // iOS native Google OAuth clients don't support the implicit id_token
-    // flow — they require the authorization code flow (with PKCE).
-    // expo-auth-session picks the right flow per client; the id_token is
-    // returned in response.authentication.idToken because we request the
-    // `openid` scope.
     scopes: ['openid', 'profile', 'email'],
   });
 
-  // Handle response from Google OAuth flow
+  // Common post-sign-in: create user doc if needed, update lastSeen, callback.
+  const finishSignIn = async (uid: string) => {
+    const existing = await getUserData(uid).catch(() => null);
+    if (!existing) {
+      await createUserData(uid);
+    } else {
+      await updateLastSeen(uid).catch(() => {});
+    }
+    onSuccess();
+  };
+
+  // ── Google response handler ──
   useEffect(() => {
     const handleResponse = async () => {
       if (response?.type === 'success') {
-        setLoading(true);
+        setLoading('google');
         setError(null);
         try {
           const idToken = response.authentication?.idToken
             ?? (response.params as any)?.id_token;
-          if (!idToken) {
-            throw new Error("Pas d'id_token reçu de Google");
-          }
+          if (!idToken) throw new Error("Pas d'id_token reçu de Google");
           const user = await signInWithGoogleIdToken(idToken);
-          // Create user data if not exists
-          const existing = await getUserData(user.uid).catch(() => null);
-          if (!existing) {
-            await createUserData(user.uid);
-          } else {
-            await updateLastSeen(user.uid).catch(() => {});
-          }
-          onSuccess();
+          await finishSignIn(user.uid);
         } catch (e: any) {
-          setError(e?.message ?? 'Connexion échouée');
+          setError(e?.message ?? 'Connexion Google échouée');
         } finally {
-          setLoading(false);
+          setLoading(null);
         }
       } else if (response?.type === 'error') {
         setError("La connexion Google a échoué. Réessayez.");
@@ -93,7 +112,7 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
     handleResponse();
   }, [response]);
 
-  const onPress = async () => {
+  const onPressGoogle = async () => {
     setError(null);
     if (!isGoogleConfigured()) {
       setError(
@@ -109,7 +128,37 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
     try {
       await promptAsync();
     } catch (e: any) {
-      setError(e?.message ?? 'Connexion impossible');
+      setError(e?.message ?? 'Connexion Google impossible');
+    }
+  };
+
+  // ── Apple sign-in handler ──
+  const onPressApple = async () => {
+    setError(null);
+    setLoading('apple');
+    try {
+      const { raw, hashed } = await generateAppleNonce();
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashed,
+      });
+      if (!credential.identityToken) {
+        throw new Error("Pas d'identityToken reçu d'Apple");
+      }
+      const user = await signInWithAppleIdToken(credential.identityToken, raw);
+      await finishSignIn(user.uid);
+    } catch (e: any) {
+      // The user can cancel, in which case `e.code` is ERR_REQUEST_CANCELED
+      if (e?.code === 'ERR_REQUEST_CANCELED' || e?.code === 'ERR_CANCELED') {
+        // Silent cancel — no error display
+      } else {
+        setError(e?.message ?? 'Connexion Apple échouée');
+      }
+    } finally {
+      setLoading(null);
     }
   };
 
@@ -117,9 +166,9 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.inner}>
         <Text style={styles.emoji}>🔐</Text>
-        <Text style={styles.title}>Une dernière étape</Text>
+        <Text style={styles.title}>Connectez-vous</Text>
         <Text style={styles.subtitle}>
-          Connectez-vous avec votre compte Google pour sauvegarder vos progrès, vos profils d'enfants et accéder à l'app sur tous vos appareils.
+          Pour sauvegarder vos progrès, vos profils d'enfants et accéder à l'app sur tous vos appareils.
         </Text>
 
         <View style={styles.benefitsBox}>
@@ -137,15 +186,38 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
           </View>
         </View>
 
+        {/* ── Sign in with Apple (iOS 13+) ── */}
+        {appleAvailable && (
+          <Pressable
+            onPress={onPressApple}
+            disabled={loading !== null}
+            style={({ pressed }) => [
+              styles.appleBtn,
+              (pressed || loading === 'apple') && { opacity: 0.85 },
+            ]}
+          >
+            {loading === 'apple' ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <>
+                <Text style={styles.appleLogo}></Text>
+                <Text style={styles.appleBtnText}>Continuer avec Apple</Text>
+              </>
+            )}
+          </Pressable>
+        )}
+
+        {/* ── Sign in with Google ── */}
         <Pressable
-          onPress={onPress}
-          disabled={loading || !request}
+          onPress={onPressGoogle}
+          disabled={loading !== null || !request}
           style={({ pressed }) => [
             styles.googleBtn,
-            (pressed || loading) && { opacity: 0.85 },
+            appleAvailable && { marginTop: spacing.md },
+            (pressed || loading === 'google') && { opacity: 0.85 },
           ]}
         >
-          {loading ? (
+          {loading === 'google' ? (
             <ActivityIndicator color={colors.text} />
           ) : (
             <>
@@ -169,18 +241,15 @@ export default function GoogleAuthScreen({ onSuccess }: Props) {
         {(__DEV__ || isExpoGo) && (
           <Pressable
             onPress={async () => {
-              setLoading(true);
+              setLoading('google');
               setError(null);
               try {
                 const user = await signInAnon();
-                const existing = await getUserData(user.uid).catch(() => null);
-                if (!existing) await createUserData(user.uid);
-                else await updateLastSeen(user.uid).catch(() => {});
-                onSuccess();
+                await finishSignIn(user.uid);
               } catch (e: any) {
                 setError(e?.message ?? 'Bypass échoué');
               } finally {
-                setLoading(false);
+                setLoading(null);
               }
             }}
             style={styles.devBypass}
@@ -228,6 +297,21 @@ const styles = StyleSheet.create({
   benefitText: {
     flex: 1, fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
     color: colors.textSoft,
+  },
+  // Apple button — black per Apple HIG when on light background
+  appleBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: spacing.sm,
+    width: '100%', maxWidth: 360, paddingVertical: 14, paddingHorizontal: spacing.lg,
+    backgroundColor: '#000', borderRadius: radius.full,
+  },
+  appleLogo: {
+    fontSize: 18, color: colors.white,
+    // Apple logo glyph "" (Private Use Area), falls back gracefully
+    // on systems that don't have it; iOS native font does.
+  },
+  appleBtnText: {
+    fontFamily: fonts.sans, fontSize: 15, fontWeight: '600', color: colors.white,
   },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

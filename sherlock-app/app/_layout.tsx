@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import GateScreen from '../components/GateScreen';
-import GoogleAuthScreen from '../components/GoogleAuthScreen';
+import AuthScreen from '../components/AuthScreen';
 import {
-  onAuthChange, getUserData, updateLastSeen, isGoogleSignedIn,
+  onAuthChange, getUserData, updateLastSeen, isThirdPartySignedIn,
 } from '../constants/firebase';
 
 SplashScreen.preventAutoHideAsync();
@@ -17,22 +16,27 @@ export default function RootLayout() {
     Inter: require('../assets/fonts/Inter-Regular.ttf'),
   });
 
-  // Two-stage gate: code → Google sign-in
-  const [codeAccepted, setCodeAccepted] = useState(false);
-  const [googleAccepted, setGoogleAccepted] = useState(false);
+  // Single auth gate: Google or Apple sign-in.
+  // The previous "access code" gate was removed for App Store guideline 3.1.1
+  // (no third-party promo codes for unlocking digital content).
+  const [signedIn, setSignedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // On boot: check if user is already Google-authenticated (returning user)
+  // On boot: check if user is already authenticated (returning user)
   useEffect(() => {
     const unsubscribe = onAuthChange(async (user) => {
-      if (user && isGoogleSignedIn(user)) {
-        // Already Google-signed in → skip both gates
+      if (user && isThirdPartySignedIn(user)) {
         const data = await getUserData(user.uid).catch(() => null);
         if (data) {
-          setCodeAccepted(true);
-          setGoogleAccepted(true);
+          setSignedIn(true);
           updateLastSeen(user.uid).catch(() => {});
+        } else {
+          // Auth user exists but no Firestore doc — treat as signed-out so the
+          // AuthScreen flow re-creates the doc on first sign-in.
+          setSignedIn(false);
         }
+      } else {
+        setSignedIn(false);
       }
       setCheckingAuth(false);
     });
@@ -49,14 +53,9 @@ export default function RootLayout() {
     return null;
   }
 
-  // ── Stage 1: PIN code from the book ──
-  if (!codeAccepted) {
-    return <GateScreen onUnlock={() => setCodeAccepted(true)} />;
-  }
-
-  // ── Stage 2: Google sign-in ──
-  if (!googleAccepted) {
-    return <GoogleAuthScreen onSuccess={() => setGoogleAccepted(true)} />;
+  // ── Sign-in screen (Google + Apple) ──
+  if (!signedIn) {
+    return <AuthScreen onSuccess={() => setSignedIn(true)} />;
   }
 
   // ── Authenticated: render the app ──

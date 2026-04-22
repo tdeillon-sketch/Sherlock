@@ -57,6 +57,16 @@ export default function HomeScreen() {
         end={{ x: 0, y: 1 }}
         style={styles.hero}
       >
+        {/* Top-right account button */}
+        <Pressable
+          onPress={() => router.push('/account' as never)}
+          accessibilityLabel="Mon compte"
+          style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.6 }]}
+          hitSlop={10}
+        >
+          <Text style={styles.accountBtnIcon}>👤</Text>
+        </Pressable>
+
         <Text style={styles.heroEyebrow}>Le compagnon de lecture</Text>
         <Text style={styles.heroTitle}>On a tous besoin{'\n'}de quelqu'un d'autre</Text>
         <Text style={styles.heroSubtitle}>
@@ -174,7 +184,19 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
+    position: 'relative',
   },
+  accountBtn: {
+    position: 'absolute',
+    top: 56,
+    right: spacing.md,
+    width: 38, height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  accountBtnIcon: { fontSize: 18 },
   heroEyebrow: {
     fontFamily: fonts.sans,
     fontSize: 11,

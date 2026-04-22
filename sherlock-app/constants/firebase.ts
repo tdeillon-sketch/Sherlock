@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth, signInAnonymously, onAuthStateChanged, User,
-  GoogleAuthProvider, signInWithCredential, signOut as fbSignOut,
+  GoogleAuthProvider, OAuthProvider, signInWithCredential, signOut as fbSignOut,
+  deleteUser,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -9,6 +10,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 
@@ -45,14 +47,67 @@ export async function signInWithGoogleIdToken(idToken: string): Promise<User> {
   return result.user;
 }
 
+// Sign in with an Apple identity token (obtained from expo-apple-authentication)
+// `rawNonce` is the unhashed nonce we passed to Apple — Firebase requires it
+// to verify the token.
+export async function signInWithAppleIdToken(
+  identityToken: string,
+  rawNonce: string,
+): Promise<User> {
+  const provider = new OAuthProvider('apple.com');
+  const credential = provider.credential({
+    idToken: identityToken,
+    rawNonce,
+  });
+  const result = await signInWithCredential(auth, credential);
+  return result.user;
+}
+
 // Returns true if the current user is signed in with Google (vs anonymous)
 export function isGoogleSignedIn(user: User | null): boolean {
   if (!user) return false;
   return user.providerData.some(p => p.providerId === 'google.com');
 }
 
+// Returns true if the current user is signed in with Apple (vs anonymous)
+export function isAppleSignedIn(user: User | null): boolean {
+  if (!user) return false;
+  return user.providerData.some(p => p.providerId === 'apple.com');
+}
+
+// Returns true if the user is signed in with any third-party provider
+export function isThirdPartySignedIn(user: User | null): boolean {
+  return isGoogleSignedIn(user) || isAppleSignedIn(user);
+}
+
 export async function signOut(): Promise<void> {
   await fbSignOut(auth);
+}
+
+/**
+ * Permanently delete the current user's account:
+ *  - Removes the Firestore document /users/{uid}
+ *  - Deletes the Firebase Auth user
+ * After this, the user will be signed out and the local state should be reset.
+ *
+ * NOTE: Firebase requires a recent sign-in for `deleteUser`. If the call
+ * throws "auth/requires-recent-login", the caller should re-authenticate
+ * the user (sign in again) before retrying.
+ */
+export async function deleteAccount(): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Aucun utilisateur connecté");
+  // 1. Delete Firestore data first (best-effort — if it fails the auth
+  //    user remains so we don't end up with orphaned data).
+  try {
+    await deleteDoc(userDocRef(user.uid));
+  } catch (e) {
+    // Continue anyway — the auth user must still be deleted to comply
+    // with Apple's account-deletion requirement.
+  }
+  // 2. Delete the auth user. If "requires-recent-login", let the caller
+  //    handle re-auth.
+  await deleteUser(user);
 }
 
 // ── User data types ──
