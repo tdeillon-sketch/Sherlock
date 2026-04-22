@@ -21,11 +21,8 @@ const TYPE_NAMES = [
 ];
 
 // ── Role ───────────────────────────────────────────────────────
-// Simplified to 2 roles: 'adulte' and 'enfant'. The 'ado' role was
-// removed from the UI to declutter the picker; its data bucket still
-// lives in constants/duo.ts but is now unreachable from the UI.
-// 'enfant' is presented generically as "5-17 ans" so it covers what
-// used to be the ado bracket too.
+// 2 roles only: 'adulte' and 'enfant'. The 'enfant' bucket covers the
+// full 5–17 range (the previous 'ado' role + bucket has been removed).
 type ProfileRole = 'adulte' | 'enfant';
 
 const ROLE_LABELS: Record<ProfileRole, string> = {

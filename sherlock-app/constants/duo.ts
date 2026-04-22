@@ -3,16 +3,17 @@
 //  81 paires dirigées (A→B) × 5 contextes
 // ═══════════════════════════════════════════════════════════════
 
-export type DuoContext = 'enfant' | 'ado' | 'couple' | 'adulte' | 'pairs';
+// Note: the 'ado' context was retired with the 2-role Duo picker (Adulte
+// / Enfant only). The 'enfant' bucket now covers the 5-17 range.
+export type DuoContext = 'enfant' | 'couple' | 'adulte' | 'pairs';
 
 export const CONTEXT_LABELS: Record<BaseContext, string> = {
-  enfant:  '👨 Parent · Enfant (5–12)',
-  ado:     '🧑 Parent · Ado (13–17)',
+  enfant:  '👨 Parent · Enfant (5–17)',
   couple:  '💑 Couple',
   adulte:  '👥 Amis · Collègues',
 };
 
-export type BaseContext = Exclude<DuoContext, 'pairs'>; // 'enfant' | 'ado' | 'couple' | 'adulte'
+export type BaseContext = Exclude<DuoContext, 'pairs'>; // 'enfant' | 'couple' | 'adulte'
 
 export interface DuoPair {
   pointsForts: string;
@@ -38,7 +39,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez ensemble une règle : une critique = un compliment sincère. Sans cela, votre espace commun peut devenir un tribunal.",
     contexte: {
       enfant: "Parent Type 1 avec enfant Type 1 : évitez la surenchère d'exigence. Votre enfant se punit déjà lui-même — il a besoin de votre légèreté, pas de votre perfectionnisme.",
-      ado: "Votre ado Type 1 comprend vos règles mais les conteste sur le fond. Acceptez ses arguments : il veut améliorer le système, pas le détruire.",
       couple: "Vous partagez un foyer impeccable et des valeurs fortes, mais prenez soin de garder de la spontanéité — la vie ne doit pas être une check-list.",
       adulte: "Duo redoutable en projet mais prenez garde : sans humour ni tolérance à l'imperfection, votre collaboration peut virer au tribunal.",
     },
@@ -52,7 +52,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 1 : exprimez la gratitude avant la critique. Type 2 : dites clairement ce dont vous avez besoin au lieu d'attendre qu'il le devine.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre approbation avant tout. Remplacez une correction sur deux par « je suis fier de toi » — il s'épanouira.",
-      ado: "Votre ado Type 2 donne beaucoup aux autres et peut se négliger. Votre rigueur est utile ici : aidez-le à poser des limites sans se sentir coupable.",
       couple: "Le 2 adoucit le 1, le 1 structure le 2. Belle complémentarité si le 1 apprend à valoriser avant de corriger.",
       adulte: "Le 2 rend le 1 plus humain aux yeux des autres. Le 1 aide le 2 à ne pas se perdre dans le service des autres.",
     },
@@ -66,7 +65,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Clarifiez dès le départ : est-ce le processus ou le résultat qui prime ? Cette question évite la plupart de vos frictions.",
     contexte: {
       enfant: "Votre enfant Type 3 veut votre admiration, pas seulement votre approbation. Célébrez ses succès avec enthousiasme, pas avec « oui mais tu aurais pu... »",
-      ado: "Votre ado Type 3 est en train de construire son image. Ne critiquez pas sa stratégie — guidez-le vers l'authenticité derrière la façade.",
       couple: "Duo puissant mais potentiellement compétitif. Définissez des domaines distincts où chacun excelle pour éviter la rivalité.",
       adulte: "Redoutable en équipe si le 1 accepte les raccourcis pragmatiques du 3 et si le 3 respecte les lignes rouges éthiques du 1.",
     },
@@ -80,7 +78,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 1 : la sensibilité du 4 n'est pas un défaut — c'est sa force. Type 4 : la rigueur du 1 n'est pas du rejet — c'est sa façon d'aimer.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin de se sentir unique, pas parfait. Valorisez sa différence plutôt que de la corriger.",
-      ado: "Votre ado Type 4 traverse des tempêtes intérieures intenses. Votre stabilité est précieuse — mais évitez de minimiser ce qu'il ressent.",
       couple: "Relation intense et riche si le 1 apprend à vivre dans le flou émotionnel et si le 4 accepte la structure comme acte d'amour.",
       adulte: "Collaboration artistique ou éthique idéale. Laissez le 4 créer et le 1 structurer — ne les inversez pas.",
     },
@@ -94,7 +91,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Planifiez des moments de connexion émotionnelle — ni l'un ni l'autre n'en prendra l'initiative naturellement.",
     contexte: {
       enfant: "Votre enfant Type 5 a besoin de temps seul pour se ressourcer — ne le forcez pas à sociabiliser. Respectez son rythme.",
-      ado: "Votre ado Type 5 peut sembler distant. Proposez des échanges intellectuels : c'est par là qu'il s'ouvre.",
       couple: "Relation stable et respectueuse mais risque de « vie parallèle ». Créez des rituels de connexion réguliers.",
       adulte: "Duo très efficace sur les projets analytiques. Attention à ne pas laisser la relation se réduire au seul plan professionnel.",
     },
@@ -108,7 +104,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 1 : rassurez avant de corriger. Type 6 : faites confiance aux intentions du 1 — sa rigueur protège, elle n'opprime pas.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de règles claires ET de votre sécurité affective. Les deux ensemble, pas l'un sans l'autre.",
-      ado: "Votre ado Type 6 peut être très rebelle ou très conformiste selon les jours. Offrez-lui un cadre stable sans rigidité.",
       couple: "Relation solide et fiable. Attention à ne pas tomber dans la routine par peur du changement — stimulez-vous mutuellement.",
       adulte: "Excellent binôme pour les projets qui demandent rigueur et anticipation. Le 6 voit les risques, le 1 tient le cap.",
     },
@@ -122,7 +117,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Définissez des zones de liberté pour le 7 et des lignes rouges pour le 1. Respectez-les mutuellement sans négociation constante.",
     contexte: {
       enfant: "Votre enfant Type 7 est une tornade d'énergie. Donnez-lui des règles COURTES et CLAIRES — les longues explications morales le perdent.",
-      ado: "Votre ado Type 7 a horreur des contraintes. Négociez sur les modalités, jamais sur les valeurs essentielles.",
       couple: "Relation vivante et stimulante si le 1 apprend à lâcher prise et si le 7 honore ses engagements. Jamais ennuyeux.",
       adulte: "Le 7 génère les idées, le 1 les structure. Duo créatif redoutable si les rôles sont clairs.",
     },
@@ -136,7 +130,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Acceptez que vous puissiez tous les deux avoir raison en même temps. La complémentarité est possible si l'ego ne prend pas toute la place.",
     contexte: {
       enfant: "Votre enfant Type 8 teste les limites — c'est sa façon de chercher un adulte solide. Tenez bon sans écraser, c'est ce dont il a besoin.",
-      ado: "Votre ado Type 8 ne respecte que ce qu'il ne peut pas intimider. Soyez cohérent, calme et ferme — jamais réactif.",
       couple: "Relation passionnée et explosive. Apprenez à vous disputer sans détruire — les blessures entre vous peuvent être profondes.",
       adulte: "Duo puissant en leadership. Définissez les territoires de décision de chacun pour éviter la rivalité.",
     },
@@ -150,7 +143,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 1 : demandez l'avis du 9 avant de décider — il a souvent la meilleure réponse, mais ne la donnera pas si on ne lui laisse pas le temps.",
     contexte: {
       enfant: "Votre enfant Type 9 a besoin de douceur dans les consignes. Le ton compte autant que le contenu — évitez les ordres secs.",
-      ado: "Votre ado Type 9 semble apathique mais observe tout. Impliquez-le dans les décisions qui le concernent.",
       couple: "Relation stable et paisible. Attention : la passivité du 9 peut masquer des frustrations que le 1 n'entend pas.",
       adulte: "Le 9 harmonise, le 1 organise. Excellent binôme si le 1 apprend à ne pas dominer les réunions.",
     },
@@ -168,7 +160,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 2 : dites ce dont vous avez besoin sans attendre que l'autre le devine. Type 1 : une reconnaissance sincère vaut plus que dix corrections.",
     contexte: {
       enfant: "Votre enfant Type 1 a des standards élevés pour lui-même. Célébrez ses efforts, pas seulement ses résultats parfaits.",
-      ado: "Votre ado Type 1 a besoin de votre approbation sur ses valeurs, pas sur ses performances.",
       couple: "Belle complémentarité si le 2 n'attend pas la perfection du 1 et si le 1 exprime régulièrement sa gratitude.",
       adulte: "Le 2 rend le 1 accessible aux équipes. Le 1 aide le 2 à ne pas se dissoudre dans le service des autres.",
     },
@@ -182,7 +173,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Assurez-vous que votre relation a de l'espace pour les deux. Deux 2 ensemble peuvent s'oublier mutuellement dans l'effort de se servir.",
     contexte: {
       enfant: "Parent Type 2 avec enfant Type 2 : apprenez-lui aussi à recevoir, pas seulement à donner. Votre enfant doit savoir qu'il a de la valeur en dehors du service.",
-      ado: "Votre ado Type 2 donne tout à ses amis. Aidez-le à identifier ses propres besoins avant de les sacrifier.",
       couple: "Relation chaleureuse et douce. Attention : deux 2 peuvent éviter tous les conflits nécessaires par peur de blesser l'autre.",
       adulte: "Duo très soudé. Prenez garde à ne pas exclure les autres ou à créer une dépendance mutuelle excessive.",
     },
@@ -196,7 +186,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : le 2 ne donne pas pour être utile — il donne pour être aimé. Répondez à ce besoin explicitement.",
     contexte: {
       enfant: "Votre enfant Type 3 veut votre admiration. Donnez-lui votre amour sans condition d'abord, l'admiration ensuite.",
-      ado: "Votre ado Type 3 construit son image. Aidez-le à distinguer ce qu'il veut vraiment de ce qu'il pense que les autres veulent.",
       couple: "Relation dynamique où le 2 soutient et le 3 avance. Vérifiez régulièrement que le 2 ne s'efface pas totalement.",
       adulte: "Le 3 ouvre les portes, le 2 les entretient. Excellent duo commercial ou associatif.",
     },
@@ -210,7 +199,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 2 : donnez de l'espace au 4 — votre présence constante peut étouffer. Type 4 : exprimer votre gratitude concrètement nourrira le 2.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin d'être vu dans sa singularité. Aimez-le pour ce qu'il est, pas pour ce qu'il fait.",
-      ado: "Votre ado Type 4 traverse des crises d'identité intenses. Soyez présent sans envahir — le juste milieu.",
       couple: "Relation profonde et intense. Le 2 apporte la stabilité affective que le 4 cherche ; le 4 donne au 2 la profondeur qu'il désire.",
       adulte: "Duo créatif et émotionnellement riche. Évitez les drames mutuels qui peuvent bloquer l'avancement.",
     },
@@ -224,7 +212,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 2 : respectez les silences du 5 — c'est sa façon de se ressourcer, pas un rejet. Type 5 : un mot d'appréciation sincère change tout pour le 2.",
     contexte: {
       enfant: "Votre enfant Type 5 préfère observer qu'interagir. Ne forcez pas la connexion — proposez des activités intellectuelles partagées.",
-      ado: "Votre ado Type 5 peut sembler vous rejeter. Il a besoin de vous mais ne sait pas demander — restez disponible sans insister.",
       couple: "Relation possible et riche si le 2 apprend à ne pas surinvestir et si le 5 apprend à exprimer son attachement.",
       adulte: "Le 2 apporte l'humain, le 5 apporte l'analyse. Duo complémentaire dans les projets qui mêlent relation et réflexion.",
     },
@@ -238,7 +225,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Assurez-vous que votre relation n'est pas que de la gestion des angoisses mutuelles. Construisez aussi de la joie et de la légèreté.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de votre présence constante et de règles claires pour se sentir en sécurité.",
-      ado: "Votre ado Type 6 doute de lui. Votre soutien inconditionnel est vital — mais évitez de surprotéger.",
       couple: "Relation très sécurisante et loyale. Risque de repli sur soi en bulle protectrice — continuez à vous ouvrir au monde.",
       adulte: "Duo de confiance absolue. Veillez à ne pas vous isoler du reste de l'équipe.",
     },
@@ -252,7 +238,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 2 : ne prenez pas les escapades du 7 comme un rejet — c'est sa nature. Type 7 : la fidélité émotionnelle que demande le 2 est un ancrage précieux.",
     contexte: {
       enfant: "Votre enfant Type 7 vit à 100 à l'heure. Canalisez son énergie avec bienveillance — les règles doivent être courtes et motivantes.",
-      ado: "Votre ado Type 7 fuit les responsabilités. Aidez-le à voir que s'engager n'est pas une prison mais une source de liberté.",
       couple: "Relation joyeuse et chaleureuse. Le 2 ancre le 7, le 7 allège le 2. Très belle dynamique si les besoins affectifs du 2 sont entendus.",
       adulte: "Le 2 fidélise les gens, le 7 les enthousiasme. Duo redoutable en animation ou en vente.",
     },
@@ -266,7 +251,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : la douceur du 2 n'est pas de la faiblesse — c'est sa puissance. Type 2 : dites directement ce que vous voulez au lieu d'attendre que le 8 le devine.",
     contexte: {
       enfant: "Votre enfant Type 8 teste les limites pour chercher un adulte solide. Soyez doux ET ferme — les deux ensemble.",
-      ado: "Votre ado Type 8 a besoin que vous teniez bon face à ses provocations. Votre amour incondititionnel + votre fermeté = sa sécurité.",
       couple: "Relation intense et passionnée. Le 2 apporte la tendresse que le 8 n'ose pas demander. Belle alchimie si la brutalité du 8 est régulée.",
       adulte: "Le 8 avance, le 2 fédère. Duo efficace en leadership si le 8 respecte la dimension humaine portée par le 2.",
     },
@@ -280,7 +264,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Fixez un moment régulier pour parler de ce qui ne va pas — vos deux tendances naturelles sont d'ignorer les frictions.",
     contexte: {
       enfant: "Votre enfant Type 9 a besoin de douceur et de paix. Guidez-le sans brusquerie — il répond très bien à l'encouragement calme.",
-      ado: "Votre ado Type 9 peut sembler sans direction. Aidez-le à identifier ce qu'IL veut vraiment, pas ce qui est commode.",
       couple: "Relation très harmonieuse. Risque de « trop de paix » et de non-dits. Cultivez aussi l'expression des désaccords.",
       adulte: "Duo très apprécié des équipes pour sa bienveillance. Attention à ne pas éviter les décisions difficiles ensemble.",
     },
@@ -298,7 +281,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Décidez ensemble si le projet est une vitrine (3 mène) ou un chef-d'œuvre (1 mène). La clarté évite 80% des frictions.",
     contexte: {
       enfant: "Votre enfant Type 1 veut faire bien, pas vite. Respectez son rythme et valorisez la qualité autant que la performance.",
-      ado: "Votre ado Type 1 a des principes forts. Ne les bousculez pas par pragmatisme — engagez un dialogue sur le sens.",
       couple: "Duo de high-performers. Attention à ne pas transformer votre vie commune en concurrence permanente.",
       adulte: "Le 3 vend, le 1 livre. Très bonne répartition des rôles si elle est explicite.",
     },
@@ -312,7 +294,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : partagez le crédit avec le 2 — publiquement. Type 2 : posez des limites claires sur ce que vous pouvez et voulez donner.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre amour avant vos applaudissements. Dites-lui que vous l'aimez pour qui il est.",
-      ado: "Votre ado Type 2 peut se sacrifier pour sa popularité. Aidez-le à comprendre que la vraie amitié ne demande pas de sacrifice.",
       couple: "Belle dynamique si le 3 valorise le 2 au-delà de son rôle de soutien. Le 2 doit aussi avoir ses propres victoires.",
       adulte: "Le 3 conquiert les nouveaux, le 2 fidélise les existants. Duo commercial ou RH excellent.",
     },
@@ -326,7 +307,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des moments sans enjeu de performance. Qui êtes-vous quand personne ne regarde ? C'est là que votre relation prend de la profondeur.",
     contexte: {
       enfant: "Parent Type 3 avec enfant Type 3 : attention à la pression de performance. Votre enfant a besoin de savoir que vous l'aimez même quand il échoue.",
-      ado: "Votre ado Type 3 est en compétition avec le monde — et peut-être avec vous. Soyez modèle d'authenticité, pas de succès.",
       couple: "Duo glamour et efficace. Prenez garde : vous pouvez tous les deux jouer un rôle sans jamais vous montrer vrais.",
       adulte: "Duo très performant. Définissez clairement les rôles pour éviter la rivalité destructrice.",
     },
@@ -340,7 +320,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : ralentissez assez pour entendre le 4. Type 4 : le 3 montre son amour par ses actes, pas toujours par ses mots.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin que vous le voyiez dans sa singularité. Résistez à l'envie de le « corriger » pour qu'il soit plus efficace.",
-      ado: "Votre ado Type 4 peut sembler en crise permanente. C'est sa façon de chercher son identité. Soyez son ancre.",
       couple: "Relation riche et complexe. Le 4 apporte la profondeur que le 3 cherche secrètement. Le 3 sort le 4 de sa mélancolie.",
       adulte: "Le 3 commercialise, le 4 crée. Duo créatif remarquable si chacun respecte le territoire de l'autre.",
     },
@@ -354,7 +333,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : donnez au 5 le temps de réflexion dont il a besoin — vous en bénéficierez. Type 5 : le 3 a besoin de résultats visibles pour avancer.",
     contexte: {
       enfant: "Votre enfant Type 5 observe beaucoup avant d'agir. Respectez sa prudence — ne l'accusez pas de lenteur.",
-      ado: "Votre ado Type 5 peut sembler indifférent à votre regard. Il a ses propres standards intérieurs très élevés.",
       couple: "Relation possible et solide si le 3 apprend à être vrai et si le 5 apprend à s'engager émotionnellement.",
       adulte: "Le 3 présente, le 5 maîtrise le fond. Duo excellent en conseil ou en innovation.",
     },
@@ -368,7 +346,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : prenez au sérieux les alertes du 6 — il voit ce que votre optimisme cache parfois. Type 6 : le 3 n'est pas imprudent, il a juste confiance.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de sécurité pour oser. Encouragez-le à prendre des risques calculés — soyez son filet.",
-      ado: "Votre ado Type 6 peut alterner confiance et doute. Votre constance et votre présence sont son ancre.",
       couple: "Bon duo si le 3 honore ses engagements et si le 6 fait confiance à la fidélité du 3 sans l'interroger sans cesse.",
       adulte: "Le 3 lance, le 6 sécurise. Excellent duo pour les projets ambitieux avec gestion des risques.",
     },
@@ -382,7 +359,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez de vrais moments de profondeur. Deux profils aussi énergiques peuvent se divertir mutuellement sans jamais se rencontrer vraiment.",
     contexte: {
       enfant: "Votre enfant Type 7 est une source d'énergie inépuisable. Orientez-la vers des projets concrets avec des résultats visibles.",
-      ado: "Votre ado Type 7 papillonne. Aidez-le à finir ce qu'il commence — c'est là qu'il construira sa confiance.",
       couple: "Relation très stimulante mais risque de fuite mutuelle vers l'action pour éviter les conversations difficiles.",
       adulte: "Duo explosion de créativité et d'énergie. Entourez-vous de profils plus posés pour structurer vos idées.",
     },
@@ -396,7 +372,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Définissez clairement les rôles. Un 3 et un 8 ensemble sans territoire défini = conflit de leadership assuré.",
     contexte: {
       enfant: "Votre enfant Type 8 a besoin de votre force. Ne cherchez pas à le séduire — soyez simplement solide et cohérent.",
-      ado: "Votre ado Type 8 teste les limites. Tenez bon sans entrer dans le rapport de force — vous ne le gagnerez pas.",
       couple: "Relation puissante et passionnée. Attention à la compétition — chacun doit avoir un espace de leadership.",
       adulte: "Duo de choc en affaires. Définissez qui est CEO et qui est COO — et respectez cette ligne.",
     },
@@ -410,7 +385,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 3 : le 9 est votre meilleur miroir — il vous voit tel que vous êtes, pas tel que vous voulez paraître. Écoutez-le.",
     contexte: {
       enfant: "Votre enfant Type 9 s'adapte à vos attentes. Assurez-vous qu'il développe aussi ses propres désirs.",
-      ado: "Votre ado Type 9 semble sans ambition. C'est souvent de la résistance passive — cherchez ce qui l'anime vraiment.",
       couple: "Le 9 apporte la paix dont le 3 a secrètement besoin. Le 3 tire le 9 de sa léthargie. Belle dynamique.",
       adulte: "Le 9 harmonise, le 3 motive. Duo apprécié en management.",
     },
@@ -428,7 +402,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : la rigueur du 1 n'est pas un jugement de valeur sur vous. Type 1 : le 4 ne cherche pas la perfection — il cherche la vérité.",
     contexte: {
       enfant: "Votre enfant Type 1 se punit déjà de ses erreurs. Votre soutien émotionnel lui permet de lâcher prise.",
-      ado: "Votre ado Type 1 a un fort sens moral. Engagez des discussions sur les valeurs — il adore ça.",
       couple: "Relation complexe et riche. Le 1 structure le 4, le 4 donne de la profondeur au 1. Fragile mais précieux.",
       adulte: "Le 4 crée, le 1 améliore. Duo artistique ou éditorial remarquable.",
     },
@@ -442,7 +415,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : le 2 a besoin d'être remercié concrètement. Type 2 : laissez le 4 disparaître parfois — il reviendra.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre affection. Dites-lui souvent que vous l'aimez — en mots, pas seulement en actes.",
-      ado: "Votre ado Type 2 se perd dans ses relations. Aidez-le à mettre ses propres besoins en premier.",
       couple: "Relation intense, profonde et émotionnellement riche. Risque d'excès dramatiques des deux côtés.",
       adulte: "Duo créatif et humain. Attention aux drames qui peuvent bloquer l'avancement des projets.",
     },
@@ -456,7 +428,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : le 3 peut rendre vos idées accessibles au monde — c'est précieux. Type 3 : donnez crédit à la source créative du 4.",
     contexte: {
       enfant: "Votre enfant Type 3 a besoin d'être admiré. Mais apprenez-lui aussi la valeur de la profondeur et de l'authenticité.",
-      ado: "Votre ado Type 3 construit son image. Encouragez-le à explorer qui il est vraiment derrière la façade.",
       couple: "Relation créative et stimulante. Le 4 apporte la vérité, le 3 apporte l'élan. Fragile mais belle.",
       adulte: "Duo artistique-commercial idéal. Le 4 crée, le 3 vend. Ne les mélangez pas.",
     },
@@ -470,7 +441,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez ensemble des espaces de légèreté. La profondeur est votre force, mais la vie demande aussi de la joie.",
     contexte: {
       enfant: "Parent Type 4 avec enfant Type 4 : évitez la transmission de la mélancolie. Montrez-lui la joie dans la beauté.",
-      ado: "Votre ado Type 4 a besoin d'être vu et compris — vous le pouvez mieux que personne. Mais aidez-le aussi à agir.",
       couple: "Relation profonde et intense. Cultivez aussi la légèreté et l'humour pour équilibrer.",
       adulte: "Duo créatif exceptionnel. Entourez-vous de profils plus pragmatiques pour concrétiser vos visions.",
     },
@@ -484,7 +454,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : le 5 vous aime différemment — par la curiosité et l'attention. Type 5 : exprimez votre attachement, même maladroitement.",
     contexte: {
       enfant: "Votre enfant Type 5 vit dans sa tête. Rejoignez-le là-bas avant d'essayer de le ramener dans le monde émotionnel.",
-      ado: "Votre ado Type 5 préfère le livre ou l'ordinateur à la conversation. C'est normal — créez des ponts discrets.",
       couple: "Relation possible et profonde si chacun accepte le langage de l'autre. Belle complémentarité.",
       adulte: "Duo intellectuellement riche. Apportez un peu de chaleur humaine dans vos interactions pour les rendre accessibles.",
     },
@@ -498,7 +467,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez ensemble une relation fondée sur la confiance progressive. Ni le 4 ni le 6 ne s'ouvre facilement — mais les deux en ont besoin.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de sécurité avant l'autonomie. Soyez son ancre sans le surprotéger.",
-      ado: "Votre ado Type 6 peut être rebelle ou très conformiste. Aidez-le à trouver son propre cap.",
       couple: "Relation profonde et loyale. Attention aux spirales de doute mutuel — rassurez-vous souvent.",
       adulte: "Le 4 apporte l'originalité, le 6 apporte la loyauté. Bon équilibre dans les équipes créatives.",
     },
@@ -512,7 +480,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : laissez le 7 vous emmener vers la légèreté — ce n'est pas une trahison de votre profondeur. Type 7 : restez quand c'est difficile.",
     contexte: {
       enfant: "Votre enfant Type 7 fuit la douleur. Aidez-le à apprendre que les émotions difficiles passent — et qu'elles enrichissent.",
-      ado: "Votre ado Type 7 a besoin de liberté ET de sens. Aidez-le à construire une vision au-delà du plaisir immédiat.",
       couple: "Relation vivante. Le 7 allège le 4, le 4 ancre le 7. Très belle dynamique si le 7 honore ses engagements.",
       adulte: "Le 4 donne du sens, le 7 donne de l'énergie. Duo créatif remarquable.",
     },
@@ -526,7 +493,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : la sensibilité du 4 n'est pas une faiblesse — c'est sa force créatrice. Type 4 : la brutalité du 8 cache souvent une grande loyauté.",
     contexte: {
       enfant: "Votre enfant Type 8 est direct et puissant. Répondez à sa force sans le briser — tenez bon avec douceur.",
-      ado: "Votre ado Type 8 peut sembler vous défier. Il teste si vous êtes digne de confiance — montrez-lui que oui.",
       couple: "Relation passionnée et intense. Les deux se blessent facilement. Apprenez les mots qui soignent.",
       adulte: "Duo très engagé. Les deux apportent leur entièreté. Définissez des espaces de désaccord sains.",
     },
@@ -540,7 +506,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 4 : le 9 vous accepte comme vous êtes — c'est rare. Reconnaissez cette qualité. Type 9 : exprimez vos propres désirs et émotions — le 4 en a besoin.",
     contexte: {
       enfant: "Votre enfant Type 9 absorbe les ambiances. Protégez-le de vos propres turbulences émotionnelles.",
-      ado: "Votre ado Type 9 peut sembler sans vie propre. Aidez-le à trouver ce qui l'enflamme vraiment.",
       couple: "Relation profonde et apaisante. Le 9 est le havre dont le 4 a besoin. Le 4 réveille le 9. Belle dynamique.",
       adulte: "Le 4 inspire, le 9 harmonise. Bon duo en milieu créatif ou relationnel.",
     },
@@ -558,7 +523,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Planifiez des moments de connexion humaine. Ni l'un ni l'autre ne le fera naturellement.",
     contexte: {
       enfant: "Votre enfant Type 1 cherche votre approbation. Exprimez votre fierté en mots, pas seulement en signes.",
-      ado: "Votre ado Type 1 veut débattre sur les principes. C'est sa façon de se construire — engagez le dialogue.",
       couple: "Relation respectueuse et stable. Investissez dans la chaleur émotionnelle — elle ne viendra pas toute seule.",
       adulte: "Duo intellectuellement puissant. Attention à ne pas paraître distant ou arrogant aux autres.",
     },
@@ -572,7 +536,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 5 : un geste de gratitude sincère vers le 2 change tout. Type 2 : donnez de l'espace — c'est la condition pour que le 5 revienne.",
     contexte: {
       enfant: "Votre enfant Type 2 a besoin de connexion. Proposez des activités côte à côte — c'est votre façon naturelle d'être ensemble.",
-      ado: "Votre ado Type 2 peut se sacrifier pour être aimé. Aidez-le à voir qu'il a de la valeur sans se donner.",
       couple: "Relation possible et complémentaire. Le 2 humanise le 5, le 5 ancre le 2. Besoin de négocier les niveaux d'intimité.",
       adulte: "Le 5 analyse, le 2 relie. Excellent duo dans les projets qui mêlent expertise et relationnel.",
     },
@@ -586,7 +549,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 5 : votre expertise a besoin d'être vue — laissez le 3 vous aider. Type 3 : sans le fond solide du 5, votre image est fragile.",
     contexte: {
       enfant: "Votre enfant Type 3 veut briller. Enseignez-lui que la compétence réelle est le meilleur fond de scène.",
-      ado: "Votre ado Type 3 veut des résultats rapides. Guidez-le vers la profondeur — elle servira son ambition.",
       couple: "Relation efficace si les rôles sont clairs. Le 5 réfléchit, le 3 agit. Attention : le 5 ne doit pas rester dans l'ombre.",
       adulte: "Duo de conseil ou d'innovation très efficace. Le 5 fournit l'expertise, le 3 la vend.",
     },
@@ -600,7 +562,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 5 : laissez le 4 vous emmener dans l'émotionnel — c'est la zone de croissance. Type 4 : le 5 vous aime par l'intellect d'abord.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin d'être vu dans sa singularité émotionnelle. Rejoignez-le là avec curiosité.",
-      ado: "Votre ado Type 4 cherche son identité dans l'intensité. Soyez son ancre calme.",
       couple: "Relation riche et profonde. Deux êtres qui ne vivent pas en surface. Belle rencontre si la distance du 5 est apprivoisée.",
       adulte: "Le 5 structure, le 4 inspire. Duo créatif et intellectuellement exceptionnel.",
     },
@@ -614,7 +575,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Fixez intentionnellement des moments de partage. Deux 5 ensemble peuvent coexister sans vraiment se rencontrer.",
     contexte: {
       enfant: "Parent Type 5 avec enfant Type 5 : votre enfant a besoin de chaleur autant que d'espace. Verbalisez votre amour.",
-      ado: "Votre ado Type 5 peut sembler ne pas avoir besoin de vous. Il en a besoin — différemment.",
       couple: "Relation intellectuellement riche mais risque de vie parallèle. Créez des projets communs.",
       adulte: "Duo extrêmement compétent. Risque d'isolement de l'équipe — impliquez les autres.",
     },
@@ -628,7 +588,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 5 : le 6 a besoin de réassurance régulière — un mot suffit. Type 6 : le calme du 5 n'est pas de l'indifférence.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de votre présence constante. Ne disparaissez pas derrière votre travail sans le rassurer.",
-      ado: "Votre ado Type 6 doute beaucoup. Partagez votre façon de raisonner avec lui — il apprendra à faire confiance à sa propre analyse.",
       couple: "Relation stable et complémentaire. Le 5 calme le 6, le 6 sort le 5 de son isolement.",
       adulte: "Le 5 maîtrise le fond, le 6 anticipe les risques. Excellent duo pour les projets complexes.",
     },
@@ -642,7 +601,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 5 : le 7 vous sort de votre bulle — laissez-le faire. Type 7 : restez assez longtemps pour bénéficier de la profondeur du 5.",
     contexte: {
       enfant: "Votre enfant Type 7 a besoin de stimulation constante. Canalisez avec des activités qui demandent aussi de la concentration.",
-      ado: "Votre ado Type 7 saute d'une passion à l'autre. Aidez-le à finir quelque chose — la satisfaction est au bout.",
       couple: "Relation stimulante si le 5 accepte le rythme du 7 et si le 7 honore la profondeur du 5.",
       adulte: "Le 5 maîtrise, le 7 enthousiasme. Duo innovant remarquable.",
     },
@@ -656,7 +614,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : donnez de l'espace au 5 — son expertise vaut la patience. Type 5 : le 8 a besoin de vos conclusions, pas de tout votre raisonnement.",
     contexte: {
       enfant: "Votre enfant Type 8 est fort et direct. Il a besoin d'un parent qui tient bon — soyez ce roc.",
-      ado: "Votre ado Type 8 teste les autorités. Votre compétence est votre meilleure arme — soyez incontestable.",
       couple: "Relation complémentaire. Le 5 réfléchit, le 8 agit. Belle alliance si le 8 respecte les besoins d'espace du 5.",
       adulte: "Le 5 est le cerveau, le 8 est le bras. Duo puissant si les rôles sont clairement définis.",
     },
@@ -670,7 +627,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Planifiez des moments de vrai échange — vos deux naturels sont de coexister sans vous rencontrer vraiment.",
     contexte: {
       enfant: "Votre enfant Type 9 a besoin de guidance claire. Sa compliance peut masquer des désirs non exprimés.",
-      ado: "Votre ado Type 9 cherche sa direction. Proposez-lui des options et laissez-le choisir — mais accompagnez.",
       couple: "Relation très paisible. Risque de « vie parallèle » douce mais vide de connexion profonde.",
       adulte: "Duo très respectueux. Excellent pour les environnements qui demandent calme et réflexion.",
     },
@@ -688,7 +644,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 6 : faites confiance aux intentions du 1 — sa rigueur est son amour. Type 1 : rassurez le 6 sur le processus, pas seulement sur le résultat.",
     contexte: {
       enfant: "Votre enfant Type 1 a des standards très élevés. Montrez-lui que l'erreur est permise chez vous.",
-      ado: "Votre ado Type 1 veut améliorer le système. Accueillez ses critiques comme des marques d'engagement.",
       couple: "Relation solide et durable. Attention à ne pas alimenter les peurs mutuelles — cherchez la légèreté.",
       adulte: "Duo de confiance. Excellent pour les projets qui demandent fiabilité et intégrité sur la durée.",
     },
@@ -702,7 +657,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Assurez-vous que votre relation inclut aussi de la joie et de la légèreté — pas seulement du soutien mutuel.",
     contexte: {
       enfant: "Votre enfant Type 2 donne beaucoup. Apprenez-lui à aussi recevoir et à poser des limites.",
-      ado: "Votre ado Type 2 cherche l'approbation de ses pairs. Aidez-le à s'ancrer dans sa propre valeur.",
       couple: "Relation très sécurisante. Risque de repli en bulle protectrice — continuez à vous ouvrir au monde.",
       adulte: "Duo de soutien humain excellent. Faites attention à ne pas vous isoler des autres.",
     },
@@ -716,7 +670,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 6 : le 3 n'est pas irresponsable — il a une confiance que vous pouvez apprendre. Type 3 : honorez vos engagements envers le 6.",
     contexte: {
       enfant: "Votre enfant Type 3 veut être admiré. Montrez-lui que l'intégrité est plus durable que le succès rapide.",
-      ado: "Votre ado Type 3 prend des risques calculés. Guidez-le avec des règles sur les moyens, pas les fins.",
       couple: "Bon duo si le 3 est fiable dans ses engagements. Le 6 a besoin de certitude pour se sentir en sécurité.",
       adulte: "Le 6 sécurise, le 3 propulse. Excellent tandem en gestion de projet.",
     },
@@ -730,7 +683,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Rassurez-vous mutuellement et régulièrement. Ni l'un ni l'autre ne fait facilement confiance — mais les deux en ont besoin.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin d'être vu dans sa différence. Votre présence constante est sa sécurité.",
-      ado: "Votre ado Type 4 vit des tempêtes intérieures. Soyez son ancre stable sans chercher à les résoudre.",
       couple: "Relation profonde et loyale. Attention aux angoisses d'abandon croisées — développez un langage de réassurance.",
       adulte: "Le 6 apporte la fidélité, le 4 apporte la profondeur. Beau duo dans les milieux artistiques.",
     },
@@ -744,7 +696,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 6 : la réflexion calme du 5 est votre meilleur antidote à l'anxiété. Type 5 : le 6 a juste besoin que vous disiez « c'est OK ».",
     contexte: {
       enfant: "Votre enfant Type 5 a besoin de temps seul pour réfléchir. Respectez ces moments — il reviendra.",
-      ado: "Votre ado Type 5 peut sembler indifférent aux règles. Il les applique s'il les comprend — expliquez.",
       couple: "Relation complémentaire et stable. Le 5 rassure le 6 par sa clarté ; le 6 fidélise le 5 par sa constance.",
       adulte: "Duo d'analyse et de gestion des risques excellent. Très bon en conseil ou en gestion de crise.",
     },
@@ -758,7 +709,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des rituels de joie et de légèreté. Vos deux natures vous portent vers la vigilance — équilibrez avec de la confiance.",
     contexte: {
       enfant: "Parent Type 6 avec enfant Type 6 : ne transmettez pas vos angoisses. Montrez-lui que le monde est aussi sûr.",
-      ado: "Votre ado Type 6 a besoin de confiance en lui. Aidez-le à prendre des risques mesurés.",
       couple: "Relation très sécurisante. Attention à la bulle protectrice — ouvrez-vous au monde.",
       adulte: "Duo très fiable. Prenez garde à l'excès de prudence qui peut bloquer l'innovation.",
     },
@@ -772,7 +722,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 6 : le 7 ne nie pas les risques — il choisit de ne pas les laisser diriger. Apprenez de ça. Type 7 : honorer ses engagements donne au 6 la sécurité dont il a besoin.",
     contexte: {
       enfant: "Votre enfant Type 7 a besoin de liberté ET de limites. Les deux ensemble, pas l'un sans l'autre.",
-      ado: "Votre ado Type 7 fuit les contraintes. Négociez sur les formes, jamais sur les valeurs.",
       couple: "Relation complémentaire. Le 7 allège le 6, le 6 ancre le 7. Belle dynamique si le 7 honore ses engagements.",
       adulte: "Le 6 gère les risques, le 7 génère les opportunités. Excellent duo en développement.",
     },
@@ -786,7 +735,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 6 : le 8 teste votre loyauté — restez vous-même sous pression. Type 8 : votre douceur avec le 6 est votre plus grande force dans cette relation.",
     contexte: {
       enfant: "Votre enfant Type 8 a besoin d'un parent solide. Soyez son roc — il n'a pas besoin d'un ami.",
-      ado: "Votre ado Type 8 ne cède qu'aux arguments solides. Soyez cohérent — jamais réactif.",
       couple: "Relation de force et de loyauté. Le 8 protège, le 6 fidélise. Belle dynamique si la brutalité du 8 est régulée.",
       adulte: "Le 8 avance, le 6 assure les arrières. Duo de leadership efficace.",
     },
@@ -800,7 +748,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des rituels de dialogue sur les désaccords. Vos deux tendances naturelles vous portent à éviter — mais les non-dits corrodent.",
     contexte: {
       enfant: "Votre enfant Type 9 est accommodant. Assurez-vous qu'il exprime aussi ses propres désirs.",
-      ado: "Votre ado Type 9 peut sembler sans direction. Aidez-le à identifier ce qui l'anime profondément.",
       couple: "Relation très paisible et loyale. Attention aux non-dits — créez de l'espace pour les désaccords.",
       adulte: "Duo très fiable et apaisé. Excellent pour les environnements qui demandent calme et constance.",
     },
@@ -818,7 +765,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : finissez ce que vous commencez — le 1 a besoin de constance. Type 1 : laissez le 7 vous apporter de la légèreté.",
     contexte: {
       enfant: "Votre enfant Type 1 est sérieux et consciencieux. Apprenez-lui aussi à jouer et à accepter l'imperfection joyeusement.",
-      ado: "Votre ado Type 1 porte le monde sur ses épaules. Votre légèreté est un cadeau — partagez-la.",
       couple: "Relation vivante et complémentaire. Le 7 allège le 1, le 1 ancre le 7. Fragile mais stimulante.",
       adulte: "Le 7 génère les idées, le 1 les réalise avec soin. Duo créatif si les rôles sont respectés.",
     },
@@ -832,7 +778,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : le 2 a besoin d'être prioritaire régulièrement — montrez-le. Type 2 : la fuite du 7 n'est pas un rejet.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre approbation constante. Dites-lui souvent que vous l'aimez tel qu'il est.",
-      ado: "Votre ado Type 2 donne tout à ses amis. Aidez-le à construire ses propres limites.",
       couple: "Relation joyeuse et chaleureuse. Le 2 ancre le 7. Belle dynamique si le 7 honore ses engagements affectifs.",
       adulte: "Le 7 génère l'enthousiasme, le 2 tisse les liens durables. Excellent duo commercial.",
     },
@@ -846,7 +791,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des moments de vraie connexion — deux profils aussi énergiques peuvent se stimuler sans jamais se rencontrer vraiment.",
     contexte: {
       enfant: "Votre enfant Type 3 a besoin de savoir qu'il est aimé au-delà de ses performances. Dites-le souvent.",
-      ado: "Votre ado Type 3 construit son image. Guidez-le vers l'authenticité.",
       couple: "Relation stimulante mais attention à la fuite mutuelle — les conversations difficiles sont aussi nécessaires.",
       adulte: "Duo créatif et énergique. Entourez-vous de profils plus posés pour concrétiser.",
     },
@@ -860,7 +804,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : ne fuyez pas quand le 4 devient intense — ces moments sont les plus précieux. Type 4 : le 7 vous ouvre vers la joie — laissez-le.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin de profondeur. Rejoignez-le dans ses émotions avant de l'emmener vers la légèreté.",
-      ado: "Votre ado Type 4 est en crise d'identité. Soyez son ancre — pas son divertisseur.",
       couple: "Relation vivante et complémentaire. Le 7 allège, le 4 ancre. Belle dynamique si le 7 ne fuit pas l'intensité.",
       adulte: "Le 7 donne de l'élan, le 4 donne du sens. Duo créatif remarquable.",
     },
@@ -874,7 +817,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : restez assez longtemps pour bénéficier de la profondeur du 5. Type 5 : l'enthousiasme du 7 peut être votre pont vers le monde.",
     contexte: {
       enfant: "Votre enfant Type 5 observe avant d'agir. Rejoignez-le dans sa curiosité — c'est votre terrain commun.",
-      ado: "Votre ado Type 5 a des passions profondes. Stimulez-les sans les brusquer.",
       couple: "Relation stimulante si le 7 accepte les besoins d'espace du 5. Belle complémentarité.",
       adulte: "Le 7 génère, le 5 approfondit. Duo innovant excellent.",
     },
@@ -888,7 +830,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : les risques que le 6 voit sont réels — prenez-les au sérieux. Type 6 : le 7 vous montre que l'aventure peut être sûre.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin d'encouragement pour oser. Guidez-le avec enthousiasme.",
-      ado: "Votre ado Type 6 hésite beaucoup. Votre confiance contagieuse est un cadeau précieux.",
       couple: "Relation complémentaire. Le 7 propulse, le 6 sécurise. Belle dynamique si le 7 honore ses engagements.",
       adulte: "Excellent duo en développement commercial. Le 7 ouvre les portes, le 6 gère les risques.",
     },
@@ -902,7 +843,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Quelqu'un doit tenir le gouvernail. Deux 7 ensemble sans structure = énergie magnifique mais projets non finalisés.",
     contexte: {
       enfant: "Parent Type 7 avec enfant Type 7 : votre enfant a besoin de limites claires. Quelqu'un doit être l'adulte dans la pièce.",
-      ado: "Votre ado Type 7 a besoin que vous teniez la structure. Soyez fun ET fiable.",
       couple: "Relation très vivante. Attention : quelqu'un doit gérer le quotidien — définissez qui.",
       adulte: "Duo créatif explosif. Entourez-vous de profils plus structurés pour concrétiser.",
     },
@@ -916,7 +856,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Définissez les rôles clairement — sinon vous passerez votre énergie à vous affronter plutôt qu'à avancer.",
     contexte: {
       enfant: "Votre enfant Type 8 a besoin de votre solidité. Soyez fun ET ferme — les deux ensemble.",
-      ado: "Votre ado Type 8 teste tout. Votre joie de vivre peut être un pont — mais tenez bon sur les limites.",
       couple: "Relation passionnée et vivante. Deux caractères forts — définissez des espaces de leadership distincts.",
       adulte: "Duo explosif en énergie. Excellents pour lancer, moins pour maintenir — entourez-vous.",
     },
@@ -930,7 +869,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 7 : demandez au 9 ce qu'il veut vraiment — ne décidez pas pour lui. Type 9 : exprimez vos propres désirs au lieu de suivre.",
     contexte: {
       enfant: "Votre enfant Type 9 s'adapte à vos envies. Assurez-vous qu'il développe aussi les siennes.",
-      ado: "Votre ado Type 9 peut sembler sans ambition. Aidez-le à trouver sa passion propre.",
       couple: "Relation douce et joyeuse. Le 7 apporte le mouvement que le 9 ne génère pas seul. Belle dynamique.",
       adulte: "Le 7 génère l'enthousiasme, le 9 crée l'harmonie. Bon duo en animation d'équipe.",
     },
@@ -948,7 +886,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Apprenez à débattre sans détruire. Vos deux natures vous poussent à ne jamais céder — parfois il faut pourtant.",
     contexte: {
       enfant: "Votre enfant Type 1 porte déjà le monde sur ses épaules. Autorisez-le à faire des erreurs.",
-      ado: "Votre ado Type 1 a des principes forts. Débattez avec lui — il a besoin d'un adversaire à sa hauteur.",
       couple: "Relation forte et passionnée. Apprenez à vous disputer sans blesser profondément.",
       adulte: "Duo de leadership puissant. Définissez les territoires de décision de chacun.",
     },
@@ -962,7 +899,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : votre douceur avec le 2 n'est pas de la faiblesse — c'est votre plus grande force ici. Type 2 : dites directement ce dont vous avez besoin.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre approbation. Donnez-lui votre amour inconditionnel — pas seulement des encouragements.",
-      ado: "Votre ado Type 2 donne trop. Aidez-le à apprendre à recevoir et à poser des limites.",
       couple: "Relation intense. Le 8 apporte la force, le 2 apporte la tendresse. Belle alchimie si la brutalité est régulée.",
       adulte: "Le 8 ouvre les portes, le 2 crée les liens durables. Duo puissant en leadership.",
     },
@@ -976,7 +912,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Définissez les rôles dès le départ. Un 8 et un 3 sans territoire défini = conflit de leadership destructeur.",
     contexte: {
       enfant: "Votre enfant Type 3 a besoin d'admiration. Mais apprenez-lui que la force vient aussi de l'authenticité.",
-      ado: "Votre ado Type 3 cherche le succès. Montrez-lui la différence entre paraître fort et l'être.",
       couple: "Relation puissante. Définissez les domaines de chacun pour éviter la rivalité permanente.",
       adulte: "Duo redoutable en affaires. Définissez clairement qui est CEO — et respectez ça.",
     },
@@ -990,7 +925,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : la sensibilité du 4 est sa force — apprenez à la lire. Type 4 : la brutalité du 8 cache une grande loyauté.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin de votre douceur autant que de votre force. Équilibrez les deux.",
-      ado: "Votre ado Type 4 vit des crises d'identité. Votre présence solide est son ancre.",
       couple: "Relation passionnée et intense. Les deux se blessent facilement — apprenez les mots qui soignent.",
       adulte: "Duo engagé et créatif. Les deux apportent leur entièreté.",
     },
@@ -1004,7 +938,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : la réflexion du 5 vous donnera les meilleures décisions — patientez. Type 5 : le 8 a besoin de vos conclusions, pas de tout votre raisonnement.",
     contexte: {
       enfant: "Votre enfant Type 5 a besoin de silence pour penser. Respectez ses espaces de solitude.",
-      ado: "Votre ado Type 5 peut sembler distant. Il vous observe et vous respecte — à sa façon.",
       couple: "Relation complémentaire. Le 8 décide, le 5 analyse. Belle alliance si le 8 respecte l'espace du 5.",
       adulte: "Le 8 est le bras, le 5 est le cerveau. Duo puissant si les rôles sont clairs.",
     },
@@ -1018,7 +951,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : votre douceur avec le 6 est votre plus grande force. Type 6 : le 8 teste votre loyauté — montrez-la.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de votre force ET de votre chaleur. Ne soyez pas que le chef.",
-      ado: "Votre ado Type 6 a peur. Votre solidité est son remède — mais évitez de l'écraser.",
       couple: "Relation de force et de loyauté. Le 8 protège, le 6 fidélise. Belle dynamique.",
       adulte: "Le 8 avance, le 6 assure les arrières. Duo de leadership efficace.",
     },
@@ -1032,7 +964,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : le 7 apporte la joie dont vous avez besoin. Type 7 : l'engagement du 8 est précieux — honorez-le.",
     contexte: {
       enfant: "Votre enfant Type 7 a besoin de liberté encadrée. Soyez fun ET ferme — les deux ensemble.",
-      ado: "Votre ado Type 7 fuit les contraintes. Négociez sur les formes, jamais sur les valeurs.",
       couple: "Relation passionnée et vivante. Deux caractères forts — des espaces de leadership distincts évitent les conflits.",
       adulte: "Duo d'énergie explosive. Le 8 ancre, le 7 élève. Excellent pour lancer des projets.",
     },
@@ -1046,7 +977,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Définissez des territoires clairs. Deux 8 en harmonie sont une force extraordinaire — deux 8 en conflit sont destructeurs.",
     contexte: {
       enfant: "Parent Type 8 avec enfant Type 8 : votre enfant teste votre autorité pour voir si vous êtes digne de confiance. Tenez bon.",
-      ado: "Votre ado Type 8 ne cède qu'aux arguments solides. Soyez cohérent et jamais réactif.",
       couple: "Relation intense. Apprenez à vous battre sans détruire — et à vous réconcilier vraiment.",
       adulte: "Duo redoutable. Définissez absolument qui décide quoi — sinon conflit permanent.",
     },
@@ -1060,7 +990,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 8 : le 9 a besoin de votre douceur pour s'ouvrir. Type 9 : exprimez vos désirs clairement — le 8 les respectera si vous les affirmez.",
     contexte: {
       enfant: "Votre enfant Type 9 absorbe les ambiances. Protégez-le de votre intensité — il en a besoin.",
-      ado: "Votre ado Type 9 peut sembler sans direction. Guidez-le avec douceur — pas d'ordres.",
       couple: "Relation complémentaire. Le 8 apporte le mouvement, le 9 apporte la paix. Belle dynamique si le 8 apprend la douceur.",
       adulte: "Le 8 avance, le 9 harmonise. Duo de management efficace et apprécié.",
     },
@@ -1078,7 +1007,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 9 : exprimez vos désirs avant que le 1 ne décide pour vous. Type 1 : le consensus que le 9 cherche n'est pas de la lenteur — c'est sa sagesse.",
     contexte: {
       enfant: "Votre enfant Type 1 a besoin de votre validation. Dites-lui souvent qu'il fait bien.",
-      ado: "Votre ado Type 1 porte le monde. Votre calme est son refuge — soyez disponible.",
       couple: "Relation stable et harmonieuse. Attention : la passivité du 9 peut masquer des frustrations que le 1 n'entend pas.",
       adulte: "Le 9 harmonise, le 1 structure. Excellent binôme si le 1 n'écrase pas les décisions du 9.",
     },
@@ -1092,7 +1020,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des rituels de dialogue sur ce qui ne va pas. Vos deux natures évitent la confrontation — mais les non-dits corrodent.",
     contexte: {
       enfant: "Votre enfant Type 2 cherche votre approbation active. Dites-lui que vous l'aimez souvent.",
-      ado: "Votre ado Type 2 se perd dans le service des autres. Aidez-le à se mettre en premier.",
       couple: "Relation douce et harmonieuse. Cultivez l'expression des désaccords pour éviter les non-dits.",
       adulte: "Duo bienveillant et apprécié. Attention à ne pas éviter les décisions difficiles ensemble.",
     },
@@ -1106,7 +1033,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 9 : le 3 a besoin de votre ancrage. Exprimez clairement vos désirs — il les respectera. Type 3 : le 9 est votre meilleur miroir d'authenticité.",
     contexte: {
       enfant: "Votre enfant Type 3 veut votre admiration. Donnez-lui d'abord votre amour inconditionnel.",
-      ado: "Votre ado Type 3 construit son image. Encouragez-le à explorer qui il est au-delà du succès.",
       couple: "Le 3 tire le 9 de sa léthargie. Le 9 apporte la paix dont le 3 a besoin secrètement.",
       adulte: "Le 9 harmonise, le 3 propulse. Bon duo en management d'équipe.",
     },
@@ -1120,7 +1046,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 9 : exprimez vos propres émotions — le 4 en a besoin. Type 4 : le 9 vous accepte comme vous êtes — reconnaissez cette rareté.",
     contexte: {
       enfant: "Votre enfant Type 4 a besoin d'être vu dans sa singularité. Votre acceptation est son cadeau.",
-      ado: "Votre ado Type 4 vit des tempêtes. Votre calme est son havre.",
       couple: "Relation profonde. Le 9 est l'ancre dont le 4 a besoin. Belle dynamique si le 9 exprime aussi ses désirs.",
       adulte: "Le 9 harmonise, le 4 crée. Bon duo dans les milieux artistiques.",
     },
@@ -1134,7 +1059,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Planifiez des moments d'échange actif. Vos deux natures vous portent à coexister — mais la relation demande aussi de la rencontre.",
     contexte: {
       enfant: "Votre enfant Type 5 a besoin de calme et d'espace. Vous êtes naturellement doué pour ça.",
-      ado: "Votre ado Type 5 cherche à comprendre. Rejoignez-le dans sa curiosité — c'est votre terrain commun.",
       couple: "Relation très paisible. Risque de vie parallèle — créez des projets communs.",
       adulte: "Duo respectueux et efficace. Attention à ne pas paraître inaccessibles aux autres.",
     },
@@ -1148,7 +1072,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Créez des espaces pour parler des vrais problèmes. Vos deux natures évitent la confrontation.",
     contexte: {
       enfant: "Votre enfant Type 6 a besoin de sécurité. Votre calme naturel est son ancre.",
-      ado: "Votre ado Type 6 hésite beaucoup. Guidez-le avec douceur vers la confiance en lui.",
       couple: "Relation très stable et loyale. Cultivez aussi l'expression des désaccords.",
       adulte: "Duo fiable et apaisant. Excellent dans les contextes qui demandent calme et constance.",
     },
@@ -1162,7 +1085,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 9 : exprimez ce que vous voulez — le 7 s'adaptera si vous le dites clairement. Type 7 : demandez au 9 son avis avant de décider pour lui.",
     contexte: {
       enfant: "Votre enfant Type 7 a besoin de liberté encadrée. Votre calme naturel aide à structurer sans rigidité.",
-      ado: "Votre ado Type 7 a besoin de sens. Aidez-le à construire une vision.",
       couple: "Relation douce et joyeuse. Le 7 apporte le mouvement, le 9 apporte la paix. Belle dynamique.",
       adulte: "Le 9 harmonise, le 7 enthousiasme. Bon duo en animation.",
     },
@@ -1176,7 +1098,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Type 9 : affirmez vos désirs clairement — le 8 les respecte si vous les posez. Type 8 : votre douceur avec le 9 l'ouvrira plus que votre force.",
     contexte: {
       enfant: "Votre enfant Type 8 a besoin d'un parent solide. Votre calme naturel est un atout — tenez bon aussi.",
-      ado: "Votre ado Type 8 teste les autorités. Soyez calme ET ferme — jamais réactif.",
       couple: "Relation complémentaire. Le 9 apporte la paix, le 8 apporte l'élan. Belle dynamique si le 8 apprend la douceur.",
       adulte: "Le 9 harmonise, le 8 propulse. Excellent duo de management.",
     },
@@ -1190,7 +1111,6 @@ export const DUO_DATA: Record<string, DuoPair> = {
     conseil: "Désignez quelqu'un pour prendre les décisions et tenir le cap. Deux 9 ensemble sans structure peuvent vivre dans un confort immobile.",
     contexte: {
       enfant: "Parent Type 9 avec enfant Type 9 : votre enfant a besoin que vous preniez des décisions claires. Quelqu'un doit guider.",
-      ado: "Votre ado Type 9 cherche une direction. Soyez ce cap — doucement mais clairement.",
       couple: "Relation très paisible. Risque de vie sans direction commune — fixez des objectifs ensemble.",
       adulte: "Duo harmonieux. Attention à l'évitement systématique des décisions difficiles.",
     },
