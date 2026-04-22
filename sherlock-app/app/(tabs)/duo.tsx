@@ -21,28 +21,28 @@ const TYPE_NAMES = [
 ];
 
 // ── Role ───────────────────────────────────────────────────────
-type ProfileRole = 'adulte' | 'enfant' | 'ado';
+// Simplified to 2 roles: 'adulte' and 'enfant'. The 'ado' role was
+// removed from the UI to declutter the picker; its data bucket still
+// lives in constants/duo.ts but is now unreachable from the UI.
+// 'enfant' is presented generically as "5-17 ans" so it covers what
+// used to be the ado bracket too.
+type ProfileRole = 'adulte' | 'enfant';
 
 const ROLE_LABELS: Record<ProfileRole, string> = {
   adulte: 'Adulte',
   enfant: 'Enfant',
-  ado:    'Ado',
 };
 
 function deriveContext(roleA: ProfileRole, roleB: ProfileRole): DuoContext {
   if (roleA === 'enfant' && roleB === 'enfant') return 'pairs';
-  if (roleA === 'ado'    && roleB === 'ado')    return 'pairs';
   if (roleA === 'enfant' || roleB === 'enfant') return 'enfant';
-  if (roleA === 'ado'    || roleB === 'ado')    return 'ado';
   return 'adulte';
 }
 
-function contextLabel(ctx: DuoContext, roleA: ProfileRole, roleB: ProfileRole): string {
+function contextLabel(ctx: DuoContext, _roleA: ProfileRole, _roleB: ProfileRole): string {
   switch (ctx) {
-    case 'pairs':
-      return roleA === 'enfant' ? 'Amitié entre enfants (5–12 ans)' : 'Amitié entre ados (13–17 ans)';
-    case 'enfant': return 'Relation parent · enfant (5–12 ans)';
-    case 'ado':    return 'Relation parent · ado (13–17 ans)';
+    case 'pairs':  return 'Amitié entre enfants (5–17 ans)';
+    case 'enfant': return 'Relation parent · enfant (5–17 ans)';
     default:       return 'Relation amis · collègues · couple';
   }
 }
@@ -124,7 +124,7 @@ function RoleStrip({
   onChange: (r: ProfileRole) => void;
   typeColor: string;
 }) {
-  const roles: ProfileRole[] = ['adulte', 'enfant', 'ado'];
+  const roles: ProfileRole[] = ['adulte', 'enfant'];
   return (
     <View style={roleStyles.strip}>
       {roles.map(r => {
@@ -278,7 +278,7 @@ export default function DuoScreen() {
   const perspectiveView = (() => {
     if (!pair) return null;
     if (context === 'pairs') return DUO_PEERS_VIEW[pairKey] ?? null;
-    if (context === 'enfant' || context === 'ado') return DUO_PARENT_VIEW[pairKey] ?? null;
+    if (context === 'enfant') return DUO_PARENT_VIEW[pairKey] ?? null;
     return null;
   })();
 
@@ -386,7 +386,7 @@ export default function DuoScreen() {
               emoji="✨"
               title={
                 context === 'pairs' ? 'Ce qui les rapproche' :
-                context === 'enfant' || context === 'ado' ? 'Ce qui fonctionne entre vous' :
+                context === 'enfant' ? 'Ce qui fonctionne entre vous' :
                 'Ce qui fonctionne bien entre vous'
               }
               body={pointsForts}
@@ -396,7 +396,7 @@ export default function DuoScreen() {
               emoji="⚠️"
               title={
                 context === 'pairs' ? 'Sources de friction entre eux' :
-                context === 'enfant' || context === 'ado' ? 'Points de vigilance pour vous, parent' :
+                context === 'enfant' ? 'Points de vigilance pour vous, parent' :
                 'Points de friction à surveiller'
               }
               body={vigilances}
@@ -418,7 +418,7 @@ export default function DuoScreen() {
               emoji="💡"
               title={
                 context === 'pairs' ? 'Conseil pour vous, parent qui observe' :
-                context === 'enfant' || context === 'ado' ? 'Conseil pratique pour vous, parent' :
+                context === 'enfant' ? 'Conseil pratique pour vous, parent' :
                 'Conseil pour mieux vivre ensemble'
               }
               body={conseil}
