@@ -227,6 +227,39 @@ function TypeGrid({ onSelect, disabled, correct, selected }: {
   );
 }
 
+// Big bicolored choice button for the faux_amis question type.
+// Replaces the previous tiny TypeBadge button so the user clearly sees the
+// type number AND its name, with a generous tap surface.
+function FauxAmisChoiceBtn({
+  typeNum, selected, disabled, onPress,
+}: {
+  typeNum: number;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  const color = TYPE_COLORS[typeNum] ?? colors.accent;
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.fauxAmisChoiceBtn,
+        { borderColor: color, backgroundColor: color + '14' },
+        selected && { backgroundColor: color + '33', borderWidth: 2 },
+        pressed && !disabled && styles.optPressed,
+      ]}
+    >
+      <View style={[styles.fauxAmisChoiceNum, { backgroundColor: color }]}>
+        <Text style={styles.fauxAmisChoiceNumText}>{typeNum}</Text>
+      </View>
+      <Text style={[styles.fauxAmisChoiceName, { color }]} numberOfLines={2}>
+        {TYPE_NAMES[typeNum]}
+      </Text>
+    </Pressable>
+  );
+}
+
 function FauxAmisScreen({ cas, playState, onSubmit }: {
   cas: FauxAmisCase; playState: any; onSubmit: (side: 'a' | 'b', type: number) => void;
 }) {
@@ -250,18 +283,13 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
         {!answered || fauxAmisAnswers.a === null ? (
           <View style={styles.fauxAmisTypes}>
             {[cas.typeA, cas.typeB].sort().map(t => (
-              <Pressable
+              <FauxAmisChoiceBtn
                 key={t}
-                onPress={() => !answered && fauxAmisAnswers.a === null && onSubmit('a', t)}
+                typeNum={t}
+                selected={fauxAmisAnswers.a === t}
                 disabled={answered || fauxAmisAnswers.a !== null}
-                style={({ pressed }) => [
-                  styles.fauxAmisTypeBtn,
-                  fauxAmisAnswers.a === t && styles.fauxAmisTypeBtnSelected,
-                  pressed && styles.optPressed,
-                ]}
-              >
-                <TypeBadge typeNum={t} size="sm" />
-              </Pressable>
+                onPress={() => !answered && fauxAmisAnswers.a === null && onSubmit('a', t)}
+              />
             ))}
           </View>
         ) : (
@@ -275,18 +303,13 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
         {!answered || fauxAmisAnswers.b === null ? (
           <View style={styles.fauxAmisTypes}>
             {[cas.typeA, cas.typeB].sort().map(t => (
-              <Pressable
+              <FauxAmisChoiceBtn
                 key={t}
-                onPress={() => !answered && fauxAmisAnswers.b === null && onSubmit('b', t)}
+                typeNum={t}
+                selected={fauxAmisAnswers.b === t}
                 disabled={answered || fauxAmisAnswers.b !== null}
-                style={({ pressed }) => [
-                  styles.fauxAmisTypeBtn,
-                  fauxAmisAnswers.b === t && styles.fauxAmisTypeBtnSelected,
-                  pressed && styles.optPressed,
-                ]}
-              >
-                <TypeBadge typeNum={t} size="sm" />
-              </Pressable>
+                onPress={() => !answered && fauxAmisAnswers.b === null && onSubmit('b', t)}
+              />
             ))}
           </View>
         ) : (
@@ -1081,6 +1104,25 @@ const styles = StyleSheet.create({
   fauxAmisTypes: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   fauxAmisTypeBtn: { padding: spacing.xs, borderRadius: radius.sm },
   fauxAmisTypeBtnSelected: { backgroundColor: colors.accentFill },
+  // New: big choice button (Option A — pastille colorée + nom du type)
+  fauxAmisChoiceBtn: {
+    flex: 1,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    borderRadius: radius.md, borderWidth: 1,
+    minHeight: 64,
+  },
+  fauxAmisChoiceNum: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  fauxAmisChoiceNumText: {
+    fontFamily: fonts.sans, fontSize: 18, fontWeight: '800', color: colors.white,
+  },
+  fauxAmisChoiceName: {
+    flex: 1,
+    fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', lineHeight: 18,
+  },
   keyDiffBox: { padding: spacing.md, backgroundColor: colors.accentFill, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.accent },
   keyDiffLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, marginBottom: spacing.xs },
   keyDiffText: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textSoft },

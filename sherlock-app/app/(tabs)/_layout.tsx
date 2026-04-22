@@ -3,9 +3,10 @@ import { Tabs } from 'expo-router';
 import { HomeIcon, QuizIcon, ProfilesIcon, GameIcon, DuoIcon } from '../../components/TabIcons';
 import { colors, fonts } from '../../constants/theme';
 
-// Wraps a tab icon so the active tab gets a small orange accent bar above it
-// (iOS Mail / Apple Music style). Pairs with the orange tint color below to
-// make active vs inactive instantly readable on the dark nav background.
+// Wraps a tab icon so the active tab gets a horizontal orange accent bar
+// flush with the TOP edge of the tab bar (not floating above the icon).
+// Pairs with the orange tint color below to make active vs inactive
+// instantly readable on the dark nav background.
 function TabIcon({
   Icon,
   color,
@@ -18,13 +19,24 @@ function TabIcon({
   focused: boolean;
 }) {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'flex-start', height: size + 8 }}>
+    <View
+      style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: size + 12,
+        width: '100%',
+      }}
+    >
+      {/* Accent bar flush with the top of the tab bar.
+          Relies on tabBarStyle.paddingTop === 0 so `top: 0` truly hits the edge. */}
       <View
         style={{
+          position: 'absolute',
+          top: 0,
           height: 3,
-          width: 18,
-          borderRadius: 2,
-          marginBottom: 5,
+          width: 40,
+          borderBottomLeftRadius: 2,
+          borderBottomRightRadius: 2,
           backgroundColor: focused ? colors.accent : 'transparent',
         }}
       />
@@ -46,7 +58,8 @@ export default function TabLayout() {
           borderTopWidth: 0.5,
           height: 72,
           paddingBottom: 12,
-          paddingTop: 8,
+          // paddingTop: 0 so the accent bar can sit flush with the top edge.
+          paddingTop: 0,
         },
         tabBarLabelStyle: {
           fontSize: 10,
