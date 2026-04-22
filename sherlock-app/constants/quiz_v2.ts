@@ -428,16 +428,18 @@ export const BANK_5_8: AdaptiveQuestion[] = [
 export const BANK_9_12: AdaptiveQuestion[] = [
   // ── POSITIONING (4) ──────────────────────────────────────────
   {
+    // See note on pad_center — we now target the spontaneous *emotional
+    // reaction* rather than the conscious decision style.
     id: 'p912_center',
     ageBand: '9-12', phase: 'positioning', format: 'choice',
     category: 'Centre dominant',
-    setup: "Face à une décision importante (un choix scolaire, un conflit avec un copain)…",
-    prompt: 'Sur quoi votre enfant s\'appuie le plus pour décider ?',
+    setup: "Quand quelque chose contrarie votre enfant (un conflit, une frustration, une déception)…",
+    prompt: 'Quelle est sa première réaction, avant même qu\'il y réfléchisse ?',
     icon: '🧭',
     options: [
-      { text: 'Il y réfléchit, anticipe, demande conseil', emoji: '🧠', scores: w([5, 3], [6, 3], [7, 2]) },
-      { text: 'Il sent ce qui est important pour lui ou pour les autres', emoji: '❤️', scores: w([2, 3], [3, 2], [4, 3]) },
-      { text: 'Il agit, suit son instinct, voit ensuite', emoji: '⚡', scores: w([1, 2], [8, 3], [9, 2]) },
+      { text: 'Il s\'inquiète, imagine le pire, pose plein de questions', emoji: '😰', scores: w([5, 3], [6, 3], [7, 2]) },
+      { text: 'Il est blessé, se referme, se sent incompris', emoji: '💔', scores: w([2, 3], [3, 2], [4, 3]) },
+      { text: 'Il s\'agace, râle, veut que ça change tout de suite', emoji: '😤', scores: w([1, 2], [8, 3], [9, 2]) },
     ],
     discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   },
@@ -695,16 +697,17 @@ export const BANK_9_12: AdaptiveQuestion[] = [
 export const BANK_13_17: AdaptiveQuestion[] = [
   // ── POSITIONING (4) ──────────────────────────────────────────
   {
+    // See note on pad_center — same shift: emotional reaction, not decision style.
     id: 'p1317_center',
     ageBand: '13-17', phase: 'positioning', format: 'choice',
     category: 'Centre dominant',
-    setup: "Quand votre ado affronte un dilemme important (orientation, choix amical, désaccord)…",
-    prompt: 'Sur quoi s\'appuie-t-il le plus pour trancher ?',
+    setup: "Quand quelque chose contrarie votre ado (un conflit, une injustice, une déception)…",
+    prompt: 'Quelle est sa première réaction, avant la réflexion ?',
     icon: '🧭',
     options: [
-      { text: 'L\'analyse : il pèse, anticipe les conséquences, cherche des infos', emoji: '🧠', scores: w([5, 3], [6, 3], [7, 1]) },
-      { text: 'Le ressenti : ce qui lui parle, ce qui touche les autres', emoji: '❤️', scores: w([2, 3], [3, 1], [4, 3]) },
-      { text: 'L\'instinct : il sent ce qui est juste / faisable et y va', emoji: '⚡', scores: w([1, 2], [8, 3], [9, 2]) },
+      { text: "L'inquiétude, l'anticipation : « et si ça tournait mal ? »", emoji: '😰', scores: w([5, 3], [6, 3], [7, 1]) },
+      { text: 'Une blessure, un repli : « pourquoi moi, personne ne comprend »', emoji: '💔', scores: w([2, 3], [3, 1], [4, 3]) },
+      { text: "L'agacement, la colère : « c'est pas normal, faut que ça bouge »", emoji: '😤', scores: w([1, 2], [8, 3], [9, 2]) },
     ],
     discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   },
@@ -973,16 +976,22 @@ export const BANK_13_17: AdaptiveQuestion[] = [
 export const BANK_ADULTE: AdaptiveQuestion[] = [
   // ── POSITIONING (4) ──────────────────────────────────────────
   {
+    // NOTE: previously this question asked "what do you rely on to decide"
+    // which was self-image driven — most people (including 5/6/7s who do
+    // analyse internally) self-identified as "ressenti" because it sounds
+    // warmer. We now target the *spontaneous emotional reaction* which is
+    // much less filtered by self-image and maps cleanly to the 3 centers
+    // (fear→head, shame→heart, anger→gut).
     id: 'pad_center',
     ageBand: 'adulte', phase: 'positioning', format: 'choice',
     category: 'Centre dominant',
-    setup: "Face à une décision importante de votre vie :",
-    prompt: 'Sur quoi vous appuyez-vous le plus pour trancher ?',
+    setup: "Quand quelque chose ne va pas (un problème, un conflit, une contrariété)…",
+    prompt: 'Quelle émotion monte en vous spontanément, avant même d\'y réfléchir ?',
     icon: '🧭',
     options: [
-      { text: 'L\'analyse : je pèse, je collecte des infos, j\'anticipe les scénarios', emoji: '🧠', scores: w([5, 3], [6, 3], [7, 2]) },
-      { text: 'Le ressenti : ce qui me touche, ce qui touche les autres', emoji: '❤️', scores: w([2, 3], [3, 1], [4, 3]) },
-      { text: 'L\'instinct corporel : je sens ce qui est juste / faisable et j\'y vais', emoji: '⚡', scores: w([1, 2], [8, 3], [9, 2]) },
+      { text: "L'inquiétude : « et si ça empirait ? qu'est-ce qui pourrait mal tourner ? »", emoji: '😰', scores: w([5, 3], [6, 3], [7, 2]) },
+      { text: "Une blessure intime : « pourquoi moi ? qu'est-ce que ça dit de moi ? »", emoji: '💔', scores: w([2, 3], [3, 1], [4, 3]) },
+      { text: "L'agacement : « ce n'est pas normal, il faut que ça bouge »", emoji: '😤', scores: w([1, 2], [8, 3], [9, 2]) },
     ],
     discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   },
