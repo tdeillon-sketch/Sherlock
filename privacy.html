@@ -70,7 +70,7 @@
 
 <div class="eyebrow">Sherlock Parent</div>
 <h1>Politique de confidentialité</h1>
-<div class="date">Dernière mise à jour : 17 avril 2026</div>
+<div class="date">Dernière mise à jour : 22 avril 2026</div>
 
 <h2>1. Qui sommes-nous ?</h2>
 <p>L'application <strong>Sherlock Parent</strong> est éditée par <strong>Thomas Deillon</strong>, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».</p>
@@ -78,14 +78,14 @@
 
 <h2>2. Quelles données collectons-nous ?</h2>
 
-<h3>2.1 Données fournies via Google Sign-In</h3>
-<p>Lors de votre connexion à l'application via Google, nous recevons :</p>
+<h3>2.1 Données fournies via votre service de connexion (Apple ou Google)</h3>
+<p>L'application propose deux modes d'authentification au choix : <strong>Sign in with Apple</strong> ou <strong>Google Sign-In</strong>. Lors de votre connexion, nous recevons :</p>
 <ul>
-  <li>Votre <strong>adresse email Google</strong></li>
-  <li>Votre <strong>nom</strong> (tel que renseigné sur votre compte Google)</li>
-  <li>Un <strong>identifiant unique</strong> Google (UID) utilisé pour vous reconnaître</li>
+  <li>Votre <strong>adresse email</strong> (avec Sign in with Apple, vous pouvez choisir de masquer votre adresse réelle ; Apple génère alors un alias privé qui transfère le courrier)</li>
+  <li>Votre <strong>nom</strong> (tel que renseigné sur votre compte Apple ou Google, et seulement si vous l'autorisez)</li>
+  <li>Un <strong>identifiant unique</strong> (UID) utilisé pour vous reconnaître</li>
 </ul>
-<p>Ces données sont transmises par Google lors de votre authentification et sont stockées de manière sécurisée via les services Firebase Authentication de Google.</p>
+<p>Ces données sont transmises par Apple ou Google lors de votre authentification et sont stockées de manière sécurisée via les services Firebase Authentication de Google.</p>
 
 <h3>2.2 Données créées au fil de votre usage</h3>
 <ul>
@@ -126,7 +126,23 @@
 
 <h2>5. Combien de temps conservons-nous vos données ?</h2>
 <p>Vos données sont conservées <strong>tant que votre compte est actif</strong>. Si vous n'utilisez plus l'application pendant <strong>24 mois consécutifs</strong>, votre compte et toutes les données associées sont automatiquement supprimés.</p>
-<p>Vous pouvez également demander la suppression immédiate de votre compte à tout moment (voir section 7).</p>
+
+<h3>Supprimer votre compte directement depuis l'application</h3>
+<p>Vous pouvez supprimer définitivement votre compte à tout moment, <strong>sans nous contacter</strong>, depuis l'application :</p>
+<ol>
+  <li>Ouvrez l'onglet <strong>Accueil</strong></li>
+  <li>Touchez l'icône 👤 en haut à droite</li>
+  <li>Touchez <strong>« Supprimer mon compte »</strong></li>
+  <li>Confirmez (deux confirmations sont demandées par sécurité)</li>
+</ol>
+<p>Cette action supprime <strong>immédiatement et définitivement</strong> :</p>
+<ul>
+  <li>votre compte d'authentification (Apple ou Google)</li>
+  <li>l'ensemble de vos profils enfants et leurs historiques</li>
+  <li>vos résultats de quiz</li>
+  <li>votre progression dans le jeu (XP, rang, fiches débloquées)</li>
+</ul>
+<p>Si vous préférez nous contacter par email plutôt que d'utiliser le bouton in-app, voir la section 7.</p>
 
 <h2>6. Qui a accès à vos données ?</h2>
 <ul>
@@ -152,7 +168,7 @@
 <p>Nous mettons en œuvre les mesures techniques suivantes pour protéger vos données :</p>
 <ul>
   <li>Chiffrement des communications (HTTPS/TLS)</li>
-  <li>Authentification sécurisée via Google Sign-In (OAuth 2.0)</li>
+  <li>Authentification sécurisée via Sign in with Apple ou Google Sign-In (OAuth 2.0)</li>
   <li>Stockage chiffré côté Firebase</li>
   <li>Accès restreint aux seuls services indispensables au fonctionnement</li>
 </ul>
