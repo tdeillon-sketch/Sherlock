@@ -262,8 +262,10 @@ const gridStyles = StyleSheet.create({
 
 // ── Main screen ────────────────────────────────────────────────
 export default function DuoScreen() {
+  // Defaults: Adulte (gauche) / Enfant (droite) — le cas d'usage le plus
+  // probable dans une app destinée aux parents.
   const [roleA, setRoleA] = useState<ProfileRole>('adulte');
-  const [roleB, setRoleB] = useState<ProfileRole>('adulte');
+  const [roleB, setRoleB] = useState<ProfileRole>('enfant');
   const [typeA, setTypeA] = useState<number | null>(null);
   const [typeB, setTypeB] = useState<number | null>(null);
 
