@@ -1,4 +1,4 @@
-# Politique de confidentialité — Sherlock Parent
+# Politique de confidentialité — 5herlock
 
 **Dernière mise à jour : 17 avril 2026**
 
@@ -6,7 +6,7 @@
 
 ## 1. Qui sommes-nous ?
 
-L'application **Sherlock Parent** (ci-après « l'Application ») est éditée par **Thomas Deillon**, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».
+L'application **5herlock** (ci-après « l'Application ») est éditée par **Thomas Deillon**, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».
 
 Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter à l'adresse : **contact@thomasdeillon.com** *(à remplacer par votre email de contact réel)*.
 
