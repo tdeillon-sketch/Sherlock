@@ -8,13 +8,13 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { TYPES } from '../../constants/data';
+import { colors, fonts, spacing, radius } from '../../../constants/theme';
+import { TYPES } from '../../../constants/data';
 
 function ProfileCard({ type }: { type: typeof TYPES[0] }) {
   return (
     <Pressable
-      onPress={() => router.push(`/profile/${type.num}`)}
+      onPress={() => router.push(`/profiles/${type.num}`)}
       style={({ pressed }) => [
         styles.card,
         pressed && styles.cardPressed,

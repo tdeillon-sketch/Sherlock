@@ -253,7 +253,7 @@ export default function QuizScreen() {
         <QuizResult
           result={adaptedResult}
           mode={legacyMode}
-          onViewProfile={() => router.push(`/profile/${result.topType}` as never)}
+          onViewProfile={() => router.push(`/profiles/${result.topType}` as never)}
           onSaveProfile={goToSaveProfile}
           onNewChild={restartSameSubject}
           onReset={reset}

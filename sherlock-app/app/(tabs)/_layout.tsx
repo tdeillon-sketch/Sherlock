@@ -114,7 +114,6 @@ export default function TabLayout() {
       />
       {/* Ecrans cachés de la tab bar */}
       <Tabs.Screen name="chapters" options={{ href: null }} />
-      <Tabs.Screen name="profile/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

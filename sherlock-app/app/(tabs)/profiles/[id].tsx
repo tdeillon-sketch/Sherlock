@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   content: {
-    paddingBottom: spacing.xxl + spacing.xl,
+    paddingBottom: spacing.xxl * 2,
   },
   errorText: {
     fontFamily: fonts.sans,
@@ -379,6 +379,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: colors.text,
+    flexShrink: 1,
   },
   identityRow: {
     flexDirection: 'row',
@@ -434,6 +435,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: colors.textSoft,
+    flexShrink: 1,
   },
   arrowRow: {
     alignItems: 'center',
