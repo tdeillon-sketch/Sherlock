@@ -1046,7 +1046,7 @@ export const BANK_ADULTE: AdaptiveQuestion[] = [
     discriminates: [1, 4, 5, 6, 7, 8],
   },
 
-  // ── ADAPTIVE (13) ────────────────────────────────────────────
+  // ── ADAPTIVE (16) ────────────────────────────────────────────
   {
     id: 'aad_motivation',
     ageBand: 'adulte', phase: 'adaptive', format: 'choice',
@@ -1267,7 +1267,82 @@ export const BANK_ADULTE: AdaptiveQuestion[] = [
     discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   },
 
-  // ── VALIDATION (9) ───────────────────────────────────────────
+  // Question « peur fondamentale » : la peur centrale de chaque type est
+  // l'un des signaux les plus fiables, mais on ne peut pas la demander
+  // frontalement (filtre d'auto-image). Le contournement : passer par le
+  // moment où l'esprit vagabonde, désamorcé.
+  {
+    id: 'aad_peur',
+    ageBand: 'adulte', phase: 'adaptive', format: 'choice',
+    category: 'La nuit',
+    setup: "La nuit, quand votre esprit vagabonde vers ce qui vous inquiète vraiment au fond…",
+    prompt: 'Ce qui revient le plus souvent :',
+    icon: '🌙',
+    options: [
+      { text: 'Avoir mal fait, ne pas avoir été à la hauteur de mes valeurs', emoji: '⚖️', scores: w([1, 3]) },
+      { text: 'Être seul·e, ne pas être vraiment aimé·e', emoji: '💔', scores: w([2, 3]) },
+      { text: 'Échouer publiquement, perdre ma crédibilité', emoji: '📉', scores: w([3, 3]) },
+      { text: 'Passer à côté de qui je suis vraiment, vivre une vie pas la mienne', emoji: '🎭', scores: w([4, 3]) },
+      { text: 'Être submergé·e, ne plus savoir gérer ce qui arrive', emoji: '🌊', scores: w([5, 3]) },
+      { text: 'Me retrouver sans repère, sans appui, en danger', emoji: '🌫️', scores: w([6, 3]) },
+      { text: 'Être coincé·e, manquer une occasion importante', emoji: '🚪', scores: w([7, 3]) },
+      { text: 'Être trahi·e, dominé·e, exposé·e à plus fort que moi', emoji: '🛡️', scores: w([8, 3]) },
+      { text: "Le conflit, la rupture, perdre l'harmonie avec mes proches", emoji: '⚡', scores: w([9, 3]) },
+    ],
+    discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  },
+  // Question « comportement de bout-de-rouleau » : capte la flèche de
+  // désintégration (chaque type bascule sur les traits non-sains d'un
+  // autre type quand il est vraiment à bout). Très complémentaire de
+  // pad_stress (positioning) qui capte l'amplification, alors que celui-
+  // ci capte le « shadow type ». Mappings : 1→4, 2→8, 3→9, 4→2, 5→7,
+  // 6→3, 7→1, 8→5, 9→6.
+  {
+    id: 'aad_ombre',
+    ageBand: 'adulte', phase: 'adaptive', format: 'choice',
+    category: 'Quand vous craquez',
+    setup: "Pas votre stress habituel — quand vous êtes vraiment épuisé·e depuis longtemps, une autre version de vous prend le relais.",
+    prompt: 'Vous devenez plutôt :',
+    icon: '🕳️',
+    options: [
+      { text: 'Mélancolique, replié·e, tout me semble vain', emoji: '🌧️', scores: w([1, 3]) },
+      { text: "Dur·e, contrôlant·e, je hausse le ton avec ceux que j'aime", emoji: '🥊', scores: w([2, 3]) },
+      { text: 'Apathique, désengagé·e, je « débranche » tout', emoji: '🛌', scores: w([3, 3]) },
+      { text: "Dans le besoin compulsif de plaire, je m'oublie pour l'autre", emoji: '🙇', scores: w([4, 3]) },
+      { text: 'Hyperactif·ve, dispersé·e, je papillonne pour ne rien sentir', emoji: '🦋', scores: w([5, 3]) },
+      { text: "Dans la performance d'image, je veux paraître au top à tout prix", emoji: '🎬', scores: w([6, 3]) },
+      { text: 'Critique, rigide, moralisateur·trice avec mon entourage', emoji: '📐', scores: w([7, 3]) },
+      { text: 'Soupçonneux·se, isolé·e, je coupe les ponts mentalement', emoji: '🐺', scores: w([8, 3]) },
+      { text: "Anxieux·se, je m'agite sans vraiment agir, je doute de tout", emoji: '🌪️', scores: w([9, 3]) },
+    ],
+    discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  },
+
+  // Question rétrospective d'enfance : le type cristallise tôt et reste
+  // très stable. Comme elle discrimine les 9 types (overlap maximal sur
+  // les top-4 candidats), elle sera sélectionnée tôt par l'entropie ;
+  // c'est un signal de très haute fiabilité.
+  {
+    id: 'aad_enfance',
+    ageBand: 'adulte', phase: 'adaptive', format: 'choice',
+    category: 'Vous, enfant',
+    setup: "Souvenez-vous de vous à 7-9 ans. Pas de qui vous auriez voulu être — de ce qu'on disait de vous à l'époque.",
+    prompt: "Vous étiez plutôt l'enfant :",
+    icon: '👧',
+    options: [
+      { text: 'Très sage, sérieux·se, qui voulait bien faire et respecter les règles', emoji: '📏', scores: w([1, 3]) },
+      { text: 'Toujours à aider, à donner, à plaire aux adultes', emoji: '🌹', scores: w([2, 3]) },
+      { text: 'Qui voulait briller, gagner, être remarqué·e', emoji: '🏆', scores: w([3, 3]) },
+      { text: 'Sensible, à part, dans son monde intérieur', emoji: '🌙', scores: w([4, 3]) },
+      { text: 'Solitaire, dans ses livres, posant des « pourquoi »', emoji: '📚', scores: w([5, 3]) },
+      { text: 'Inquiet·ète, posant beaucoup de questions, accroché·e à ses adultes', emoji: '🫂', scores: w([6, 3]) },
+      { text: "Hyperactif·ve, plein·e d'idées, débordant·e d'énergie", emoji: '🎈', scores: w([7, 3]) },
+      { text: 'Avec du caractère, qui défendait son territoire et les copains', emoji: '🦁', scores: w([8, 3]) },
+      { text: 'Doux·ce, accommodant·e, qui ne faisait jamais de vagues', emoji: '🌱', scores: w([9, 3]) },
+    ],
+    discriminates: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  },
+  // Descriptions par type — réponse Oui (+5) / À peu près (+2) / Non (-3)
   ...buildValidationsForAdulte(),
 ];
 

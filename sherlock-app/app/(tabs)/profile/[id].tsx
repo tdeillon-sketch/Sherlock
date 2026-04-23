@@ -116,6 +116,54 @@ export default function ProfileDetailScreen() {
         <Text style={styles.sectionBody}>{displayMetaphor}</Text>
       </View>
 
+      {/* La mécanique intérieure (NON affecté par l'aile — ce sont les fondations du type) */}
+      {type.belief && type.compulsion && type.virtue && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>La mécanique intérieure</Text>
+
+          {/* Croyance racine */}
+          <View style={styles.beliefCard}>
+            <Text style={styles.beliefLabel}>SA CROYANCE RACINE</Text>
+            <Text style={styles.beliefText}>« {type.belief} »</Text>
+          </View>
+
+          {/* Identité cristallisée */}
+          {type.identity && (
+            <View style={styles.identityRow}>
+              <Text style={styles.identityLabel}>Son identité :</Text>
+              <Text style={styles.identityText}>« {type.identity} »</Text>
+            </View>
+          )}
+
+          {/* Compulsion → Vertu (le mouvement de transformation) */}
+          <View style={styles.dynamicBox}>
+            <View style={[styles.poleCard, styles.poleCompulsion]}>
+              <Text style={styles.poleLabel}>SA COMPULSION</Text>
+              <Text style={styles.poleName}>{type.compulsion.name}</Text>
+              <Text style={styles.poleDesc}>{type.compulsion.desc}</Text>
+            </View>
+
+            <View style={styles.arrowRow}>
+              <Text style={styles.arrowText}>↓ chemin de libération ↓</Text>
+            </View>
+
+            <View style={[styles.poleCard, styles.poleVirtue, { borderColor: type.color }]}>
+              <Text style={[styles.poleLabel, { color: type.color }]}>SA VERTU</Text>
+              <Text style={styles.poleName}>{type.virtue.name}</Text>
+              <Text style={styles.poleDesc}>{type.virtue.desc}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Mission libérée */}
+      {type.missionLibre && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quand il se libère</Text>
+          <Text style={styles.sectionBody}>{type.missionLibre}</Text>
+        </View>
+      )}
+
       {/* Intégration & Désintégration (NON affecté par l'aile — ce sont des dynamiques du type de base) */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Intégration & Désintégration</Text>
@@ -307,6 +355,96 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: colors.textSoft,
+  },
+
+  // ── Mécanique intérieure ──
+  beliefCard: {
+    backgroundColor: colors.surface,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+    borderRadius: radius.sm,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  beliefLabel: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    marginBottom: spacing.sm,
+  },
+  beliefText: {
+    fontFamily: fonts.serifItalic,
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.text,
+  },
+  identityRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xs,
+  },
+  identityLabel: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.textSoft,
+    marginRight: spacing.xs,
+  },
+  identityText: {
+    fontFamily: fonts.serif,
+    fontSize: 15,
+    color: colors.text,
+    flexShrink: 1,
+  },
+  dynamicBox: {
+    marginTop: spacing.sm,
+  },
+  poleCard: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    borderWidth: 1,
+  },
+  poleCompulsion: {
+    backgroundColor: 'rgba(192, 68, 58, 0.06)',
+    borderColor: 'rgba(192, 68, 58, 0.25)',
+  },
+  poleVirtue: {
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+  },
+  poleLabel: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#c0443a',
+    marginBottom: spacing.xs,
+  },
+  poleName: {
+    fontFamily: fonts.serif,
+    fontSize: 18,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  poleDesc: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSoft,
+  },
+  arrowRow: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  arrowText: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    color: colors.textMuted,
   },
 
   // Intégration

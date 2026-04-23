@@ -26,6 +26,11 @@ export const TYPES = [
             { title: "Offrez-lui des espaces d'imperfection", desc: "Creez des moments ou les erreurs sont invitees. Jouez a des jeux ou vous faites expres de perdre. Montrez que vous etes imparfait et que c'est o.k. Ces memoires d'imperfection partagee sont des graces pour un type 1." },
             { title: "Valorisez la tentative plus que la perfection", desc: "Quand il doute — « Mais et si j'echoue ? » — dites : « Je suis fier de toi pour avoir essaye, independamment du resultat. » Celebrez le courage plus que la victoire." }
         ],
+        belief: "Pour être digne d'amour, je dois être parfait, juste, irréprochable. L'erreur est une faute morale.",
+        compulsion: { name: "Colère (ressentiment)", desc: "Une colère froide, contenue, faite d'irritation chronique de voir que rien — ni lui, ni les autres, ni le monde — n'est à la hauteur de l'idéal." },
+        virtue: { name: "Sérénité", desc: "La sagesse d'accepter ce qui est, de faire de son mieux avec ce qu'il contrôle, et de lâcher prise sur le reste avec une paix profonde." },
+        identity: "Je suis celui qui fait bien les choses.",
+        missionLibre: "Le 1 libéré ne cherche plus à corriger le monde, mais à incarner la sérénité. Il devient un leader éthique : son discernement, libéré du jugement, inspire par l'exemple plutôt que par la critique.",
         wings: "Type 9 (le reveur silencieux) et Type 2 (l'aidant donne)"
     },
     {
@@ -54,6 +59,11 @@ export const TYPES = [
             { title: "Aidez-le a decouvrir ses propres desirs", desc: "Posez des questions : « Qu'est-ce que TOI tu aimerais faire ? » Creez des espaces ou il est invite a penser a lui-meme, sans compromis, sans souci des autres." },
             { title: "Enseignez-lui que dire non, c'est un acte d'amour", desc: "« Si tu dis oui alors que tu veux dire non, tu souffres. Un ami qui t'aime veut que tu dises ce que tu sens. » Normaliser le non est un cadeau pour la vie du type 2." }
         ],
+        belief: "Pour être aimé, je dois donner et répondre aux besoins des autres. Mes propres besoins sont secondaires, voire égoïstes.",
+        compulsion: { name: "Orgueil (de l'aide)", desc: "Un orgueil subtil drapé dans l'humilité : « vous avez besoin de moi », « je sais mieux que vous ce qui est bon pour vous ». Il refuse de voir ses propres besoins." },
+        virtue: { name: "Humilité", desc: "Le courage de reconnaître ses propres besoins et limites. S'aimer soi-même pour pouvoir aimer librement, sans attente de retour." },
+        identity: "Je suis celui (celle) qui aime.",
+        missionLibre: "Le 2 libéré ne cherche plus à se rendre indispensable. Il devient un leader au service des autres : sa générosité devient inconditionnelle, et il sait nourrir le potentiel des autres sans rien attendre en retour.",
         wings: "Type 1 (le consciencieux) et Type 3 (le performeur)"
     },
     {
@@ -82,6 +92,11 @@ export const TYPES = [
             { title: "Encouragez l'echec comme une donnee, pas une catastrophe", desc: "Racontez vos propres echecs, vos peurs, vos maladresses. Montrez que vous etes imparfait et que c'est correct. L'echec n'est pas une identite, c'est un evenement." },
             { title: "Creez des espaces de non-performance", desc: "Une soiree sans ecran ou vous parlez simplement. Une balade ou il n'y a rien a faire, rien a gagner, rien a prouver. Peu a peu, l'enfant apprend que vous aimez sa presence, non sa productivite." }
         ],
+        belief: "Ma valeur dépend de mes succès, de mes performances et de l'image admirable que les autres ont de moi.",
+        compulsion: { name: "Mensonge (à soi-même)", desc: "Une tromperie subtile : il s'identifie à son image de réussite et finit par croire à son propre masque, perdant le contact avec ses vrais sentiments." },
+        virtue: { name: "Véracité (Authenticité)", desc: "Le courage de ralentir, de décoller le masque et d'oser être vu pour qui il est, au-delà des succès et des échecs. Il découvre que sa valeur est inhérente." },
+        identity: "Je suis mes succès.",
+        missionLibre: "Le 3 libéré ne performe plus pour être aimé. Il devient un leader authentique et inspirant : son énergie sert une vision qui a du sens, et il motive les autres par le courage de sa vulnérabilité.",
         wings: "Type 2 (l'aide) et Type 4 (le sensible)"
     },
     {
@@ -110,6 +125,11 @@ export const TYPES = [
             { title: "Ta difference est ton chemin, pas ta prison", desc: "Aidez-le a transformer son sentiment d'etrangete en quete creatrice. Montrez-lui d'autres personnes qui ont ete differentes et qui ont eu un impact. Aidez-le a trouver sa tribu." },
             { title: "Reste present quand je m'enferme", desc: "L'Artiste se retire dans ses univers. C'est sain. Mais il a besoin de savoir qu'on ne l'oublie pas. Pas de l'y forcer a sortir, mais de l'inviter regulierement avec douceur." }
         ],
+        belief: "Il me manque quelque chose d'essentiel pour être complet. Je suis fondamentalement différent et je dois trouver mon identité unique pour être aimé.",
+        compulsion: { name: "Envie (du manque)", desc: "Non pas la jalousie, mais la conviction qu'il lui manque une qualité essentielle que les autres possèdent. Son attention reste tournée vers l'absent, l'inaccessible, l'idéalisé." },
+        virtue: { name: "Équanimité", desc: "La capacité de ressentir toute la gamme des émotions humaines — joie comme tristesse — sans se laisser emporter. La découverte que rien d'essentiel ne lui manque." },
+        identity: "Je suis mes sentiments.",
+        missionLibre: "Le 4 libéré ne se complaît plus dans le sentiment de différence. Il devient un leader créatif et empathique : sa profondeur se met au service de la beauté et du sens, et il révèle l'humanité cachée dans l'imperfection.",
         wings: "Type 3 (l'ambitieux) et Type 5 (le penseur)"
     },
     {
@@ -138,6 +158,11 @@ export const TYPES = [
             { title: "Ta connaissance vaut quelque chose", desc: "Validez son expertise. Creez des espaces ou son savoir compte. Encouragez-le a partager d'une facon qui le satisfait — pas pour impressionner, mais pour communiquer veritablement." },
             { title: "Le coeur existe, meme derriere l'intellect", desc: "Il n'est pas froid. Il est prudent sur le plan emotionnel. Il a besoin de savoir qu'il est securitaire de descendre de la tour. Que l'amour peut etre vrai meme quand il est difficile a exprimer." }
         ],
+        belief: "Le monde est envahissant et mes ressources sont limitées. Je dois comprendre avant d'agir et conserver mon énergie en minimisant mes engagements.",
+        compulsion: { name: "Avarice (de soi)", desc: "Non pas une avarice matérielle, mais une rétention : il retient son temps, son énergie, ses émotions, son savoir, vivant dans une économie intérieure de la rareté." },
+        virtue: { name: "Non-attachement (Sagesse engagée)", desc: "La capacité de s'engager pleinement dans le monde, de partager ses dons et de ressentir ses émotions, sans craindre d'être vidé. Plus il donne, plus il reçoit." },
+        identity: "Je suis ce que je sais.",
+        missionLibre: "Le 5 libéré quitte sa tour d'ivoire. Il devient un leader sage et visionnaire : sa clarté d'analyse, désormais partagée généreusement, apporte de la compréhension et de l'innovation face aux défis du monde.",
         wings: "Type 4 (le sensible) et Type 6 (le prudent)"
     },
     {
@@ -166,6 +191,11 @@ export const TYPES = [
             { title: "Ton doute ne veut pas dire que tu es faible", desc: "Au lieu de tenter de le guerir de son doute, apprenez-lui a y vivre. « Tu doutes. C'est qui tu es. Tu peux douter et agir de toute facon. » C'est un courage qu'il faut cultiver." },
             { title: "Tu as besoin d'appartenance, pas de perfection", desc: "Donnez-lui une tribu ou il peut etre authentique. Montrez-lui qu'il vous appartient, inconditionnellement. C'est la securite dont il a vraiment besoin." }
         ],
+        belief: "Le monde est dangereux et imprévisible. Je ne peux pas faire confiance à ma propre guidance — je dois être vigilant et trouver une autorité extérieure fiable.",
+        compulsion: { name: "Peur (anxiété chronique)", desc: "Une « peur de la peur » qui pousse à imaginer tous les scénarios catastrophes. Le doute ronge la certitude, la méfiance questionne chaque intention." },
+        virtue: { name: "Courage (Foi)", desc: "Non pas l'absence de peur, mais la capacité d'agir malgré la peur. Trouver son autorité et sa sécurité non plus à l'extérieur, mais en soi-même." },
+        identity: "Je suis celui qui doute (et qui est loyal).",
+        missionLibre: "Le 6 libéré ne cherche plus la sécurité dehors. Il devient un leader courageux et engagé : sa lucidité devient prévoyance stratégique, sa loyauté un engagement indéfectible. Il pose les questions difficiles que personne n'ose poser.",
         wings: "Type 5 (le penseur) et Type 7 (l'optimiste)"
     },
     {
@@ -194,6 +224,11 @@ export const TYPES = [
             { title: "Aidez-le a terminer les choses", desc: "Non en le forcant, mais en restant present. L'Aventurier a besoin de sentir que laisser briller longtemps, c'est magique — pas seulement l'etincelle du debut." },
             { title: "Nommez l'evitement", desc: "« Je remarque que quand c'est difficile, tu changes de sujet. C'est normal. Mais ensemble, on peut apprendre a rester un peu meme quand c'est moins brillant. » L'Aventurier a besoin d'apprendre la profondeur par la decouverte." }
         ],
+        belief: "Le monde est plein d'opportunités, mais je dois éviter la douleur et la limitation. Je dois garder mes options ouvertes pour ne pas être piégé.",
+        compulsion: { name: "Gourmandise (d'expériences)", desc: "Une soif insatiable d'expériences, d'idées, de plaisirs, de projets. Il consomme toujours plus de stimulations pour ne pas avoir à digérer le présent." },
+        virtue: { name: "Sobriété (Joie pleine)", desc: "Non pas la privation, mais la capacité de trouver une satisfaction entière dans l'expérience présente, telle qu'elle est. La joie comme état d'être, pas comme stimulation." },
+        identity: "Je suis quelqu'un d'heureux (et de libre).",
+        missionLibre: "Le 7 libéré ne fuit plus l'ombre. Il devient un leader joyeux et visionnaire : son optimisme n'est plus une fuite mais une force résiliente, et il couple sa vision des possibilités à la discipline pour les réaliser.",
         wings: "Type 6 (le prudent) et Type 8 (le leader)"
     },
     {
@@ -222,6 +257,11 @@ export const TYPES = [
             { title: "Creez de l'espace pour la vulnerabilite", desc: "Non pas en l'exigeant, mais en la nommant. « J'ai remarque que c'est difficile de dire quand tu as peur. Mais admettre qu'on a besoin d'aide, c'est le contraire de la faiblesse. »" },
             { title: "Reconnaissez le bien qu'il fait", desc: "Le Chef protege les autres. Nommez-le : « Tu as defendu ce garcon que personne ne regardait. C'est beau. » Le Chef a besoin de savoir que sa force peut etre une beaute, pas seulement une menace." }
         ],
+        belief: "Le monde est une jungle où les forts dominent les faibles. Pour survivre et protéger les miens, je dois être fort, prendre le contrôle et ne jamais montrer ma vulnérabilité.",
+        compulsion: { name: "Luxure (de vie, d'intensité)", desc: "Une soif d'intensité, un besoin de « trop » : repousser les limites, prendre plus d'espace, intensifier les confrontations. Une manière de sentir sa propre vitalité." },
+        virtue: { name: "Innocence (Force protectrice)", desc: "Non pas la naïveté, mais le courage de déposer son armure, d'ouvrir son cœur et de redécouvrir sa propre tendresse. La vraie force protège plutôt qu'elle ne domine." },
+        identity: "Je suis la force.",
+        missionLibre: "Le 8 libéré n'a plus besoin de dominer. Il devient un leader protecteur et magnanime : sa puissance crée un espace sûr où les autres peuvent grandir, et il défend la justice plutôt que d'imposer sa volonté.",
         wings: "Type 7 (l'energique) et Type 9 (le pacifique)"
     },
     {
@@ -250,6 +290,11 @@ export const TYPES = [
             { title: "Validez ses limites molles", desc: "Quand le Mediateur dit « je ne suis pas sur » ou « peut-etre », c'est une limite, pas une indecision. Respectez-la. Il doit apprendre que s'affirmer ne signifie pas blesser les autres." },
             { title: "Connectez-le a lui-meme, pas aux autres", desc: "Aidez-le a distinguer : ce qui vient de lui, ce qui vient de sa mere, ce qui vient de son groupe. « Ceci est ce que TU ressens. Ceci est ce que TU crois. Ceci est ce que TU veux. »" }
         ],
+        belief: "Mon opinion, mes désirs et ma présence ne sont pas si importants. Pour maintenir la paix, je ne dois pas m'affirmer — cela risquerait de créer des conflits.",
+        compulsion: { name: "Paresse de soi", desc: "Pas une paresse physique, mais spirituelle : une tendance à s'oublier, à anesthésier ses propres désirs et sa colère pour ne pas déranger l'ordre établi." },
+        virtue: { name: "Action juste (Amour saint)", desc: "S'engager pleinement dans la vie depuis son propre centre, en étant éveillé à soi-même. Sa contribution unique compte ; la vraie paix vient de la présence engagée." },
+        identity: "Je suis facile à vivre.",
+        missionLibre: "Le 9 libéré ne s'efface plus. Il devient un leader unificateur et éveillé : sa capacité à voir tous les points de vue n'est plus une paralysie mais un outil puissant de médiation, et sa présence calme apaise les conflits.",
         wings: "Type 8 (le protecteur) et Type 1 (le consciencieux)"
     }
 ];
