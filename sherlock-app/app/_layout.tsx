@@ -9,6 +9,13 @@ import {
 
 SplashScreen.preventAutoHideAsync();
 
+// Minimum time the splash screen stays visible at boot, in milliseconds.
+// The splash naturally hides as soon as fonts + auth check are ready (often
+// well under a second). We hold it at least this long so the brand image has
+// time to register — roughly doubles the perceived startup duration.
+const MIN_SPLASH_MS = 2000;
+const bootStart = Date.now();
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     PlayfairDisplay: require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
@@ -43,13 +50,23 @@ export default function RootLayout() {
     return unsubscribe;
   }, []);
 
+  // Track when the natural ready conditions (fonts + auth) are met so we
+  // can render the app, but defer hiding the native splash until the
+  // minimum hold time has also elapsed.
+  const [splashHidden, setSplashHidden] = useState(false);
   useEffect(() => {
     if (fontsLoaded && !checkingAuth) {
-      SplashScreen.hideAsync();
+      const elapsed = Date.now() - bootStart;
+      const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+      const t = setTimeout(() => {
+        SplashScreen.hideAsync().catch(() => {});
+        setSplashHidden(true);
+      }, remaining);
+      return () => clearTimeout(t);
     }
   }, [fontsLoaded, checkingAuth]);
 
-  if (!fontsLoaded || checkingAuth) {
+  if (!fontsLoaded || checkingAuth || !splashHidden) {
     return null;
   }
 
