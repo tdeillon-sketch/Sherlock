@@ -13,7 +13,7 @@ import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
 import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
-import type { QuizSubject } from '../../constants/quiz_v2';
+import type { QuizSubject } from '../../constants/quiz_v3';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; title: string; desc: string }[] = [
   { key: 'enfant', emoji: '🧒', title: 'Mon enfant', desc: 'Vous répondez pour votre enfant ou votre ado' },
@@ -36,11 +36,11 @@ export default function QuizScreen() {
   const isWide = width >= 768;
 
   const {
-    phase, subject, ageBand, currentQuestion, scores,
-    stepIndex, estimatedTotal, result, childProfiles, precisionRound,
+    phase, subject, ageBand, currentPage, scores,
+    stepIndex, estimatedTotal, result, childProfiles, canAdvance, pageIndex,
     selectSubject, selectAge,
-    answerChoice, answerSlider, answerValidation, skip,
-    refineResult, reset, restartSameSubject,
+    updateResponse, advancePage, goToPrevPage,
+    reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
     saveChildResult,
   } = useAdaptiveQuiz();
@@ -215,18 +215,38 @@ export default function QuizScreen() {
   // ─────────────────────────────────────────────
   let mainContent: React.ReactNode = null;
 
-  // Questions et validation utilisent le même composant
-  if ((phase === 'questions' || phase === 'validation') && currentQuestion) {
+  // Pages du quiz (likert / budget / final / wing)
+  if (phase === 'questions' && currentPage && ageBand) {
     mainContent = (
-      <AdaptiveQuestion
-        question={currentQuestion}
-        stepIndex={stepIndex}
-        estimatedTotal={estimatedTotal}
-        onChoice={answerChoice}
-        onSlider={answerSlider}
-        onValidation={answerValidation}
-        onSkip={skip}
-      />
+      <View>
+        <AdaptiveQuestion
+          page={currentPage}
+          pageIndex={pageIndex}
+          ageBand={ageBand}
+          onChange={updateResponse}
+        />
+        <View style={styles.navRow}>
+          {pageIndex > 0 ? (
+            <Pressable onPress={goToPrevPage} style={({ pressed }) => [styles.navBtn, styles.navBtnGhost, pressed && { opacity: 0.7 }]}>
+              <Text style={styles.navBtnGhostText}>← Précédent</Text>
+            </Pressable>
+          ) : <View style={{ width: 100 }} />}
+          <Pressable
+            onPress={advancePage}
+            disabled={!canAdvance}
+            style={({ pressed }) => [
+              styles.navBtn,
+              styles.navBtnPrimary,
+              !canAdvance && { opacity: 0.4 },
+              pressed && canAdvance && { opacity: 0.85 },
+            ]}
+          >
+            <Text style={styles.navBtnPrimaryText}>
+              {currentPage.kind === 'wing' ? 'Voir mon profil →' : 'Page suivante →'}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
     );
   }
 
@@ -259,12 +279,10 @@ export default function QuizScreen() {
           onReset={reset}
         />
 
-        {/* Score de confiance + bouton préciser */}
+        {/* Score de confiance (sans bouton "Affiner" — retiré en v3) */}
         <ConfidenceBar
           confidence={result.confidence}
           label={result.confidenceLabel}
-          onRefine={refineResult}
-          canRefine={precisionRound < 2}
         />
       </>
     );
@@ -543,6 +561,34 @@ const styles = StyleSheet.create({
   skipBtnText: {
     fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted,
     textDecorationLine: 'underline',
+  },
+
+  // Nav row (Précédent / Suivant)
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
+  },
+  navBtn: {
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.md,
+    borderRadius: radius.full,
+    minWidth: 100, alignItems: 'center', justifyContent: 'center',
+  },
+  navBtnPrimary: {
+    backgroundColor: colors.accent,
+  },
+  navBtnPrimaryText: {
+    fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', color: colors.white,
+  },
+  navBtnGhost: {
+    backgroundColor: 'transparent',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  navBtnGhostText: {
+    fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft,
   },
 
   // Save Profile

@@ -1,13 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
 //  CONFIDENCE BAR — affiche le score de confiance du résultat
 //
-//  - Barre horizontale 0..100% avec gradient orange
-//  - Label : Très confiant / Confiant / Plutôt confiant / À préciser
-//  - Bouton "Préciser (3 questions de plus)" si confiance < 80
+//  V3 : le bouton "Préciser" a été retiré (le flow adaptatif gère
+//  lui-même la relance). Barre + label uniquement.
 // ═══════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 
@@ -15,16 +14,9 @@ interface Props {
   /** 0..100 */
   confidence: number;
   label: 'Très confiant' | 'Confiant' | 'Plutôt confiant' | 'À préciser';
-  onRefine?: () => void;
-  canRefine?: boolean;
 }
 
-export default function ConfidenceBar({
-  confidence, label, onRefine, canRefine,
-}: Props) {
-  const showRefineBtn = canRefine && confidence < 80 && !!onRefine;
-
-  // Couleur selon le niveau
+export default function ConfidenceBar({ confidence, label }: Props) {
   const tone =
     confidence >= 80 ? colors.success :
     confidence >= 60 ? colors.accent :
@@ -48,25 +40,6 @@ export default function ConfidenceBar({
       </View>
 
       <Text style={[styles.qualifier, { color: tone }]}>{label}</Text>
-
-      {showRefineBtn && (
-        <>
-          <Text style={styles.refineHint}>
-            Le résultat n'est pas tranché. Vous pouvez répondre à 3 questions
-            de plus pour le préciser.
-          </Text>
-          <Pressable
-            onPress={onRefine}
-            style={({ pressed }) => [
-              styles.refineBtn, pressed && { opacity: 0.85 },
-            ]}
-          >
-            <Text style={styles.refineBtnText}>
-              ✨ Préciser (3 questions de plus)
-            </Text>
-          </Pressable>
-        </>
-      )}
     </View>
   );
 }
@@ -112,27 +85,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginTop: spacing.sm,
-  },
-  refineHint: {
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    color: colors.textMuted,
-    lineHeight: 18,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  refineBtn: {
-    backgroundColor: colors.accentFill,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  refineBtnText: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.accent,
   },
 });

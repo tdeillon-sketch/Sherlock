@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Test Ennéagramme — Sherlock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1f2d; --bg-2: #0a1824;
+    --surface: #132f42; --surface-2: #183c54;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+    --accent: #c0713a; --accent-soft: rgba(192,113,58,0.14);
+    --gold: #d4a24a; --text: #f4f1ec;
+    --text-soft: #c8d8e8; --text-muted: #8899aa;
+    --green: #6bb58a; --red: #d66a5c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-soft); min-height: 100vh; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .serif { font-family: 'Playfair Display', Georgia, serif; }
+  .app { max-width: 640px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; align-items: center; gap: 14px; padding: 18px 20px 12px; min-height: 58px; }
+  .topbar .back { background: none; border: none; color: var(--text-soft); font-size: 24px; cursor: pointer; padding: 4px 8px; opacity: 0.7; }
+  .topbar .back:hover { opacity: 1; }
+  .topbar .title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .topbar .spacer { width: 40px; }
+  .progress-bar { height: 3px; background: rgba(255,255,255,0.06); }
+  .progress-bar .fill { height: 100%; background: var(--accent); transition: width 0.4s; width: 0%; }
+
+  .screen { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .screen.center { justify-content: center; align-items: center; text-align: center; }
+
+  #screen-intro h1 { font-size: 36px; color: var(--text); margin-bottom: 14px; line-height: 1.2; max-width: 480px; }
+  #screen-intro .lede { font-size: 16px; color: var(--text-muted); max-width: 460px; margin-bottom: 32px; font-style: italic; }
+  .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 460px; margin-bottom: 36px; width: 100%; }
+  .info-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .info-cell .val { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); }
+  .info-cell .lab { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+  .cta { background: var(--accent); color: #fff; border: none; padding: 14px 30px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; letter-spacing: 0.2px; }
+  .cta:hover { background: #d07e43; transform: translateY(-1px); }
+  .cta:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .cta.ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--border); }
+  .cta.ghost:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+  .cta.small { padding: 9px 16px; font-size: 13px; }
+
+  .radar-wrap { display: flex; justify-content: center; padding: 4px 0 12px; }
+  svg.radar { width: 100%; max-width: 300px; height: auto; display: block; }
+  svg.radar .axis { stroke: rgba(255,255,255,0.08); stroke-width: 1; fill: none; }
+  svg.radar .spoke { stroke: rgba(255,255,255,0.05); stroke-width: 1; }
+  svg.radar .label { fill: var(--text-muted); font-size: 13px; font-weight: 500; }
+  svg.radar .label.active { fill: var(--accent); font-weight: 700; }
+  svg.radar .poly { fill: rgba(192,113,58,0.22); stroke: var(--accent); stroke-width: 1.5; transition: all 0.5s; }
+  svg.radar .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+  svg.radar .center-emoji { font-size: 22px; text-anchor: middle; dominant-baseline: central; }
+
+  .page-header { margin: 2px 2px 14px; }
+  .page-header .phase { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .page-header .page-title { font-family: 'Playfair Display', serif; color: var(--text); font-size: 22px; line-height: 1.3; margin-bottom: 6px; }
+  .page-header .page-hint { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+  /* Likert slider (continuous -5 to +5) */
+  .lk5-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+  .lk5-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .lk5-row.moved { border-color: rgba(192,113,58,0.3); }
+  .lk5-row .lk5-text { font-family: 'Playfair Display', serif; font-size: 15px; line-height: 1.35; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .lk5-slider-wrap { display: flex; align-items: center; gap: 14px; }
+  .lk5-slider-lbl { font-family: 'Playfair Display', serif; font-size: 22px; flex: 0 0 18px; text-align: center; font-weight: 700; line-height: 1; }
+  .lk5-slider-lbl.left { color: var(--red); }
+  .lk5-slider-lbl.right { color: var(--green); }
+  .lk5-slider {
+    flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; outline: none;
+    background: linear-gradient(90deg, rgba(214,106,92,0.6) 0%, rgba(136,153,170,0.3) 50%, rgba(107,181,138,0.6) 100%);
+    cursor: pointer;
+  }
+  .lk5-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); cursor: grab; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; }
+  .lk5-slider::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.15); }
+  .lk5-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); cursor: grab; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+  .lk5-slider-ticks { display: flex; justify-content: space-between; padding: 0 2px; margin-top: -4px; }
+  .lk5-slider-ticks span { width: 2px; height: 6px; background: rgba(255,255,255,0.12); border-radius: 1px; }
+  .lk5-slider-ticks span.center { height: 10px; background: rgba(255,255,255,0.25); }
+
+  /* Budget (steppers) */
+  .bg-meter { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .bg-meter .lab { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .bg-meter .val { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .bg-meter .val.overflow { color: var(--red); }
+  .bg-meter .val.exact { color: var(--green); }
+  .bg-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+  .bg-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+  .bg-row .bg-text { flex: 1; font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; line-height: 1.4; color: var(--text); display: flex; gap: 10px; align-items: flex-start; }
+  .bg-row .bg-text .emo { font-size: 18px; flex-shrink: 0; }
+  .bg-stepper { display: flex; align-items: center; gap: 6px; flex-shrink: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 24px; padding: 3px; }
+  .bg-stepper button { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: var(--text-soft); font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; }
+  .bg-stepper button:hover:not(:disabled) { background: var(--accent); color: #fff; }
+  .bg-stepper button:disabled { opacity: 0.2; cursor: not-allowed; }
+  .bg-stepper .bg-val { min-width: 32px; text-align: center; font-family: 'Playfair Display', serif; font-size: 18px; font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+  .bg-stepper .bg-val.pos { color: var(--green); }
+  .bg-stepper .bg-val.neg { color: var(--red); }
+
+  .quiz-controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-bottom: 8px; flex-wrap: wrap; }
+  .conf-mini { flex: 1; min-width: 100px; display: flex; flex-direction: column; gap: 4px; }
+  .conf-mini .label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  .conf-mini .track { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .conf-mini .track .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.5s; width: 0%; }
+
+  /* Result */
+  .result-hero { background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%); border: 1px solid var(--border); border-radius: 18px; padding: 28px 20px; text-align: center; margin-bottom: 16px; }
+  .type-badge { width: 68px; height: 68px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: #fff; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .result-hero h1 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 32px; margin-bottom: 2px; }
+  .result-hero .nick { font-family: 'Playfair Display', serif; font-style: italic; color: var(--text-soft); font-size: 18px; margin-bottom: 18px; }
+  .conf-big { font-family: 'Playfair Display', serif; color: var(--accent); font-size: 48px; line-height: 1; margin-top: 10px; }
+  .conf-big sup { font-size: 28px; }
+  .conf-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  .lecture { background: var(--surface); border: 1px solid var(--gold); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display: flex; gap: 14px; align-items: flex-start; }
+  .lecture .lico { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .lecture .ltitle { color: var(--gold); font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+  .lecture .ltext { color: var(--text-soft); font-size: 15px; line-height: 1.5; }
+  .topthree { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+  .topthree h3 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 20px; font-weight: 400; margin-bottom: 16px; }
+  .tt-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+  .tt-row:last-child { margin-bottom: 0; }
+  .tt-row .rank { color: var(--text-muted); width: 24px; font-weight: 600; }
+  .tt-row .bubble { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .tt-row .name { flex: 1; color: var(--text); font-weight: 500; }
+  .tt-row .pct { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
+  .tt-row .bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin: 0 4px; }
+  .tt-row .bar-fill { height: 100%; border-radius: 2px; }
+
+  .details-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .details-card h3 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 20px; font-weight: 400; margin-bottom: 12px; }
+  .details-card .copy-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .copy-feedback { color: var(--green); font-size: 12px; }
+  .ans-row { padding: 12px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .ans-row:first-child { border-top: none; padding-top: 0; }
+  .ans-row .qstage { color: var(--accent); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+  .ans-row .qname { color: var(--text); font-size: 14px; margin: 3px 0 6px; font-weight: 500; }
+  .ans-row .ansval { color: var(--text-soft); font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
+  .ans-row .contribs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .ans-row .contrib { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .ans-row .contrib strong { color: var(--accent); font-weight: 700; }
+  .ans-row .phase-tag { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--text-muted); letter-spacing: 0.5px; margin-left: 6px; text-transform: uppercase; font-weight: 600; }
+  .ans-row .phase-tag.budget { background: rgba(192,113,58,0.14); color: var(--accent); }
+  .ans-row .phase-tag.final { background: rgba(212,162,74,0.14); color: var(--gold); }
+
+  .intro-resume { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; max-width: 460px; width: 100%; font-size: 14px; color: var(--text); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .intro-resume .ir-actions { display: flex; gap: 8px; }
+
+  .desc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .desc-card h3 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 20px; font-weight: 400; margin-bottom: 10px; }
+  .desc-card p { color: var(--text-soft); font-size: 14px; margin-bottom: 10px; }
+  .desc-card p:last-child { margin-bottom: 0; }
+  .desc-card .chip { display: inline-block; background: var(--accent-soft); color: var(--accent); padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 6px; margin-top: 6px; letter-spacing: 0.5px; }
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  .actions .cta { flex: 1; }
+
+  .hidden { display: none !important; }
+  .fade-in { animation: fadeIn 0.35s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (min-width: 900px) {
+    .app { max-width: 920px; }
+    .quiz-layout { display: grid; grid-template-columns: 300px 1fr; gap: 36px; align-items: flex-start; }
+    .quiz-layout .radar-col { position: sticky; top: 20px; }
+    #screen-intro h1 { font-size: 44px; }
+  }
+  @media (max-width: 400px) {
+    .lk5-row .lk5-text, .bg-row .bg-text { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <button class="back" id="backBtn">‹</button>
+    <div class="title"><span>🧭</span><span id="title">Test Ennéagramme</span></div>
+    <div class="spacer"></div>
+  </div>
+  <div class="progress-bar"><div class="fill" id="progress"></div></div>
+
+  <section id="screen-intro" class="screen center fade-in">
+    <div class="eyebrow">POUR COMMENCER</div>
+    <h1 class="serif">Découvrez votre type d'Ennéagramme</h1>
+    <p class="lede">Test adaptatif par pages d'affirmations. <strong>Tu évalues librement</strong> au début (+/−), puis tu <strong>tranches par hiérarchie</strong> en fin (budget de points). Le radar vit en direct.</p>
+    <div class="intro-resume hidden" id="resumeBanner">
+      <span id="resumeText"></span>
+      <div class="ir-actions">
+        <button class="cta small ghost" id="freshBtn">Nouveau test</button>
+        <button class="cta small" id="resumeBtn">Reprendre →</button>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="val">~4</div><div class="lab">Pages</div></div>
+      <div class="info-cell"><div class="val">Adaptatif</div><div class="lab">Méthode</div></div>
+      <div class="info-cell"><div class="val">9</div><div class="lab">Profils</div></div>
+    </div>
+    <button class="cta" id="startBtn">Démarrer le test →</button>
+  </section>
+
+  <section id="screen-quiz" class="screen hidden">
+    <div class="quiz-layout">
+      <div class="radar-col">
+        <div class="radar-wrap">
+          <svg class="radar" id="radar" viewBox="0 0 300 300"></svg>
+        </div>
+      </div>
+      <div class="q-col">
+        <div class="page-header">
+          <div class="phase" id="pagePhase"></div>
+          <div class="page-title" id="pageTitle"></div>
+          <div class="page-hint" id="pageHint"></div>
+        </div>
+        <div id="pageBody"></div>
+        <div class="quiz-controls">
+          <button class="cta small ghost" id="prevBtn">← Précédent</button>
+          <div class="conf-mini">
+            <div class="label">Confiance</div>
+            <div class="track"><div class="fill" id="confMini"></div></div>
+          </div>
+          <button class="cta small" id="nextBtn" disabled>Valider →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-result" class="screen hidden">
+    <div class="result-hero">
+      <div class="type-badge" id="resBadge">5</div>
+      <div class="eyebrow">VOTRE PROFIL</div>
+      <h1 class="serif" id="resTitle">Type 5</h1>
+      <div class="nick" id="resNick">L'Observateur</div>
+      <div class="conf-big"><span id="resConf">0</span><sup>%</sup></div>
+      <div class="conf-label">de confiance</div>
+    </div>
+    <div class="lecture">
+      <div class="lico">💡</div>
+      <div>
+        <div class="ltitle">Notre lecture</div>
+        <div class="ltext" id="resLecture"></div>
+      </div>
+    </div>
+    <div class="topthree">
+      <h3>Les 3 types les plus marqués</h3>
+      <div id="topThree"></div>
+    </div>
+    <div class="desc-card">
+      <h3 id="descTitle"></h3>
+      <p id="descFear"></p>
+      <p id="descMotive"></p>
+      <p id="descCompul"></p>
+      <div id="descChips"></div>
+    </div>
+    <div class="actions">
+      <button class="cta ghost" id="restartBtn">Recommencer</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// ============================================================
+// TYPES
+// ============================================================
+const TYPES = {
+  1: { name: 'Le Perfectionniste', nick: 'Perfectionniste', color: '#c0713a',
+       fear: 'Être mauvais, corrompu, défectueux.', motive: 'Agir avec intégrité, améliorer le monde.',
+       compul: 'Le ressentiment et la rigidité morale — un juge intérieur qui note tout.',
+       wing: [9, 2], stress: 4, integ: 7 },
+  2: { name: 'L\'Altruiste', nick: 'Le Généreux', color: '#d49155',
+       fear: 'Être indigne d\'amour, ne pas être désiré.', motive: 'Aimer et être aimé.',
+       compul: 'L\'orgueil caché sous l\'aide — donner pour devenir indispensable.',
+       wing: [1, 3], stress: 8, integ: 4 },
+  3: { name: 'Le Battant', nick: 'Le Gagneur', color: '#d4a24a',
+       fear: 'Être sans valeur, un échec.', motive: 'Réussir, être admiré.',
+       compul: 'La tromperie de soi — vivre derrière un masque de réussite.',
+       wing: [2, 4], stress: 9, integ: 6 },
+  4: { name: 'Le Romantique', nick: 'L\'Individualiste', color: '#9b8cb8',
+       fear: 'Être insignifiant, ordinaire, sans identité propre.', motive: 'Trouver et exprimer sa vérité unique.',
+       compul: 'L\'envie du manque — la mélancolie comme preuve de profondeur.',
+       wing: [3, 5], stress: 2, integ: 1 },
+  5: { name: 'L\'Observateur', nick: 'L\'Investigateur', color: '#5b8db8',
+       fear: 'Être submergé, vidé de ses ressources internes.', motive: 'Comprendre, être compétent.',
+       compul: 'L\'avarice de soi — retenir temps, énergie, émotions.',
+       wing: [4, 6], stress: 7, integ: 8 },
+  6: { name: 'Le Loyaliste', nick: 'Le Prudent', color: '#6b8ec4',
+       fear: 'Être sans soutien, sans orientation.', motive: 'Se sentir en sécurité et soutenu.',
+       compul: 'La peur et le doute permanent — anticiper tous les scénarios.',
+       wing: [5, 7], stress: 3, integ: 9 },
+  7: { name: 'L\'Épicurien', nick: 'L\'Enthousiaste', color: '#7abf8e',
+       fear: 'Être piégé dans la souffrance ou la privation.', motive: 'Vivre pleinement, multiplier les découvertes.',
+       compul: 'La gourmandise — fuir la douleur dans la multiplication des options.',
+       wing: [6, 8], stress: 1, integ: 5 },
+  8: { name: 'Le Chef', nick: 'Le Challenger', color: '#d66a5c',
+       fear: 'Être contrôlé, dominé, blessé.', motive: 'Rester maître de sa vie et de son destin.',
+       compul: 'La luxure de contrôle — la force pour masquer la vulnérabilité.',
+       wing: [7, 9], stress: 5, integ: 2 },
+  9: { name: 'Le Médiateur', nick: 'Le Pacificateur', color: '#b8a48a',
+       fear: 'Être en conflit, perdre la paix intérieure.', motive: 'Vivre en paix, en harmonie avec tous.',
+       compul: 'La paresse de soi — s\'endormir à ses propres désirs pour maintenir l\'harmonie.',
+       wing: [8, 1], stress: 6, integ: 3 }
+};
+
+// ============================================================
+// STATEMENTS POOL — 6 par type, dimensions variées (fear, voice, behavior, stress, shadow, motive)
+// ============================================================
+const STATEMENTS = [
+  // T1
+  { id:'s1a', t:1, e:'🔍', txt:'Je remarque automatiquement ce qui pourrait être mieux fait autour de moi', dim:'behavior' },
+  { id:'s1b', t:1, e:'📏', txt:'J\'ai une petite voix intérieure qui critique beaucoup ce que je fais', dim:'voice' },
+  { id:'s1c', t:1, e:'🔒', txt:'Je réprime mes pulsions — je me discipline, je me contrôle', dim:'compul' },
+  { id:'s1d', t:1, e:'😤', txt:'Quand c\'est mal fait ou injuste, ça me pèse physiquement', dim:'body' },
+  { id:'s1e', t:1, e:'⚖️', txt:'J\'ai un sens aigu de ce qui devrait être — la réalité me déçoit souvent', dim:'belief' },
+  { id:'s1f', t:1, e:'✅', txt:'J\'ai du mal à lâcher prise sur les détails — je vérifie, je retouche', dim:'behavior' },
+  // T2
+  { id:'s2a', t:2, e:'💞', txt:'Je sens immédiatement quand quelqu\'un va mal, avant même qu\'il ne parle', dim:'attunement' },
+  { id:'s2b', t:2, e:'🤲', txt:'J\'anticipe les besoins des autres avant les miens', dim:'behavior' },
+  { id:'s2c', t:2, e:'🚫', txt:'J\'ai du mal à dire non sans me sentir coupable', dim:'shadow' },
+  { id:'s2d', t:2, e:'😞', txt:'Ça me blesse qu\'on ne reconnaisse pas tout ce que je fais pour les autres', dim:'shadow' },
+  { id:'s2e', t:2, e:'🔗', txt:'Je cherche à me rendre indispensable à certaines personnes', dim:'compul' },
+  { id:'s2f', t:2, e:'🧭', txt:'Je sais parfois mieux ce dont les autres ont besoin qu\'eux-mêmes', dim:'belief' },
+  // T3
+  { id:'s3a', t:3, e:'🎯', txt:'Je m\'adapte à ce qu\'on attend de moi pour performer et briller', dim:'compul' },
+  { id:'s3b', t:3, e:'📉', txt:'L\'échec visible me terrifie plus que l\'échec privé', dim:'fear' },
+  { id:'s3c', t:3, e:'🎭', txt:'Je suis très conscient de l\'image que je projette', dim:'behavior' },
+  { id:'s3d', t:3, e:'⏭️', txt:'Je mets mes émotions en pause pour avancer efficacement', dim:'shadow' },
+  { id:'s3e', t:3, e:'🏅', txt:'Ma valeur personnelle est liée à mes accomplissements visibles', dim:'belief' },
+  { id:'s3f', t:3, e:'⚙️', txt:'Je peux fonctionner en mode pilote automatique productif même épuisé', dim:'stress' },
+  // T4
+  { id:'s4a', t:4, e:'🫥', txt:'Je me sens souvent différent, à part — étranger au monde ordinaire', dim:'identity' },
+  { id:'s4b', t:4, e:'🌫️', txt:'Il me manque quelque chose d\'essentiel que les autres semblent avoir', dim:'fear' },
+  { id:'s4c', t:4, e:'🎨', txt:'Mon monde émotionnel intérieur est intense, coloré, parfois excessif', dim:'emotion' },
+  { id:'s4d', t:4, e:'🌙', txt:'Je suis attiré par ce qui est beau, rare, mélancolique, authentique', dim:'aesthetic' },
+  { id:'s4e', t:4, e:'🌑', txt:'Le banal, la routine, le quotidien me pèsent profondément', dim:'shadow' },
+  { id:'s4f', t:4, e:'🎭', txt:'Je cultive mes états d\'âme — ils font partie de ma richesse', dim:'compul' },
+  // T5
+  { id:'s5a', t:5, e:'🔋', txt:'J\'ai besoin de beaucoup plus de solitude que la plupart des gens pour me recharger', dim:'behavior' },
+  { id:'s5b', t:5, e:'🔬', txt:'Je préfère observer et comprendre avant de m\'engager dans l\'action', dim:'behavior' },
+  { id:'s5c', t:5, e:'🏰', txt:'Je protège mon temps et mon énergie comme des ressources rares', dim:'compul' },
+  { id:'s5d', t:5, e:'🧠', txt:'Je me coupe émotionnellement pour protéger mon énergie — je reste dans ma tête', dim:'shadow' },
+  { id:'s5e', t:5, e:'📚', txt:'Je peux rester des heures dans mes idées sans m\'ennuyer, seul', dim:'behavior' },
+  { id:'s5f', t:5, e:'📡', txt:'Les demandes émotionnelles intenses des autres m\'épuisent vite', dim:'stress' },
+  // T6
+  { id:'s6a', t:6, e:'⚠️', txt:'J\'imagine spontanément ce qui pourrait mal tourner dans une situation', dim:'voice' },
+  { id:'s6b', t:6, e:'📋', txt:'Je vérifie, re-vérifie, par précaution — je veux être préparé', dim:'behavior' },
+  { id:'s6c', t:6, e:'❓', txt:'Je doute souvent de mes propres décisions, je cherche l\'avis des autres', dim:'shadow' },
+  { id:'s6d', t:6, e:'🛡️', txt:'J\'ai besoin d\'un cadre, de règles, de gens fiables autour de moi', dim:'motive' },
+  { id:'s6e', t:6, e:'🔎', txt:'Je teste les gens avant de leur faire pleinement confiance', dim:'behavior' },
+  { id:'s6f', t:6, e:'🤝', txt:'Je suis loyal : une fois engagé, je reste au long cours', dim:'motive' },
+  // T7
+  { id:'s7a', t:7, e:'✨', txt:'Mes envies se multiplient vite — je passe d\'une idée excitante à une autre', dim:'behavior' },
+  { id:'s7b', t:7, e:'😊', txt:'J\'évite instinctivement la douleur et l\'inconfort', dim:'compul' },
+  { id:'s7c', t:7, e:'🎪', txt:'J\'ai souvent plusieurs plans en parallèle — je jongle', dim:'behavior' },
+  { id:'s7d', t:7, e:'☀️', txt:'Je transforme les obstacles en opportunités, les problèmes en possibilités', dim:'belief' },
+  { id:'s7e', t:7, e:'🔗', txt:'L\'ennui et la routine me sont insupportables', dim:'fear' },
+  { id:'s7f', t:7, e:'🥂', txt:'Je suis optimiste — je vois le verre à moitié plein par défaut', dim:'belief' },
+  // T8
+  { id:'s8a', t:8, e:'⚡', txt:'Je prends spontanément les rênes quand personne ne décide', dim:'behavior' },
+  { id:'s8b', t:8, e:'💬', txt:'Je dis les choses franchement, sans filtre', dim:'behavior' },
+  { id:'s8c', t:8, e:'👁️', txt:'Je sens d\'instinct les rapports de force dans une pièce', dim:'attunement' },
+  { id:'s8d', t:8, e:'🦁', txt:'Je protège férocement les miens — personne ne touche à eux sans moi', dim:'motive' },
+  { id:'s8e', t:8, e:'⛓️', txt:'Être dirigé, contrôlé, limité me donne physiquement envie de résister', dim:'fear' },
+  { id:'s8f', t:8, e:'👑', txt:'Quand je me sens bien et en confiance, j\'agis avec force — naturellement', dim:'integ' },
+  // T9
+  { id:'s9a', t:9, e:'🕊️', txt:'Je cherche l\'harmonie, même au prix de mes propres désirs', dim:'compul' },
+  { id:'s9b', t:9, e:'💤', txt:'Je procrastine sur ce qui compte vraiment pour moi', dim:'shadow' },
+  { id:'s9c', t:9, e:'🌊', txt:'Je me fonds facilement dans l\'environnement, je m\'adapte aux autres', dim:'behavior' },
+  { id:'s9d', t:9, e:'☮️', txt:'J\'évite les conflits ouverts autant que possible', dim:'compul' },
+  { id:'s9e', t:9, e:'🤷', txt:'Je mets du temps à savoir ce que MOI je veux vraiment', dim:'shadow' },
+  { id:'s9f', t:9, e:'☁️', txt:'Je m\'anesthésie parfois dans la routine — je me désinvestis de moi', dim:'stress' }
+];
+
+function getStmt(id) { return STATEMENTS.find(s => s.id === id) || WING_STATEMENTS.find(s => s.id === id); }
+function stmtsByType(t) { return STATEMENTS.filter(s => s.t === t); }
+
+// Wing statements — not scored in main type scores, only used for post-determination
+const WING_STATEMENTS = [
+  { id:'w1_9', wingOf:1, wingType:9, e:'🌙', txt:'Mon exigence s\'exprime plus dans la contemplation calme que dans l\'expression verbale', dim:'wing' },
+  { id:'w1_2', wingOf:1, wingType:2, e:'🤲', txt:'Mon exigence s\'exprime à travers le soin que je porte aux autres — je veux les aider à mieux faire', dim:'wing' },
+  { id:'w2_1', wingOf:2, wingType:1, e:'⚖️', txt:'J\'aide par devoir moral — c\'est juste de le faire, et je peux être critique si ça ne l\'est pas', dim:'wing' },
+  { id:'w2_3', wingOf:2, wingType:3, e:'✨', txt:'J\'aime l\'image de quelqu\'un qui aide, qui est apprécié, qui est socialement visible', dim:'wing' },
+  { id:'w3_2', wingOf:3, wingType:2, e:'❤️', txt:'Mon succès inclut d\'être aimé et apprécié, pas seulement admiré de loin', dim:'wing' },
+  { id:'w3_4', wingOf:3, wingType:4, e:'🎭', txt:'Derrière ma performance, j\'ai un côté introspectif, parfois mélancolique, en quête de sens unique', dim:'wing' },
+  { id:'w4_3', wingOf:4, wingType:3, e:'🏆', txt:'Mon unicité s\'exprime AUSSI par des accomplissements visibles — je veux être reconnu pour ma singularité', dim:'wing' },
+  { id:'w4_5', wingOf:4, wingType:5, e:'🏰', txt:'Ma singularité est surtout intérieure — je préfère la solitude loin du regard pour la cultiver', dim:'wing' },
+  { id:'w5_4', wingOf:5, wingType:4, e:'🌌', txt:'Mon monde intellectuel a une dimension esthétique et imaginative — j\'ai mes obsessions singulières, presque artistiques', dim:'wing' },
+  { id:'w5_6', wingOf:5, wingType:6, e:'🔎', txt:'Je teste les gens avant de leur faire confiance — mon analyse a une teinte de méfiance vigilante', dim:'wing' },
+  { id:'w6_5', wingOf:6, wingType:5, e:'📚', txt:'Mes inquiétudes passent par beaucoup d\'analyse et de réflexion — je préfère approfondir avant d\'agir', dim:'wing' },
+  { id:'w6_7', wingOf:6, wingType:7, e:'🎉', txt:'Je décharge mes anxiétés dans l\'activité sociale, le mouvement — j\'ai besoin des autres autour pour tenir', dim:'wing' },
+  { id:'w7_6', wingOf:7, wingType:6, e:'🤝', txt:'Mon goût pour la nouveauté coexiste avec de la loyauté — je veille sur les gens et projets qui comptent', dim:'wing' },
+  { id:'w7_8', wingOf:7, wingType:8, e:'⚡', txt:'Mon énergie est assertive, presque agressive — je veux faire, construire, prendre les choses en main', dim:'wing' },
+  { id:'w8_7', wingOf:8, wingType:7, e:'🎢', txt:'Mon énergie de chef est doublée d\'un appétit pour le nouveau, le stimulant, l\'aventure', dim:'wing' },
+  { id:'w8_9', wingOf:8, wingType:9, e:'🌾', txt:'Je prends les rênes avec un calme intérieur — force tranquille plutôt qu\'agressive', dim:'wing' },
+  { id:'w9_8', wingOf:9, wingType:8, e:'🦁', txt:'Mon calme est ancré dans une présence physique solide — je peux basculer en force décidée si on me pousse', dim:'wing' },
+  { id:'w9_1', wingOf:9, wingType:1, e:'📏', txt:'Mon besoin de paix s\'accompagne d\'exigences morales silencieuses, d\'un sens du devoir et de l\'ordre', dim:'wing' }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  pageIndex: 0,           // current page
+  pages: [],              // [{ kind:'likert'|'budget'|'final', stmtIds:[...], responses:{id:value} }]
+  scores: { 1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0 },
+  screen: 'intro'
+};
+
+const MAX_PAGES = 5;
+const MIN_PAGES = 3;
+const LIKERT_MULT = 0.3;   // slider value (-5 to +5) × 0.3 = ±1.5 max contribution
+const BUDGET_WEIGHT = 0.3; // per point
+const FINAL_WEIGHT = 0.4;  // per point
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+const STORAGE_KEY = 'sherlock-enneagram-v3';
+function persist() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ pageIndex: state.pageIndex, pages: state.pages, scores: state.scores, ts: Date.now() })); } catch (e) {} }
+function loadStored() { try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+function clearStored() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+
+// ============================================================
+// RADAR
+// ============================================================
+const RADAR = { cx:150, cy:150, rMax:105, rings:4, angles: (() => { const a={}; for (let i=1;i<=9;i++) a[i] = -Math.PI/2 + ((i-1)*2*Math.PI)/9; return a; })() };
+function radarPoint(t, v, max) { const r = max>0?(v/max)*RADAR.rMax:0; const ang=RADAR.angles[t]; return { x:RADAR.cx+r*Math.cos(ang), y:RADAR.cy+r*Math.sin(ang) }; }
+function radarLabelPt(t) { const r=RADAR.rMax+22; const ang=RADAR.angles[t]; return { x:RADAR.cx+r*Math.cos(ang), y:RADAR.cy+r*Math.sin(ang) }; }
+function renderRadar() {
+  const svg = document.getElementById('radar');
+  const { cx, cy, rMax, rings } = RADAR;
+  const positiveScores = Object.fromEntries(Object.entries(state.scores).map(([t,v]) => [t, Math.max(0, v)]));
+  const max = Math.max(1, ...Object.values(positiveScores));
+  const top = dominantType();
+  let out = '';
+  for (let i=1; i<=rings; i++) {
+    const r = (rMax*i)/rings; const pts = [];
+    for (let t=1; t<=9; t++) { const ang=RADAR.angles[t]; pts.push(`${cx+r*Math.cos(ang)},${cy+r*Math.sin(ang)}`); }
+    out += `<polygon class="axis" points="${pts.join(' ')}" />`;
+  }
+  for (let t=1; t<=9; t++) { const ang=RADAR.angles[t]; out += `<line class="spoke" x1="${cx}" y1="${cy}" x2="${cx+rMax*Math.cos(ang)}" y2="${cy+rMax*Math.sin(ang)}" />`; }
+  const pts = [];
+  for (let t=1; t<=9; t++) { const p=radarPoint(t, positiveScores[t], max); pts.push(`${p.x},${p.y}`); }
+  out += `<polygon class="poly" points="${pts.join(' ')}" />`;
+  for (let t=1; t<=9; t++) { if (positiveScores[t] > 0) { const p=radarPoint(t, positiveScores[t], max); out += `<circle class="dot" cx="${p.x}" cy="${p.y}" r="3.5" />`; } }
+  for (let t=1; t<=9; t++) { const l=radarLabelPt(t); const active = top===t && positiveScores[t]>0; out += `<text class="label${active?' active':''}" x="${l.x}" y="${l.y}" text-anchor="middle" dominant-baseline="central">${t}</text>`; }
+  out += `<text class="center-emoji" x="${cx}" y="${cy+2}">🧭</text>`;
+  svg.innerHTML = out;
+}
+function dominantType() {
+  let top = null, max = 0;
+  for (const t in state.scores) { if (state.scores[t] > max) { max = state.scores[t]; top = +t; } }
+  return top;
+}
+
+// ============================================================
+// SCORING
+// ============================================================
+function recomputeScores() {
+  state.scores = { 1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0 };
+  for (const page of state.pages) {
+    if (page.kind === 'wing') continue; // wings don't affect main type scoring
+    if (page.kind === 'likert') {
+      for (const id in page.responses) {
+        const stmt = getStmt(id); if (!stmt || !stmt.t) continue;
+        const v = +page.responses[id] || 0; // slider value -5..+5
+        state.scores[stmt.t] += v * LIKERT_MULT;
+      }
+    } else if (page.kind === 'budget' || page.kind === 'final') {
+      const w = page.kind === 'final' ? FINAL_WEIGHT : BUDGET_WEIGHT;
+      for (const id in page.responses) {
+        const stmt = getStmt(id); if (!stmt || !stmt.t) continue;
+        state.scores[stmt.t] += page.responses[id] * w;
+      }
+    }
+  }
+}
+
+// ============================================================
+// CONFIDENCE
+// ============================================================
+function computeConfidence() {
+  const answered = state.pages.reduce((n, p) => n + Object.keys(p.responses || {}).length, 0);
+  const positive = Object.values(state.scores).filter(v => v > 0);
+  const totalPos = positive.reduce((a,b) => a+b, 0);
+  if (answered === 0 || totalPos === 0) return { pct:0, top:null, top2:null, sorted: Object.entries(state.scores).sort((a,b)=>b[1]-a[1]), gap:0, dominance:0 };
+  const sorted = Object.entries(state.scores).sort((a,b)=>b[1]-a[1]);
+  const [top1Id, top1Val] = sorted[0];
+  const [top2Id, top2Val] = sorted[1];
+  const dominance = top1Val / totalPos;
+  const gap = (top1Val - top2Val) / Math.max(Math.abs(top1Val), 0.001);
+  const volume = Math.min(1, answered / 15);
+  const zeroOrNeg = Object.values(state.scores).filter(v => v <= 0).length;
+  const coveragePenalty = 1 - Math.max(0, zeroOrNeg - 4) * 0.05; // penalty only if many types are missing
+  const raw = (Math.min(1, dominance/0.45)*0.55 + Math.min(1, gap/0.55)*0.45) * volume * coveragePenalty;
+  return { pct: Math.min(95, Math.round(raw*100)), top:+top1Id, top2:+top2Id, sorted, gap, dominance };
+}
+
+// ============================================================
+// PAGE BUILDER (adaptive)
+// ============================================================
+function buildPage(pageIndex) {
+  // Page 0 & 1 → Likert (openers), cover all 9 types across the two pages with 1 deeper for balance
+  // Page 2+ → Budget (adaptive on top)
+  // Final page → Budget on 3 finalists (only if gap close)
+  if (pageIndex === 0) {
+    // Page 1: types 1, 3, 5, 7, 9 (odd — covers all 3 centers)
+    const ids = [pickStmt(1), pickStmt(3), pickStmt(5), pickStmt(7), pickStmt(9)];
+    return { kind:'likert', stmtIds: ids, responses: {} };
+  }
+  if (pageIndex === 1) {
+    // Page 2: types 2, 4, 6, 8, + deeper for current #1 (or T5 by default)
+    const top = dominantType() || 5;
+    const extra = pickStmt(top, state.pages.flatMap(p => p.stmtIds || []));
+    const ids = [pickStmt(2), pickStmt(4), pickStmt(6), pickStmt(8), extra];
+    return { kind:'likert', stmtIds: ids, responses: {} };
+  }
+  // Adaptive budget pages 3+
+  const c = computeConfidence();
+  const topTypes = c.sorted.slice(0, 4).map(s => +s[0]).filter(t => state.scores[t] > 0.1);
+  // If close gap and pageIndex >= 3 → final disambiguation
+  if (pageIndex >= 3 && c.gap < 0.25 && topTypes.length >= 2) {
+    const finalists = topTypes.slice(0, 3);
+    const ids = finalists.map(t => pickStmt(t, state.pages.flatMap(p => p.stmtIds || [])));
+    return { kind:'final', stmtIds: ids.filter(Boolean), responses: {}, budget: 6 };
+  }
+  // Standard budget: 5 statements targeting top 3 + 1 emerging + 1 control
+  const usedIds = state.pages.flatMap(p => p.stmtIds || []);
+  const pick = (t) => pickStmt(t, usedIds);
+  const ids = [];
+  if (topTypes[0]) ids.push(pick(topTypes[0]));
+  if (topTypes[1]) ids.push(pick(topTypes[1]));
+  if (topTypes[2]) ids.push(pick(topTypes[2]));
+  // Add an "emerging" type (any type not in top 3 with some signal)
+  const emerging = c.sorted.map(s => +s[0]).find(t => !topTypes.slice(0,3).includes(t) && state.scores[t] > 0.2);
+  if (emerging) ids.push(pick(emerging));
+  // Fill with under-tested types
+  while (ids.length < 5) {
+    const missing = [1,2,3,4,5,6,7,8,9].find(t => !ids.some(id => { const s = getStmt(id); return s && s.t === t; }) && stmtsByType(t).some(s => !usedIds.includes(s.id)));
+    if (missing) ids.push(pick(missing)); else break;
+  }
+  return { kind:'budget', stmtIds: ids.filter(Boolean), responses: {}, budget: 10 };
+}
+
+function pickStmt(type, excludeIds = []) {
+  const pool = stmtsByType(type).filter(s => !excludeIds.includes(s.id));
+  if (pool.length === 0) return null;
+  return pool[Math.floor(Math.random() * pool.length)].id;
+}
+
+// ============================================================
+// SCREENS & RENDERING
+// ============================================================
+function showScreen(id) {
+  ['screen-intro','screen-quiz','screen-result'].forEach(s => document.getElementById(s).classList.add('hidden'));
+  const el = document.getElementById(id);
+  el.classList.remove('hidden'); el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in');
+  state.screen = id.replace('screen-','');
+  updateTopbar();
+}
+function updateTopbar() {
+  const prog = document.getElementById('progress');
+  const back = document.getElementById('backBtn');
+  const title = document.getElementById('title');
+  if (state.screen === 'intro') { prog.style.width='0%'; back.style.visibility='hidden'; title.textContent='Test Ennéagramme'; }
+  else if (state.screen === 'quiz') { prog.style.width = Math.min(100, (state.pageIndex / 3) * 75) + '%'; back.style.visibility = state.pageIndex>0?'visible':'hidden'; title.textContent='Moi-même'; }
+  else { prog.style.width='100%'; back.style.visibility='visible'; title.textContent='Mon profil'; }
+}
+
+function renderPage() {
+  const page = state.pages[state.pageIndex];
+  if (!page) return renderResult();
+  const phase = document.getElementById('pagePhase');
+  const title = document.getElementById('pageTitle');
+  const hint = document.getElementById('pageHint');
+  const body = document.getElementById('pageBody');
+  body.innerHTML = '';
+
+  if (page.kind === 'likert') {
+    phase.textContent = `PAGE ${state.pageIndex+1} · SCAN LIBRE`;
+    title.textContent = 'Pour chaque affirmation, à quel point ça te ressemble ?';
+    hint.textContent = 'Curseur au centre = sans avis. Glisse à droite si ça te ressemble, à gauche si non.';
+    renderLikertPage(page, body);
+  } else if (page.kind === 'wing') {
+    phase.textContent = `PAGE ${state.pageIndex+1} · AILE`;
+    title.textContent = `Ton Type ${page.topType} — quelle teinte ?`;
+    hint.textContent = `Deux ailes possibles pour le ${page.topType} : aile ${page.wings[0]} ou aile ${page.wings[1]}. Celle qui te parle le plus l'emporte.`;
+    renderLikertPage(page, body);
+  } else if (page.kind === 'budget') {
+    phase.textContent = `PAGE ${state.pageIndex+1} · HIÉRARCHIE (${page.budget} pts)`;
+    title.textContent = 'Répartis 10 points sur ces 5 affirmations';
+    hint.textContent = 'Tu peux aller en négatif (max −3) pour retirer du signal. La somme doit faire +10.';
+    renderBudgetPage(page, body);
+  } else if (page.kind === 'final') {
+    phase.textContent = `PAGE ${state.pageIndex+1} · DÉPARTAGE (${page.budget} pts)`;
+    title.textContent = 'Départage tes finalistes';
+    hint.textContent = 'Chaque affirmation représente un des types en tête. Répartis 6 points pour trancher.';
+    renderBudgetPage(page, body, true);
+  }
+  updateNav();
+  updateConfMini();
+  updateTopbar();
+  renderRadar();
+}
+
+function renderLikertPage(page, body) {
+  const list = document.createElement('div'); list.className = 'lk5-list';
+  page.stmtIds.forEach(sid => {
+    const stmt = getStmt(sid); if (!stmt) return;
+    const current = page.responses[sid] != null ? +page.responses[sid] : 0;
+    const row = document.createElement('div'); row.className = 'lk5-row';
+    if (current !== 0) row.classList.add('moved');
+    row.innerHTML = `
+      <div class="lk5-text" title="${stmt.txt.replace(/"/g, '&quot;')}">${stmt.txt}</div>
+      <div class="lk5-slider-wrap">
+        <span class="lk5-slider-lbl left">−</span>
+        <input type="range" class="lk5-slider" min="-5" max="5" step="1" value="${current}" data-sid="${sid}" />
+        <span class="lk5-slider-lbl right">+</span>
+      </div>
+      <div class="lk5-slider-ticks">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span class="center"></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>`;
+    list.appendChild(row);
+
+    const slider = row.querySelector('input.lk5-slider');
+    slider.addEventListener('input', () => {
+      const v = +slider.value;
+      page.responses[sid] = v;
+      row.classList.toggle('moved', v !== 0);
+      recomputeScores(); renderRadar(); updateConfMini(); updateNav();
+    });
+    slider.addEventListener('change', () => { persist(); });
+  });
+  body.appendChild(list);
+}
+
+function renderBudgetPage(page, body, isFinal = false) {
+  const budget = page.budget;
+  const MIN = isFinal ? -2 : -3;
+  const MAX = isFinal ? 6 : 5;
+  // init responses to 0
+  page.stmtIds.forEach(id => { if (page.responses[id] == null) page.responses[id] = 0; });
+
+  const meter = document.createElement('div'); meter.className = 'bg-meter';
+  meter.innerHTML = `<div><div class="lab">Budget à distribuer</div></div><div class="val" id="bgUsed">0 / ${budget}</div>`;
+  body.appendChild(meter);
+
+  const list = document.createElement('div'); list.className = 'bg-list';
+  page.stmtIds.forEach(sid => {
+    const stmt = getStmt(sid); if (!stmt) return;
+    const row = document.createElement('div'); row.className = 'bg-row';
+    row.innerHTML = `<div class="bg-text"><span class="emo">${stmt.e}</span><span>« ${stmt.txt} »</span></div>`;
+    const step = document.createElement('div'); step.className = 'bg-stepper';
+    step.innerHTML = `<button data-dir="-1">−</button><span class="bg-val" data-val>${page.responses[sid]}</span><button data-dir="1">+</button>`;
+    row.appendChild(step);
+    list.appendChild(row);
+
+    const refreshAll = () => {
+      page.stmtIds.forEach(id => {
+        const r = list.querySelector(`[data-sid="${id}"]`);
+        if (!r) return;
+        const val = page.responses[id];
+        const valSpan = r.querySelector('[data-val]');
+        valSpan.textContent = val;
+        valSpan.className = 'bg-val' + (val > 0 ? ' pos' : val < 0 ? ' neg' : '');
+        // Disable buttons that would exceed budget (moving away from 0)
+        const used = page.stmtIds.reduce((s, i) => s + Math.abs(page.responses[i] || 0), 0);
+        const minus = r.querySelector('[data-dir="-1"]');
+        const plus = r.querySelector('[data-dir="1"]');
+        // minus: v → v-1 ; delta = |v-1| - |v|. Block if delta > 0 and used==budget, or v at MIN
+        const vMinus = val - 1;
+        const deltaMinus = Math.abs(vMinus) - Math.abs(val);
+        minus.disabled = val <= MIN || (deltaMinus > 0 && used >= budget);
+        const vPlus = val + 1;
+        const deltaPlus = Math.abs(vPlus) - Math.abs(val);
+        plus.disabled = val >= MAX || (deltaPlus > 0 && used >= budget);
+      });
+      const used = page.stmtIds.reduce((s, id) => s + Math.abs(page.responses[id] || 0), 0);
+      const meterVal = document.getElementById('bgUsed');
+      meterVal.textContent = `${used} / ${budget}`;
+      meterVal.className = 'val' + (used === budget ? ' exact' : used > budget ? ' overflow' : '');
+      updateNav(); recomputeScores(); renderRadar(); updateConfMini();
+    };
+    row.setAttribute('data-sid', sid);
+    step.querySelector('[data-dir="-1"]').onclick = () => {
+      const v = page.responses[sid];
+      const newV = v - 1; if (newV < MIN) return;
+      const used = page.stmtIds.reduce((s, i) => s + Math.abs(page.responses[i] || 0), 0);
+      const delta = Math.abs(newV) - Math.abs(v);
+      if (delta > 0 && used >= budget) return;
+      page.responses[sid] = newV; persist(); refreshAll();
+    };
+    step.querySelector('[data-dir="1"]').onclick = () => {
+      const v = page.responses[sid];
+      const newV = v + 1; if (newV > MAX) return;
+      const used = page.stmtIds.reduce((s, i) => s + Math.abs(page.responses[i] || 0), 0);
+      const delta = Math.abs(newV) - Math.abs(v);
+      if (delta > 0 && used >= budget) return;
+      page.responses[sid] = newV; persist(); refreshAll();
+    };
+    refreshAll();
+  });
+  body.appendChild(list);
+}
+
+function pageIsValid() {
+  const page = state.pages[state.pageIndex];
+  if (!page) return false;
+  if (page.kind === 'likert' || page.kind === 'wing') {
+    // Slider-based: always valid (default 0 = no opinion). Init defaults if missing.
+    page.stmtIds.forEach(id => { if (page.responses[id] == null) page.responses[id] = 0; });
+    return true;
+  }
+  if (page.kind === 'budget' || page.kind === 'final') {
+    const used = page.stmtIds.reduce((s, id) => s + Math.abs(page.responses[id] || 0), 0);
+    return used === page.budget;
+  }
+  return false;
+}
+
+function updateNav() {
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  prevBtn.style.visibility = state.pageIndex > 0 ? 'visible' : 'hidden';
+  const valid = pageIsValid();
+  nextBtn.disabled = !valid;
+  const c = computeConfidence();
+  // Allow finishing if min pages reached AND confidence high
+  if (valid && state.pageIndex >= MIN_PAGES - 1 && (state.pages[state.pageIndex].kind === 'final' || c.pct >= 75 || state.pageIndex >= MAX_PAGES - 1)) {
+    nextBtn.textContent = 'Voir mon profil →';
+  } else {
+    nextBtn.textContent = valid ? 'Page suivante →' : 'Valider →';
+  }
+  nextBtn.onclick = () => advancePage();
+}
+
+function updateConfMini() {
+  const c = computeConfidence();
+  document.getElementById('confMini').style.width = c.pct + '%';
+}
+
+function advancePage() {
+  if (!pageIsValid()) return;
+  recomputeScores();
+  persist();
+  const c = computeConfidence();
+  const page = state.pages[state.pageIndex];
+  const atMax = state.pageIndex >= MAX_PAGES - 1;
+  const atMin = state.pageIndex >= MIN_PAGES - 1;
+  const hasWing = state.pages.some(p => p.kind === 'wing');
+  // After wing page → result
+  if (page.kind === 'wing') { renderResult(); return; }
+  // End of main test → insert wing page if type is clear
+  const shouldEnd = page.kind === 'final' || atMax || (atMin && c.pct >= 75);
+  if (shouldEnd) {
+    if (!hasWing && c.top && c.pct >= 40) {
+      // Insert wing page
+      state.pageIndex++;
+      state.pages[state.pageIndex] = buildWingPage(c.top);
+      persist(); renderPage();
+      return;
+    }
+    renderResult();
+    return;
+  }
+  // Continue main test
+  state.pageIndex++;
+  if (!state.pages[state.pageIndex]) state.pages[state.pageIndex] = buildPage(state.pageIndex);
+  persist(); renderPage();
+}
+
+function buildWingPage(topType) {
+  const wings = TYPES[topType].wing; // e.g., [4, 6] for type 5
+  const s1 = WING_STATEMENTS.find(s => s.wingOf === topType && s.wingType === wings[0]);
+  const s2 = WING_STATEMENTS.find(s => s.wingOf === topType && s.wingType === wings[1]);
+  return { kind:'wing', stmtIds: [s1.id, s2.id], responses: { [s1.id]: 0, [s2.id]: 0 }, topType, wings: [wings[0], wings[1]] };
+}
+
+function computeWing() {
+  const p = state.pages.find(pg => pg.kind === 'wing');
+  if (!p) return null;
+  const [s1Id, s2Id] = p.stmtIds;
+  const s1 = getStmt(s1Id); const s2 = getStmt(s2Id);
+  const v1 = (+p.responses[s1Id] || 0) * LIKERT_MULT;
+  const v2 = (+p.responses[s2Id] || 0) * LIKERT_MULT;
+  if (Math.abs(v1 - v2) < 0.25) return { wing: null, indeterminate: true, v1, v2, opts:[s1.wingType, s2.wingType] };
+  return { wing: v1 > v2 ? s1.wingType : s2.wingType, indeterminate: false, v1, v2, opts:[s1.wingType, s2.wingType] };
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function renderResult() {
+  showScreen('screen-result');
+  const c = computeConfidence();
+  const topId = c.top || 5; const top = TYPES[topId];
+  document.getElementById('resBadge').textContent = topId;
+  document.getElementById('resBadge').style.background = top.color;
+  const label = confidenceLabel(c.pct);
+  const wingInfo = computeWing();
+  let titleText = label.tone === 'strong' ? `Type ${topId}` : `${label.label} ${topId}`;
+  if (wingInfo && !wingInfo.indeterminate) titleText = `Type ${topId}w${wingInfo.wing}`;
+  document.getElementById('resTitle').textContent = titleText;
+  let nickText = top.name;
+  if (wingInfo && wingInfo.indeterminate) nickText += ' · aile indéterminée';
+  document.getElementById('resNick').textContent = nickText;
+  document.getElementById('resConf').textContent = c.pct;
+  document.getElementById('resLecture').textContent = buildLecture(c, top, topId);
+
+  const positive = Object.values(state.scores).filter(v => v > 0);
+  const totalPos = positive.reduce((a,b)=>a+b, 0) || 1;
+  const top3 = c.sorted.slice(0, 3);
+  document.getElementById('topThree').innerHTML = top3.map(([id, val], i) => {
+    const pct = Math.round((Math.max(0, val) / totalPos) * 100);
+    const t = TYPES[+id];
+    return `<div class="tt-row"><span class="rank">#${i+1}</span><span class="bubble" style="background:${t.color}">${id}</span><span class="name">${t.name}</span><span class="bar-track"><span class="bar-fill" style="width:${Math.max(6, pct*2)}%; background:${t.color}"></span></span><span class="pct">${pct}%</span></div>`;
+  }).join('');
+
+  document.getElementById('descTitle').textContent = `${top.name} — aperçu`;
+  document.getElementById('descFear').innerHTML = `<strong style="color:${top.color}">Peur racine :</strong> ${top.fear}`;
+  document.getElementById('descMotive').innerHTML = `<strong style="color:${top.color}">Motivation :</strong> ${top.motive}`;
+  document.getElementById('descCompul').innerHTML = `<strong style="color:${top.color}">Compulsion :</strong> ${top.compul}`;
+  document.getElementById('descChips').innerHTML = [
+    `<span class="chip">Ailes : ${top.wing[0]} & ${top.wing[1]}</span>`,
+    `<span class="chip">Sous stress → ${top.stress}</span>`,
+    `<span class="chip">En intégration → ${top.integ}</span>`
+  ].join(' ');
+}
+
+function confidenceLabel(pct) {
+  if (pct < 25) return { label: 'Profil composite', tone: 'soft' };
+  if (pct < 45) return { label: 'Probablement Type', tone: 'mid' };
+  if (pct < 65) return { label: 'Type', tone: 'mid' };
+  if (pct < 80) return { label: 'Type', tone: 'strong' };
+  return { label: 'Type (très marqué)', tone: 'strong' };
+}
+
+function buildLecture(c, top, topId) {
+  const top2Id = c.top2; const top2 = TYPES[top2Id]; const pct = c.pct;
+  const top3 = c.sorted.slice(0, 3).map(s => +s[0]);
+  const isWing = top.wing.includes(top2Id);
+  const isStress = top.stress === top2Id;
+  const isInteg = top.integ === top2Id;
+  if (pct < 30) return `Profil encore composite — plusieurs types cohabitent (${top3.join(', ')}). Les réponses penchent vers le ${topId}, mais un second passage aiderait à trancher.`;
+  if (pct < 55) {
+    if (isWing) return `Le Type ${topId} ressort, avec une aile ${top2Id} marquée. Teinte "${topId}${top2Id === top.wing[0] ? 'a' : 'b'}". Lisez le ${topId} en priorité.`;
+    return `Le Type ${topId} est en tête mais le Type ${top2Id} n'est pas loin (${isStress?'flèche stress':isInteg?'flèche intégration':'type voisin'}). Vérifiez la peur racine et la motivation profonde.`;
+  }
+  if (pct < 75) return `Type ${topId} ressort clairement (${top.nick})${isWing ? `, avec aile ${top2Id}` : ''}. Direction le chapitre du ${topId}.`;
+  return `Profil très marqué : Type ${topId} (${top.nick}). Notez la flèche d'intégration vers ${top.integ} et la flèche de stress vers ${top.stress}.`;
+}
+
+function renderDetails() {
+  const body = document.getElementById('detailsBody');
+  const rows = [];
+  state.pages.forEach((page, pi) => {
+    const phaseLabel = page.kind === 'likert' ? 'SCAN LIBRE' : page.kind === 'final' ? 'DÉPARTAGE' : page.kind === 'wing' ? 'AILE' : 'HIÉRARCHIE';
+    const phaseClass = page.kind === 'likert' ? '' : page.kind;
+    page.stmtIds.forEach(sid => {
+      const stmt = getStmt(sid); if (!stmt) return;
+      const resp = page.responses[sid];
+      let answerText = ''; let contrib = 0; let typeTag = stmt.t ? `T${stmt.t}` : `w${stmt.wingOf}→${stmt.wingType}`;
+      if (page.kind === 'likert' || page.kind === 'wing') {
+        const v = +resp || 0;
+        answerText = `${v > 0 ? '+' + v : v} / 5`;
+        if (stmt.t) contrib = v * LIKERT_MULT;
+      } else {
+        answerText = resp != null ? (resp > 0 ? `+${resp}` : `${resp}`) + ' pts' : '(non répondu)';
+        contrib = (resp || 0) * (page.kind === 'final' ? FINAL_WEIGHT : BUDGET_WEIGHT);
+      }
+      const contribStr = page.kind === 'wing' ? `(aile, hors score)` : `${typeTag} <strong>${contrib >= 0 ? '+' : ''}${contrib.toFixed(2)}</strong>`;
+      rows.push(`<div class="ans-row">
+        <div class="qstage">Page ${pi+1} · ${typeTag} (${stmt.dim})<span class="phase-tag ${phaseClass}">${phaseLabel}</span></div>
+        <div class="qname">${stmt.e} « ${stmt.txt} »</div>
+        <div class="ansval">Réponse : <strong>${answerText}</strong></div>
+        <div class="contribs"><span class="contrib">${contribStr}</span></div>
+      </div>`);
+    });
+  });
+  body.innerHTML = rows.join('');
+}
+
+function buildPayload() {
+  const c = computeConfidence();
+  return {
+    version: 'sherlock-quiz-v3-batch',
+    timestamp: new Date().toISOString(),
+    result: { top: c.top, top2: c.top2, confidence_pct: c.pct, gap: +c.gap.toFixed(3), dominance: +c.dominance.toFixed(3), scores: Object.fromEntries(Object.entries(state.scores).map(([t,v])=>[t,+v.toFixed(3)])), ranking: c.sorted.map(([t,v])=>({type:+t,score:+v.toFixed(3)})) },
+    pages: state.pages.map((p, i) => ({
+      page: i+1, kind: p.kind, budget: p.budget, statements: p.stmtIds.map(id => {
+        const s = getStmt(id);
+        return { id, type: s?.t, dim: s?.dim, text: s?.txt, response: p.responses[id] };
+      })
+    }))
+  };
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function reset() {
+  state.pageIndex = 0; state.pages = []; state.scores = { 1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0 };
+  clearStored();
+}
+function startFresh() {
+  reset();
+  state.pages[0] = buildPage(0);
+  persist(); showScreen('screen-quiz'); renderPage();
+}
+function refreshResumeBanner() {
+  const stored = loadStored();
+  const banner = document.getElementById('resumeBanner');
+  const txt = document.getElementById('resumeText');
+  if (!stored || !stored.pages || stored.pages.length === 0) { banner.classList.add('hidden'); return; }
+  const answered = (stored.pages || []).reduce((n,p) => n + Object.keys(p.responses||{}).length, 0);
+  txt.textContent = `Session en cours : ${answered} affirmations répondues sur ${stored.pages.length} page(s).`;
+  banner.classList.remove('hidden');
+}
+
+document.getElementById('startBtn').onclick = () => startFresh();
+document.getElementById('freshBtn').onclick = () => { reset(); refreshResumeBanner(); };
+document.getElementById('resumeBtn').onclick = () => {
+  const stored = loadStored(); if (!stored) return;
+  state.pageIndex = stored.pageIndex || 0;
+  state.pages = stored.pages || [];
+  recomputeScores();
+  if (state.pages.length === 0) startFresh();
+  else { showScreen('screen-quiz'); renderPage(); }
+};
+document.getElementById('backBtn').onclick = () => {
+  if (state.screen === 'quiz' && state.pageIndex > 0) { state.pageIndex--; renderPage(); }
+  else if (state.screen === 'result') { state.pageIndex = state.pages.length - 1; showScreen('screen-quiz'); renderPage(); }
+  else { showScreen('screen-intro'); refreshResumeBanner(); }
+};
+document.getElementById('prevBtn').onclick = () => { if (state.pageIndex > 0) { state.pageIndex--; renderPage(); } };
+document.getElementById('restartBtn').onclick = () => { reset(); refreshResumeBanner(); showScreen('screen-intro'); };
+
+showScreen('screen-intro'); refreshResumeBanner(); renderRadar();
+</script>
+
+</body>
+</html>

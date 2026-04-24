@@ -70,7 +70,7 @@ export default function HomeScreen() {
         <Text style={styles.heroEyebrow}>Le compagnon de lecture</Text>
         <Text style={styles.heroTitle}>On a tous besoin{'\n'}de quelqu'un d'autre</Text>
         <Text style={styles.heroSubtitle}>
-          Le voyage intérieur d'un père imparfait
+          Le voyage intérieur de deux parents imparfaits
         </Text>
       </LinearGradient>
 
@@ -78,15 +78,18 @@ export default function HomeScreen() {
       <View style={styles.introSection}>
         <Text style={styles.introTitle}>Bonjour,</Text>
         <Text style={styles.introBody}>
-          Je m'appelle Thomas. Je suis père, et comme vous, j'ai souvent eu le sentiment de ne pas comprendre ce qui se passait dans la petite tête de mes enfants. Pourquoi l'un se braque quand je le cadre, pourquoi l'autre se replie quand je crois bien faire, pourquoi un troisième semble avoir besoin de tellement plus d'attention que les autres.
+          Je m'appelle Thomas. Je suis père de deux enfants, et comme vous, j'ai longtemps eu le sentiment de ne pas comprendre ce qui se passait dans la tête de mes enfants — pourquoi l'un se braque quand je le cadre, pourquoi l'autre se replie quand je crois bien faire.
         </Text>
         <Text style={styles.introBody}>
-          J'ai écrit ce livre — et conçu cette application — pour partager un outil qui m'a beaucoup aidé : l'Ennéagramme. Ce n'est pas l'unique manière de comprendre nos enfants, et il a ses défauts. Mais il ouvre une porte. Une porte vers cette évidence si difficile à accepter : <Text style={{ fontStyle: 'italic' }}>nos enfants ne sont pas nous</Text>. Ils ne ressentent pas le monde comme nous, ne sont pas nourris par les mêmes choses, ne souffrent pas pour les mêmes raisons.
+          Et moi c'est Solène, leur mère. J'ai d'abord cru que mon amour suffirait à les comprendre. Puis j'ai accepté cette évidence si difficile : <Text style={{ fontStyle: 'italic' }}>nos enfants ne sont pas nous</Text>. Ils ne ressentent pas le monde comme nous, ne sont pas nourris par les mêmes choses, ne souffrent pas pour les mêmes raisons.
         </Text>
         <Text style={styles.introBody}>
-          Les quatre outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer votre enfant autrement, à vous interroger sur vos propres réflexes, à entamer le dialogue. Prenez ce qui vous parle, laissez le reste. Et surtout, n'oubliez jamais qu'aucun livre, aucune app, ne remplacera votre regard d'amour sur lui.
+          Nous avons écrit ce livre — qui sort bientôt — et conçu cette application pour partager un outil qui nous a beaucoup aidés : l'Ennéagramme. Ce n'est pas l'unique manière de comprendre nos enfants, et il a ses défauts. Mais il ouvre une porte.
         </Text>
-        <Text style={styles.introSignature}>— Thomas</Text>
+        <Text style={styles.introBody}>
+          Les quatre outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer votre enfant autrement, à interroger vos propres réflexes, à entamer le dialogue. Prenez ce qui vous parle, laissez le reste. Et surtout, n'oubliez jamais qu'aucun livre, aucune app, ne remplacera votre regard d'amour sur lui.
+        </Text>
+        <Text style={styles.introSignature}>— Thomas & Solène</Text>
       </View>
 
       {/* ── Tools (entrées vers les onglets) ── */}

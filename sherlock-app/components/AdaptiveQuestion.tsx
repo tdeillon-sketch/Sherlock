@@ -1,311 +1,106 @@
 // ═══════════════════════════════════════════════════════════════
-//  ADAPTIVE QUESTION — rend les 6 formats du quiz v2
-//
-//  Formats supportés :
-//   - choice              : MCQ classique
-//   - forced_choice       : 2 options "ou bien / ou bien"
-//   - slider              : -2..+2
-//   - scenario_complete   : "Il/Elle…" + options qui complètent la phrase
-//   - memory              : (rendu comme un choice avec setup spécifique)
-//   - validation          : "Cette description vous parle ?" → oui/à peu près/non
+//  ADAPTIVE QUESTION — DISPATCHER (v3)
+//  Route selon le kind de la Page courante :
+//   - likert → LikertSliderPage
+//   - budget / final → BudgetStepperPage
+//   - wing   → WingPage
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts, spacing, radius } from '../constants/theme';
-import { AdaptiveQuestion as Q } from '../constants/quiz_v2';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, fonts, spacing } from '../constants/theme';
+import type { AgeBand } from '../constants/quiz_v3';
+import type { Page } from '../hooks/useAdaptiveQuiz';
+import LikertSliderPage from './LikertSliderPage';
+import BudgetStepperPage from './BudgetStepperPage';
+import WingPage from './WingPage';
 
 interface Props {
-  question: Q;
-  stepIndex: number;
-  estimatedTotal: number;
-  onChoice: (optIdx: number) => void;
-  onSlider: (value: number) => void;
-  onValidation: (response: 'oui' | 'peupres' | 'non') => void;
-  onSkip: () => void;
+  page: Page;
+  pageIndex: number;
+  ageBand: AgeBand;
+  onChange: (stmtId: string, value: number) => void;
 }
 
-const SLIDER_TICKS = [-2, -1, 0, 1, 2];
-
-export default function AdaptiveQuestion({
-  question, stepIndex, estimatedTotal,
-  onChoice, onSlider, onValidation, onSkip,
-}: Props) {
-  const [sliderValue, setSliderValue] = useState(0);
-
-  // ── Header commun ──
-  const phaseLabel =
-    question.phase === 'positioning' ? 'Pour démarrer' :
-    question.phase === 'validation'  ? 'Dernière vérification' :
-                                        'Affinons';
-
-  const Header = (
-    <View style={styles.header}>
-      <View style={styles.headerTopRow}>
-        <Text style={styles.category}>{phaseLabel.toUpperCase()} · {question.category.toUpperCase()}</Text>
-        <Text style={styles.questionNum}>{stepIndex} / ~{estimatedTotal}</Text>
-      </View>
-
-      {question.setup && (
-        <View style={styles.sceneBox}>
-          {question.icon && <Text style={styles.sceneIcon}>{question.icon}</Text>}
-          <Text style={styles.sceneSetup}>{question.setup}</Text>
-        </View>
-      )}
-
-      <Text style={styles.questionText}>{question.prompt}</Text>
-    </View>
-  );
-
-  // ═══════════ Validation ═══════════
-  if (question.format === 'validation') {
+export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }: Props) {
+  if (page.kind === 'likert') {
+    const n = pageIndex + 1;
+    const subtitle = n === 1
+      ? 'Pour chaque affirmation, à quel point ça te ressemble ?'
+      : 'On continue — glisse chaque curseur selon ta perception.';
+    const hint = 'Curseur au centre = sans avis. À droite si ça te ressemble, à gauche si non.';
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerTopRow}>
-            <Text style={styles.category}>DERNIÈRE VÉRIFICATION</Text>
-            <Text style={styles.questionNum}>{stepIndex} / ~{estimatedTotal}</Text>
-          </View>
-          <Text style={styles.validationLead}>{question.prompt}</Text>
-          <View style={styles.validationDescBox}>
-            <Text style={styles.validationDescText}>« {question.validationText} »</Text>
-          </View>
-        </View>
-
-        <View style={styles.answers}>
-          <Pressable
-            onPress={() => onValidation('oui')}
-            style={({ pressed }) => [styles.validationBtn, styles.validationBtnYes, pressed && styles.answerCardPressed]}
-          >
-            <Text style={styles.validationBtnEmoji}>✅</Text>
-            <Text style={styles.validationBtnText}>Oui, ça lui ressemble vraiment</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => onValidation('peupres')}
-            style={({ pressed }) => [styles.validationBtn, pressed && styles.answerCardPressed]}
-          >
-            <Text style={styles.validationBtnEmoji}>🤔</Text>
-            <Text style={styles.validationBtnText}>À peu près, en partie seulement</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => onValidation('non')}
-            style={({ pressed }) => [styles.validationBtn, styles.validationBtnNo, pressed && styles.answerCardPressed]}
-          >
-            <Text style={styles.validationBtnEmoji}>❌</Text>
-            <Text style={styles.validationBtnText}>Non, pas vraiment</Text>
-          </Pressable>
-        </View>
+      <View style={styles.wrap}>
+        <Text style={styles.phaseLabel}>PAGE {n} · SCAN LIBRE</Text>
+        <LikertSliderPage
+          stmtIds={page.stmtIds}
+          responses={page.responses}
+          ageBand={ageBand}
+          onChange={onChange}
+          subtitle={subtitle}
+          hint={hint}
+        />
       </View>
     );
   }
 
-  // ═══════════ Slider ═══════════
-  if (question.format === 'slider') {
+  if (page.kind === 'budget') {
     return (
-      <View style={styles.container}>
-        {Header}
-
-        <View style={styles.sliderLabelsRow}>
-          <Text style={styles.sliderLabelLeft}>{question.sliderLeft}</Text>
-          <Text style={styles.sliderLabelRight}>{question.sliderRight}</Text>
-        </View>
-
-        <View style={styles.sliderTrack}>
-          {SLIDER_TICKS.map(tick => {
-            const isSelected = sliderValue === tick;
-            const isCenter = tick === 0;
-            return (
-              <Pressable
-                key={tick}
-                onPress={() => setSliderValue(tick)}
-                style={[
-                  styles.sliderTick,
-                  isCenter && styles.sliderTickCenter,
-                  isSelected && styles.sliderTickSelected,
-                ]}
-              >
-                <Text style={[styles.sliderTickText, isSelected && styles.sliderTickTextSelected]}>
-                  {tick > 0 ? `+${tick}` : tick}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Text style={styles.sliderValueDisplay}>
-          {sliderValue > 0 ? `+${sliderValue}` : sliderValue}
-        </Text>
-
-        <Pressable
-          onPress={() => { onSlider(sliderValue); setSliderValue(0); }}
-          style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}
-        >
-          <Text style={styles.confirmBtnText}>Confirmer</Text>
-        </Pressable>
-
-        <Pressable onPress={onSkip} style={styles.skipBtn}>
-          <Text style={styles.skipBtnText}>Je ne sais pas — passer</Text>
-        </Pressable>
+      <View style={styles.wrap}>
+        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · HIÉRARCHIE</Text>
+        <BudgetStepperPage
+          stmtIds={page.stmtIds}
+          responses={page.responses}
+          budget={page.budget}
+          ageBand={ageBand}
+          onChange={onChange}
+          subtitle="Répartis 10 points sur ces affirmations"
+          hint="Tu peux aller en négatif (jusqu'à −3) pour retirer du signal. Chaque point consomme du budget."
+        />
       </View>
     );
   }
 
-  // ═══════════ Choice / Forced choice / Scenario complete / Memory ═══════════
-  const isForced = question.format === 'forced_choice';
-  return (
-    <View style={styles.container}>
-      {Header}
-
-      <View style={[styles.answers, isForced && styles.answersForced]}>
-        {(question.options || []).map((opt, idx) => (
-          <Pressable
-            key={idx}
-            onPress={() => onChoice(idx)}
-            style={({ pressed }) => [
-              styles.answerCard,
-              isForced && styles.answerCardForced,
-              pressed && styles.answerCardPressed,
-            ]}
-          >
-            <Text style={styles.answerText}>
-              {opt.emoji ? `${opt.emoji}  ` : ''}{opt.text}
-            </Text>
-          </Pressable>
-        ))}
+  if (page.kind === 'final') {
+    return (
+      <View style={styles.wrap}>
+        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · DÉPARTAGE</Text>
+        <BudgetStepperPage
+          stmtIds={page.stmtIds}
+          responses={page.responses}
+          budget={page.budget}
+          ageBand={ageBand}
+          onChange={onChange}
+          isFinal
+          subtitle="Départage tes finalistes"
+          hint="Chaque affirmation représente un des types en tête. 6 points pour trancher."
+        />
       </View>
+    );
+  }
 
-      <Pressable onPress={onSkip} style={styles.skipBtn}>
-        <Text style={styles.skipBtnText}>Je ne sais pas — passer</Text>
-      </Pressable>
-    </View>
-  );
+  if (page.kind === 'wing') {
+    return (
+      <WingPage
+        stmtIds={page.stmtIds}
+        responses={page.responses}
+        ageBand={ageBand}
+        topType={page.topType}
+        wings={page.wings}
+        onChange={onChange}
+      />
+    );
+  }
+
+  return null;
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-
-  header: { marginBottom: spacing.md },
-  headerTopRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  category: {
-    fontFamily: fonts.sans, fontSize: 11, letterSpacing: 1.2,
-    color: colors.accent, fontWeight: '700', flex: 1,
-  },
-  questionNum: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted },
-
-  sceneBox: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-  },
-  sceneIcon: { fontSize: 28, marginTop: -2 },
-  sceneSetup: {
-    flex: 1, fontFamily: fonts.serifItalic, fontSize: 14,
-    lineHeight: 22, color: colors.textSoft,
-  },
-
-  questionText: {
-    fontFamily: fonts.serif, fontSize: 19, color: colors.text, lineHeight: 27,
-  },
-
-  answers: { gap: spacing.sm },
-  answersForced: { gap: spacing.md },
-  answerCard: {
-    backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border,
-    borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.md,
-  },
-  answerCardForced: {
-    paddingVertical: spacing.lg,
-    backgroundColor: colors.surface,
-    borderColor: colors.borderLight,
-  },
-  answerCardPressed: {
-    borderColor: colors.accent, backgroundColor: colors.accentSoft,
-  },
-  answerText: {
-    fontFamily: fonts.sans, fontSize: 15, color: colors.textSoft, lineHeight: 22,
-  },
-
-  skipBtn: { padding: spacing.md, alignItems: 'center', marginTop: spacing.sm },
-  skipBtnText: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted,
-    textDecorationLine: 'underline',
-  },
-
-  // Slider
-  sliderLabelsRow: {
-    flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  sliderLabelLeft: {
-    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
-    flex: 1, textAlign: 'left',
-  },
-  sliderLabelRight: {
-    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
-    flex: 1, textAlign: 'right',
-  },
-  sliderTrack: {
-    flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center',
-    backgroundColor: colors.cardBg, borderRadius: radius.md,
-    paddingVertical: spacing.sm, paddingHorizontal: spacing.sm,
-  },
-  sliderTick: {
-    width: 50, height: 50, borderRadius: radius.sm,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  sliderTickCenter: { borderWidth: 1, borderColor: colors.border },
-  sliderTickSelected: { backgroundColor: colors.accent },
-  sliderTickText: {
-    fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted, fontWeight: '600',
-  },
-  sliderTickTextSelected: { color: colors.white },
-  sliderValueDisplay: {
-    fontFamily: fonts.serif, fontSize: 28, fontWeight: '700' as any,
-    color: colors.text, textAlign: 'center', marginTop: spacing.md, marginBottom: spacing.lg,
-  },
-  confirmBtn: {
-    backgroundColor: colors.accent, paddingVertical: 14,
-    borderRadius: radius.full, alignItems: 'center',
-  },
-  confirmBtnPressed: { opacity: 0.85 },
-  confirmBtnText: {
-    fontFamily: fonts.sans, fontSize: 16, fontWeight: '600', color: colors.white,
-  },
-
-  // Validation
-  validationLead: {
-    fontFamily: fonts.serif, fontSize: 18, color: colors.text,
-    lineHeight: 26, marginBottom: spacing.md,
-  },
-  validationDescBox: {
-    backgroundColor: colors.accentFill,
-    borderWidth: 1, borderColor: colors.accent,
-    borderRadius: radius.md, padding: spacing.md,
-  },
-  validationDescText: {
-    fontFamily: fonts.serifItalic, fontSize: 15, color: colors.text,
-    lineHeight: 23,
-  },
-  validationBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-    backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border,
-    borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.md,
-  },
-  validationBtnYes: { borderColor: colors.successDark },
-  validationBtnNo: { borderColor: colors.errorDark },
-  validationBtnEmoji: { fontSize: 22 },
-  validationBtnText: {
-    flex: 1, fontFamily: fonts.sans, fontSize: 15, color: colors.textSoft,
+  wrap: { paddingVertical: spacing.sm },
+  phaseLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
+    color: colors.accent, letterSpacing: 1.5, textTransform: 'uppercase',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.xs,
   },
 });
