@@ -9,24 +9,32 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../constants/theme';
+import { useT } from '../i18n';
 
 interface Props {
   /** 0..100 */
   confidence: number;
-  label: 'Très confiant' | 'Confiant' | 'Plutôt confiant' | 'À préciser';
+  /** Legacy prop, ignored — label is now derived via i18n from confidence */
+  label?: string;
 }
 
-export default function ConfidenceBar({ confidence, label }: Props) {
+export default function ConfidenceBar({ confidence }: Props) {
+  const { t } = useT();
   const tone =
     confidence >= 80 ? colors.success :
     confidence >= 60 ? colors.accent :
     confidence >= 40 ? colors.accentLight :
                        colors.textMuted;
+  const localizedLabel =
+    confidence >= 80 ? t('result.confidenceVeryHigh') :
+    confidence >= 60 ? t('result.confidenceHigh') :
+    confidence >= 40 ? t('result.confidenceMid') :
+                       t('result.confidenceLow');
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.label}>Confiance du résultat</Text>
+        <Text style={styles.label}>{t('result.confidenceLabel')}</Text>
         <Text style={[styles.percent, { color: tone }]}>{confidence}%</Text>
       </View>
 
@@ -39,7 +47,7 @@ export default function ConfidenceBar({ confidence, label }: Props) {
         />
       </View>
 
-      <Text style={[styles.qualifier, { color: tone }]}>{label}</Text>
+      <Text style={[styles.qualifier, { color: tone }]}>{localizedLabel}</Text>
     </View>
   );
 }

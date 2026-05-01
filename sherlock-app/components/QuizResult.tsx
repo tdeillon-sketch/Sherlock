@@ -2,7 +2,10 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { TYPES, QuizMode } from '../constants/data';
+import { TYPES as TYPES_V3 } from '../constants/quiz_v3';
+import type { EnneaType } from '../constants/quiz_v3';
 import { QuizResult as QuizResultType } from '../hooks/useQuiz';
+import { useT, getTypeText } from '../i18n';
 
 interface QuizResultProps {
   result: QuizResultType;
@@ -18,17 +21,29 @@ const TYPE_COLORS: Record<number, string> = {
   5: '#4a90d9', 6: '#5b9e8f', 7: '#e07b54', 8: '#c0443a', 9: '#8fa68f',
 };
 
+/** Locale-aware type name, falling back to data.ts FR name */
+function localizedTypeName(typeNum: number, locale: 'fr' | 'en'): string {
+  const v3 = TYPES_V3[typeNum as EnneaType];
+  if (v3) return getTypeText(v3, 'name', locale);
+  return TYPES[typeNum - 1]?.name ?? '';
+}
+
 export default function QuizResult({
   result, mode, onViewProfile, onSaveProfile, onNewChild, onReset,
 }: QuizResultProps) {
+  const { t, locale } = useT();
   const top = TYPES[result.topType - 1];
-  const second = TYPES[result.secondType - 1];
-  const third = TYPES[result.thirdType - 1];
   const wing = result.wingType ? TYPES[result.wingType - 1] : null;
 
+  const topName = localizedTypeName(result.topType, locale);
+  const secondName = localizedTypeName(result.secondType, locale);
+  const thirdName = localizedTypeName(result.thirdType, locale);
+  const wingName = result.wingType ? localizedTypeName(result.wingType, locale) : '';
+
   const subjectLabel =
-    mode === 'enfant' ? 'Profil de votre enfant' :
-    mode === 'ado' ? 'Ton profil' : 'Votre profil';
+    mode === 'enfant' ? t('result.subjectChild') :
+    mode === 'ado'    ? t('result.subjectAdo')   :
+                        t('result.subjectAdult');
 
   return (
     <View style={styles.container}>
@@ -39,59 +54,61 @@ export default function QuizResult({
         </View>
         <Text style={styles.heroSubject}>{subjectLabel}</Text>
         <Text style={styles.heroType}>
-          Probablement Type {result.topType}
+          {t('result.typeProb', { n: result.topType })}
         </Text>
-        <Text style={styles.heroTypeName}>{top.name}</Text>
+        <Text style={styles.heroTypeName}>{topName}</Text>
         <View style={styles.heroPercentBox}>
           <Text style={styles.heroPercent}>{result.topPercent}%</Text>
-          <Text style={styles.heroPercentLabel}>de correspondance</Text>
+          <Text style={styles.heroPercentLabel}>{t('result.confidence')}</Text>
         </View>
       </View>
 
-      {/* ── "Notre lecture" ── */}
+      {/* ── "Our reading" ── */}
       <View style={styles.insightCard}>
-        <Text style={styles.insightLabel}>💡 Notre lecture</Text>
+        <Text style={styles.insightLabel}>{t('result.insightLabel')}</Text>
         <Text style={styles.insightText}>{result.insight}</Text>
       </View>
 
       {/* ── Top 3 types with bars ── */}
       <View style={styles.topThreeCard}>
-        <Text style={styles.sectionTitle}>Les 3 types les plus marqués</Text>
+        <Text style={styles.sectionTitle}>{t('result.topThree')}</Text>
 
         <TypeRow
           rank={1}
           type={result.topType}
-          name={top.name}
+          name={topName}
           percent={result.topPercent}
           color={TYPE_COLORS[result.topType]}
+          wingTag={t('result.wingTagShort')}
         />
         <TypeRow
           rank={2}
           type={result.secondType}
-          name={second.name}
+          name={secondName}
           percent={result.secondPercent}
           color={TYPE_COLORS[result.secondType]}
           isWing={result.wingType === result.secondType}
+          wingTag={t('result.wingTagShort')}
         />
         <TypeRow
           rank={3}
           type={result.thirdType}
-          name={third.name}
+          name={thirdName}
           percent={result.thirdPercent}
           color={TYPE_COLORS[result.thirdType]}
+          wingTag={t('result.wingTagShort')}
         />
       </View>
 
       {/* ── Wing card if detected ── */}
       {wing && (
         <View style={styles.wingCard}>
-          <Text style={styles.wingLabel}>🪶 Aile détectée</Text>
+          <Text style={styles.wingLabel}>🪶 {t('result.wingDetected')}</Text>
           <Text style={styles.wingTitle}>
             {result.topType}w{result.wingType}
           </Text>
           <Text style={styles.wingDesc}>
-            Combinaison {top.name.toLowerCase()} avec une teinte forte de {wing.name.toLowerCase()}.
-            Voir l'aile dans la section Profils pour le détail complet.
+            {t('result.wingDescription', { top: topName.toLowerCase(), wing: wingName.toLowerCase() })}
           </Text>
         </View>
       )}
@@ -102,7 +119,7 @@ export default function QuizResult({
           onPress={onViewProfile}
           style={({ pressed }) => [styles.btnPrimary, pressed && { opacity: 0.85 }]}
         >
-          <Text style={styles.btnPrimaryText}>Voir le profil complet →</Text>
+          <Text style={styles.btnPrimaryText}>{t('result.actionsViewProfile')}</Text>
         </Pressable>
 
         {mode === 'enfant' && (
@@ -111,19 +128,19 @@ export default function QuizResult({
               onPress={onSaveProfile}
               style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
             >
-              <Text style={styles.btnSecondaryText}>💾 Sauvegarder le profil de cet enfant</Text>
+              <Text style={styles.btnSecondaryText}>{t('result.actionsSave')}</Text>
             </Pressable>
             <Pressable
               onPress={onNewChild}
               style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
             >
-              <Text style={styles.btnSecondaryText}>👨‍👩‍👧 Faire le quiz pour un autre enfant</Text>
+              <Text style={styles.btnSecondaryText}>{t('result.actionsNew')}</Text>
             </Pressable>
           </>
         )}
 
         <Pressable onPress={onReset} style={styles.btnGhost}>
-          <Text style={styles.btnGhostText}>Refaire le quiz</Text>
+          <Text style={styles.btnGhostText}>{t('result.actionsReset')}</Text>
         </Pressable>
       </View>
     </View>
@@ -132,9 +149,9 @@ export default function QuizResult({
 
 // ── TypeRow ──
 function TypeRow({
-  rank, type, name, percent, color, isWing,
+  rank, type, name, percent, color, isWing, wingTag,
 }: {
-  rank: number; type: number; name: string; percent: number; color: string; isWing?: boolean;
+  rank: number; type: number; name: string; percent: number; color: string; isWing?: boolean; wingTag: string;
 }) {
   return (
     <View style={styles.typeRow}>
@@ -145,7 +162,7 @@ function TypeRow({
       <View style={{ flex: 1 }}>
         <View style={styles.typeRowTopLine}>
           <Text style={styles.typeRowName}>{name}</Text>
-          {isWing && <Text style={styles.wingTag}>🪶 aile</Text>}
+          {isWing && <Text style={styles.wingTag}>🪶 {wingTag}</Text>}
         </View>
         <View style={styles.typeRowBarTrack}>
           <View

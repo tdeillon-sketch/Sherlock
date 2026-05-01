@@ -337,6 +337,7 @@ function SaveProfileScreen({
   const [name, setName] = useState('');
   const [ageStr, setAgeStr] = useState('');
   const [selectedExisting, setSelectedExisting] = useState<string | null>(null);
+  const { t } = useT();
 
   const canSave = selectedExisting || name.trim().length > 0;
 
@@ -346,18 +347,16 @@ function SaveProfileScreen({
         <Pressable onPress={onCancel} style={styles.quizBackBtn}>
           <Text style={styles.quizBackBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.quizTopBarTitle}>Sauvegarder le profil</Text>
+        <Text style={styles.quizTopBarTitle}>{t('saveProfile.title')}</Text>
         <View style={styles.quizBackBtn} />
       </View>
 
-      <Text style={styles.saveTitle}>Pour qui était ce quiz ?</Text>
-      <Text style={styles.saveSub}>
-        Sauvegarder le profil vous permettra de suivre l'évolution dans le temps.
-      </Text>
+      <Text style={styles.saveTitle}>{t('saveProfile.title')}</Text>
+      <Text style={styles.saveSub}>{t('saveProfile.subtitle')}</Text>
 
       {existingProfiles.length > 0 && (
         <>
-          <Text style={styles.saveSectionLabel}>Ajouter à un profil existant</Text>
+          <Text style={styles.saveSectionLabel}>{t('saveProfile.addToExisting')}</Text>
           {existingProfiles.map(p => (
             <Pressable
               key={p.id}
@@ -369,26 +368,26 @@ function SaveProfileScreen({
             >
               <Text style={styles.saveProfileName}>{p.name}</Text>
               <Text style={styles.saveProfileMeta}>
-                {p.history.length} test{p.history.length > 1 ? 's' : ''} · dernier : Type {p.history[p.history.length - 1]?.topType}
+                {p.history.length > 1 ? t('history.nbTests', { n: p.history.length }) : t('history.nbTest', { n: p.history.length })} · {t('history.last', { t: p.history[p.history.length - 1]?.topType })}
               </Text>
             </Pressable>
           ))}
 
-          <Text style={[styles.saveSectionLabel, { marginTop: spacing.lg }]}>Ou créer un nouveau profil</Text>
+          <Text style={[styles.saveSectionLabel, { marginTop: spacing.lg }]}>{t('saveProfile.createNew')}</Text>
         </>
       )}
 
       <TextInput
         value={name}
-        onChangeText={(t) => { setName(t); setSelectedExisting(null); }}
-        placeholder="Prénom"
+        onChangeText={(tt) => { setName(tt); setSelectedExisting(null); }}
+        placeholder={t('saveProfile.namePlaceholder')}
         placeholderTextColor={colors.textDim}
         style={styles.saveInput}
       />
       <TextInput
         value={ageStr}
         onChangeText={setAgeStr}
-        placeholder="Âge (optionnel)"
+        placeholder={t('saveProfile.agePlaceholder')}
         placeholderTextColor={colors.textDim}
         keyboardType="numeric"
         style={styles.saveInput}
@@ -406,11 +405,11 @@ function SaveProfileScreen({
           pressed && canSave && { opacity: 0.85 },
         ]}
       >
-        <Text style={styles.saveBtnText}>Sauvegarder</Text>
+        <Text style={styles.saveBtnText}>{t('saveProfile.save')}</Text>
       </Pressable>
 
       <Pressable onPress={onCancel} style={styles.skipBtn}>
-        <Text style={styles.skipBtnText}>Annuler</Text>
+        <Text style={styles.skipBtnText}>{t('common.cancel')}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -421,18 +420,19 @@ function SaveProfileScreen({
 // ─────────────────────────────────────────────
 
 function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack: () => void }) {
+  const { t } = useT();
   return (
     <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
       <View style={styles.quizTopBar}>
         <Pressable onPress={onBack} style={styles.quizBackBtn}>
           <Text style={styles.quizBackBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.quizTopBarTitle}>Historique des profils</Text>
+        <Text style={styles.quizTopBarTitle}>{t('history.title')}</Text>
         <View style={styles.quizBackBtn} />
       </View>
 
       {profiles.length === 0 ? (
-        <Text style={styles.historyEmpty}>Aucun profil sauvegardé pour l'instant.</Text>
+        <Text style={styles.historyEmpty}>{t('history.empty')}</Text>
       ) : (
         profiles.map(p => (
           <View key={p.id} style={styles.historyCard}>
