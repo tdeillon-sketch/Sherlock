@@ -199,10 +199,18 @@ export const fr = {
     age1316: 'De 13 à 16 ans',
   },
 
-  // Banner for sections only available in French (Profiles content, Duo, Case files)
+  // Banner for sections only available in French (Duo, Case files)
   enComingSoon: {
     label: 'EN CONTENU EN ANGLAIS À VENIR',
     text: 'Cette section est encore disponible uniquement en français. La traduction anglaise est en cours.',
+  },
+
+  // Chapter detail page
+  chapter: {
+    notFound: 'Chapitre introuvable.',
+    backLabel: 'Retour',
+    keyPointsTitle: 'Points clés',
+    reflectionsTitle: 'Questions de réflexion',
   },
 };
 

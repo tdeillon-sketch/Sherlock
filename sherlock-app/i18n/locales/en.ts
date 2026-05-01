@@ -188,9 +188,17 @@ export const en = {
     age1316: 'Ages 13 to 16',
   },
 
-  // Banner for sections still in French (Profiles content, Duo, Case files)
+  // Banner for sections still in French (Duo, Case files)
   enComingSoon: {
     label: '🇬🇧 ENGLISH CONTENT COMING SOON',
-    text: 'This section is currently available in French only. English translation is in progress — the rich content (book chapters, duo dynamics, case files) requires careful work and will land in a future update. For now, you can read the French version below.',
+    text: 'This section is currently available in French only. English translation is in progress and will land in a future update. For now, you can read the French version below.',
+  },
+
+  // Chapter detail page
+  chapter: {
+    notFound: 'Chapter not found.',
+    backLabel: 'Back',
+    keyPointsTitle: 'Key points',
+    reflectionsTitle: 'Reflection questions',
   },
 };

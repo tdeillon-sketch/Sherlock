@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { CHAPTERS } from '../../constants/data';
+import { CHAPTERS_EN, findChapterEn } from '../../i18n/chapters_en';
 import { useT } from '../../i18n';
 
 // ── Tool cards (entrées vers les autres onglets) ──
@@ -24,7 +25,9 @@ const TOOLS: Tool[] = [
 
 export default function HomeScreen() {
   const [chaptersOpen, setChaptersOpen] = useState(false);
-  const { t } = useT();
+  const { t, locale } = useT();
+  // Use EN chapters structure when locale is 'en' (preserves part names + ordering)
+  const chaptersData = locale === 'en' ? CHAPTERS_EN : CHAPTERS;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -109,13 +112,13 @@ export default function HomeScreen() {
 
         {chaptersOpen && (
           <View style={styles.chaptersList}>
-            {CHAPTERS.map((part, partIndex) => (
+            {chaptersData.map((part, partIndex) => (
               <View key={partIndex} style={styles.partContainer}>
                 <Text style={styles.partTitle}>{part.part}</Text>
 
                 {part.chapters.map((chapter) => (
                   <Pressable
-                    key={chapter.num}
+                    key={String(chapter.num)}
                     style={styles.chapterItem}
                     onPress={() => router.push(`/chapter/${chapter.num}` as never)}
                   >

@@ -4,17 +4,18 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
 import { TYPE_WINGS, getWing } from '../../../constants/wings';
-import { useT } from '../../../i18n';
-import EnComingSoonBanner from '../../../components/EnComingSoonBanner';
+import { TYPES as TYPES_V3 } from '../../../constants/quiz_v3';
+import type { EnneaType } from '../../../constants/quiz_v3';
+import { useT, getTypeText } from '../../../i18n';
+import { TYPES_EN } from '../../../i18n/types_en';
 
 export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const typeIndex = parseInt(id ?? '1', 10) - 1;
   const type = TYPES[typeIndex];
-  const { t } = useT();
+  const { t, locale } = useT();
 
   // ── Wing selection (no persistence — resets on each open) ──
-  // null = base type (no wing); number = wing type number
   const [selectedWing, setSelectedWing] = useState<number | null>(null);
 
   if (!type) {
@@ -28,14 +29,29 @@ export default function ProfileDetailScreen() {
   const wingOptions = TYPE_WINGS[type.num]; // [wing1, wing2]
   const wingVariant = selectedWing !== null ? getWing(type.num, selectedWing) : null;
 
-  // ── Resolved content (wing variant overrides base) ──
+  // ── Localized content (wing variant overrides base; EN content from TYPES_EN) ──
+  const isEn = locale === 'en';
+  const en = TYPES_EN[type.num];
+  const v3 = TYPES_V3[type.num as EnneaType];
+
+  const localizedTypeName = v3 ? getTypeText(v3, 'name', locale) : type.name;
+  // Wing variant nicknames stay FR — we keep them; in EN we just show the type+wing notation
   const displayName = wingVariant
-    ? `${type.name} — ${wingVariant.nickname}`
-    : type.name;
-  const displayShort = wingVariant?.short ?? type.short;
-  const displayMetaphor = wingVariant?.metaphor ?? type.metaphor;
-  const displayAges = wingVariant?.ages ?? type.ages;
-  const displayKeys = wingVariant?.keys ?? type.keys;
+    ? `${localizedTypeName} — ${wingVariant.nickname}`
+    : localizedTypeName;
+  const displayShort = wingVariant?.short ?? (isEn && en ? en.short : type.short);
+  const displayMetaphor = wingVariant?.metaphor ?? (isEn && en ? en.metaphor : type.metaphor);
+  const displayAges = wingVariant?.ages ?? (isEn && en ? en.ages : type.ages);
+  const displayKeys = wingVariant?.keys ?? (isEn && en ? en.keys : type.keys);
+  const displayBelief = isEn && en ? en.belief : type.belief;
+  const displayCompulsionName = isEn && en ? en.compulsionName : type.compulsion?.name;
+  const displayCompulsionDesc = isEn && en ? en.compulsionDesc : type.compulsion?.desc;
+  const displayVirtueName = isEn && en ? en.virtueName : type.virtue?.name;
+  const displayVirtueDesc = isEn && en ? en.virtueDesc : type.virtue?.desc;
+  const displayIdentity = isEn && en ? en.identity : type.identity;
+  const displayMissionLibre = isEn && en ? en.missionLibre : type.missionLibre;
+  const displayIntegrationDesc = isEn && en ? en.integrationDesc : type.integration.desc;
+  const displayDisintegrationDesc = isEn && en ? en.disintegrationDesc : type.disintegration.desc;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -48,8 +64,6 @@ export default function ProfileDetailScreen() {
         <View style={styles.backBtn} />
       </View>
 
-      {/* EN coming soon banner — only shows in EN mode */}
-      <EnComingSoonBanner />
 
       {/* Hero */}
       <View style={styles.header}>
@@ -123,21 +137,21 @@ export default function ProfileDetailScreen() {
       </View>
 
       {/* Inner mechanics */}
-      {type.belief && type.compulsion && type.virtue && (
+      {displayBelief && displayCompulsionName && displayVirtueName && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.mechanicsTitle')}</Text>
 
           {/* Belief */}
           <View style={styles.beliefCard}>
             <Text style={styles.beliefLabel}>{t('profile.beliefLabel')}</Text>
-            <Text style={styles.beliefText}>« {type.belief} »</Text>
+            <Text style={styles.beliefText}>« {displayBelief} »</Text>
           </View>
 
           {/* Identity */}
-          {type.identity && (
+          {displayIdentity && (
             <View style={styles.identityRow}>
               <Text style={styles.identityLabel}>{t('profile.identityLabel')}</Text>
-              <Text style={styles.identityText}>« {type.identity} »</Text>
+              <Text style={styles.identityText}>« {displayIdentity} »</Text>
             </View>
           )}
 
@@ -145,8 +159,8 @@ export default function ProfileDetailScreen() {
           <View style={styles.dynamicBox}>
             <View style={[styles.poleCard, styles.poleCompulsion]}>
               <Text style={styles.poleLabel}>{t('profile.compulsionLabel')}</Text>
-              <Text style={styles.poleName}>{type.compulsion.name}</Text>
-              <Text style={styles.poleDesc}>{type.compulsion.desc}</Text>
+              <Text style={styles.poleName}>{displayCompulsionName}</Text>
+              <Text style={styles.poleDesc}>{displayCompulsionDesc}</Text>
             </View>
 
             <View style={styles.arrowRow}>
@@ -155,18 +169,18 @@ export default function ProfileDetailScreen() {
 
             <View style={[styles.poleCard, styles.poleVirtue, { borderColor: type.color }]}>
               <Text style={[styles.poleLabel, { color: type.color }]}>{t('profile.virtueLabel')}</Text>
-              <Text style={styles.poleName}>{type.virtue.name}</Text>
-              <Text style={styles.poleDesc}>{type.virtue.desc}</Text>
+              <Text style={styles.poleName}>{displayVirtueName}</Text>
+              <Text style={styles.poleDesc}>{displayVirtueDesc}</Text>
             </View>
           </View>
         </View>
       )}
 
       {/* Liberated mission */}
-      {type.missionLibre && (
+      {displayMissionLibre && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.liberatedTitle')}</Text>
-          <Text style={styles.sectionBody}>{type.missionLibre}</Text>
+          <Text style={styles.sectionBody}>{displayMissionLibre}</Text>
         </View>
       )}
 
@@ -177,13 +191,13 @@ export default function ProfileDetailScreen() {
           <Text style={styles.integrationLabel}>
             {t('profile.integrationToward', { n: type.integration.toward })}
           </Text>
-          <Text style={styles.integrationDesc}>{type.integration.desc}</Text>
+          <Text style={styles.integrationDesc}>{displayIntegrationDesc}</Text>
         </View>
         <View style={styles.integrationBox}>
           <Text style={styles.integrationLabel}>
             {t('profile.disintegrationToward', { n: type.disintegration.toward })}
           </Text>
-          <Text style={styles.integrationDesc}>{type.disintegration.desc}</Text>
+          <Text style={styles.integrationDesc}>{displayDisintegrationDesc}</Text>
         </View>
       </View>
 

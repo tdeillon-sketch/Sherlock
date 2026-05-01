@@ -3,11 +3,14 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { CHAPTERS } from '../../constants/data';
+import { findChapterEn } from '../../i18n/chapters_en';
+import { useT } from '../../i18n';
 
 export default function ChapterDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t, locale } = useT();
 
-  // Find the chapter across all parts
+  // Find the chapter across all parts (FR data)
   let chapter: (typeof CHAPTERS)[number]['chapters'][number] | undefined;
   for (const part of CHAPTERS) {
     chapter = part.chapters.find((c) => String(c.num) === id);
@@ -17,10 +20,18 @@ export default function ChapterDetailScreen() {
   if (!chapter) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Chapitre introuvable.</Text>
+        <Text style={styles.errorText}>{t('chapter.notFound')}</Text>
       </View>
     );
   }
+
+  // Locale-aware content: use EN translation if available, else fall back to FR
+  const enChapter = locale === 'en' ? findChapterEn(chapter.num) : null;
+  const title = enChapter?.title ?? chapter.title;
+  const quote = enChapter?.quote ?? chapter.quote;
+  const desc = enChapter?.desc ?? chapter.desc;
+  const keyPoints = enChapter?.keyPoints ?? chapter.keyPoints;
+  const reflections = enChapter?.reflections ?? chapter.reflections;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -28,7 +39,7 @@ export default function ChapterDetailScreen() {
       <View style={styles.backBar}>
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={22} color={colors.accent} />
-          <Text style={styles.backText}>Retour</Text>
+          <Text style={styles.backText}>{t('chapter.backLabel')}</Text>
         </Pressable>
       </View>
 
@@ -37,22 +48,22 @@ export default function ChapterDetailScreen() {
         <View style={styles.chapterBadge}>
           <Text style={styles.chapterBadgeText}>{chapter.num}</Text>
         </View>
-        <Text style={styles.chapterTitle}>{chapter.title}</Text>
-        {chapter.quote ? (
-          <Text style={styles.chapterQuote}>{chapter.quote}</Text>
+        <Text style={styles.chapterTitle}>{title}</Text>
+        {quote ? (
+          <Text style={styles.chapterQuote}>{quote}</Text>
         ) : null}
       </View>
 
       {/* Description */}
       <View style={styles.section}>
-        <Text style={styles.sectionBody}>{chapter.desc}</Text>
+        <Text style={styles.sectionBody}>{desc}</Text>
       </View>
 
       {/* Key Points */}
-      {chapter.keyPoints && chapter.keyPoints.length > 0 && (
+      {keyPoints && keyPoints.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Points cles</Text>
-          {chapter.keyPoints.map((point, index) => (
+          <Text style={styles.sectionTitle}>{t('chapter.keyPointsTitle')}</Text>
+          {keyPoints.map((point, index) => (
             <View key={index} style={styles.keyPointRow}>
               <View style={styles.keyPointBullet}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.accent} />
@@ -64,10 +75,10 @@ export default function ChapterDetailScreen() {
       )}
 
       {/* Reflections */}
-      {chapter.reflections && chapter.reflections.length > 0 && (
+      {reflections && reflections.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Questions de reflexion</Text>
-          {chapter.reflections.map((question, index) => (
+          <Text style={styles.sectionTitle}>{t('chapter.reflectionsTitle')}</Text>
+          {reflections.map((question, index) => (
             <View key={index} style={styles.reflectionCard}>
               <View style={styles.reflectionIconCircle}>
                 <Ionicons name="help-circle-outline" size={20} color={colors.accent} />
