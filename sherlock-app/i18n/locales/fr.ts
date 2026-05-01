@@ -212,6 +212,36 @@ export const fr = {
     keyPointsTitle: 'Points clés',
     reflectionsTitle: 'Questions de réflexion',
   },
+
+  // Duo screen
+  duo: {
+    title: 'Duo',
+    subtitle: 'Dynamiques entre profils Ennéagramme',
+    profileA: 'Profil A',
+    profileB: 'Profil B',
+    roleAdulte: 'Adulte',
+    roleEnfant: 'Enfant',
+    contextPairs: 'Amitié entre enfants (5–17 ans)',
+    contextEnfant: 'Relation parent · enfant (5–17 ans)',
+    contextAdulte: 'Relation amis · collègues · couple',
+    sectionStrengthsPairs: 'Ce qui les rapproche',
+    sectionStrengthsEnfant: 'Ce qui fonctionne entre vous',
+    sectionStrengthsAdulte: 'Ce qui fonctionne bien entre vous',
+    sectionFrictionPairs: 'Sources de friction entre eux',
+    sectionFrictionEnfant: 'Points de vigilance pour vous, parent',
+    sectionFrictionAdulte: 'Points de friction à surveiller',
+    sectionSupport: "Comment vous pouvez l'aider",
+    sectionChallenge: 'En quoi cet enfant vous challenge',
+    sectionAportsAtoB: 'Ce que le Type {{a}} apporte au Type {{b}}',
+    sectionAportsBtoA: 'Ce que le Type {{b}} apporte au Type {{a}}',
+    sectionAdvicePairs: 'Conseil pour vous, parent qui observe',
+    sectionAdviceEnfant: 'Conseil pratique pour vous, parent',
+    sectionAdviceAdulte: 'Conseil pour mieux vivre ensemble',
+    sectionContext: 'Dans votre situation',
+    typePrefix: 'Type',
+    emptyTitle: 'Sélectionnez deux profils',
+    emptyDesc: 'Choisissez un type à gauche et un à droite pour découvrir la dynamique entre ces deux personnalités.',
+  },
 };
 
 export type LocaleKeys = typeof fr;

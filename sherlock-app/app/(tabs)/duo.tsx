@@ -9,16 +9,21 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT, DUO_PARENT_VIEW, DUO_PEERS_VIEW } from '../../constants/duo';
-import EnComingSoonBanner from '../../components/EnComingSoonBanner';
+import { DUO_DATA_EN, DUO_PAIRS_CONTEXT_EN } from '../../i18n/duo_en';
+import { useT } from '../../i18n';
 
 // ── Type metadata ──────────────────────────────────────────────
 const TYPE_COLORS = [
   '#7b8e6e', '#c0713a', '#d4a03c', '#8b6ca7',
   '#5b8a9a', '#6b7b8e', '#d4853c', '#9b4a4a', '#7a9a7b',
 ];
-const TYPE_NAMES = [
+const TYPE_NAMES_FR = [
   'Perfectionniste', 'Assistant', 'Gagneur', 'Artiste',
   'Observateur', 'Loyaliste', 'Épicurien', 'Chef', 'Médiateur',
+];
+const TYPE_NAMES_EN = [
+  'Reformer', 'Helper', 'Achiever', 'Individualist',
+  'Investigator', 'Loyalist', 'Enthusiast', 'Challenger', 'Peacemaker',
 ];
 
 // ── Role ───────────────────────────────────────────────────────
@@ -26,23 +31,10 @@ const TYPE_NAMES = [
 // full 5–17 range (the previous 'ado' role + bucket has been removed).
 type ProfileRole = 'adulte' | 'enfant';
 
-const ROLE_LABELS: Record<ProfileRole, string> = {
-  adulte: 'Adulte',
-  enfant: 'Enfant',
-};
-
 function deriveContext(roleA: ProfileRole, roleB: ProfileRole): DuoContext {
   if (roleA === 'enfant' && roleB === 'enfant') return 'pairs';
   if (roleA === 'enfant' || roleB === 'enfant') return 'enfant';
   return 'adulte';
-}
-
-function contextLabel(ctx: DuoContext, _roleA: ProfileRole, _roleB: ProfileRole): string {
-  switch (ctx) {
-    case 'pairs':  return 'Amitié entre enfants (5–17 ans)';
-    case 'enfant': return 'Relation parent · enfant (5–17 ans)';
-    default:       return 'Relation amis · collègues · couple';
-  }
 }
 
 // ── Flat section ───────────────────────────────────────────────
@@ -117,10 +109,12 @@ function RoleStrip({
   value,
   onChange,
   typeColor,
+  roleLabels,
 }: {
   value: ProfileRole;
   onChange: (r: ProfileRole) => void;
   typeColor: string;
+  roleLabels: Record<ProfileRole, string>;
 }) {
   const roles: ProfileRole[] = ['adulte', 'enfant'];
   return (
@@ -139,7 +133,7 @@ function RoleStrip({
             <Text
               style={[roleStyles.label, active && { color: colors.white }]}
             >
-              {ROLE_LABELS[r]}
+              {roleLabels[r]}
             </Text>
           </Pressable>
         );
@@ -176,10 +170,12 @@ function TypeGrid({
   selected,
   onSelect,
   label,
+  typeNames,
 }: {
   selected: number | null;
   onSelect: (t: number) => void;
   label: string;
+  typeNames: string[];
 }) {
   return (
     <View style={gridStyles.container}>
@@ -207,7 +203,7 @@ function TypeGrid({
                 style={[gridStyles.short, { color: isSel ? 'rgba(255,255,255,0.8)' : colors.textDim }]}
                 numberOfLines={1}
               >
-                {TYPE_NAMES[i]}
+                {typeNames[i]}
               </Text>
             </Pressable>
           );
@@ -260,6 +256,14 @@ const gridStyles = StyleSheet.create({
 
 // ── Main screen ────────────────────────────────────────────────
 export default function DuoScreen() {
+  const { t, locale } = useT();
+  const isEn = locale === 'en';
+  const TYPE_NAMES = isEn ? TYPE_NAMES_EN : TYPE_NAMES_FR;
+  const ROLE_LABELS: Record<ProfileRole, string> = {
+    adulte: t('duo.roleAdulte'),
+    enfant: t('duo.roleEnfant'),
+  };
+
   // Defaults: Adulte (gauche) / Enfant (droite) — le cas d'usage le plus
   // probable dans une app destinée aux parents.
   const [roleA, setRoleA] = useState<ProfileRole>('adulte');
@@ -268,32 +272,50 @@ export default function DuoScreen() {
   const [typeB, setTypeB] = useState<number | null>(null);
 
   const context = deriveContext(roleA, roleB);
-  const pair = typeA && typeB ? getDuoPair(typeA, typeB) : null;
+  const pairFr = typeA && typeB ? getDuoPair(typeA, typeB) : null;
   const pairKey = typeA && typeB ? `${typeA}-${typeB}` : '';
+  const pairEn = isEn && pairKey ? DUO_DATA_EN[pairKey] : null;
 
-  // ── Choose the right perspective view for the 5 main sections ──
-  // Parent-child context → DUO_PARENT_VIEW (parent perspective)
-  // Peers context → DUO_PEERS_VIEW (parent observing two kids/teens)
-  // Adult/couple → original DUO_DATA content
+  // ── Locale-aware base pair: prefer EN, fall back to FR field-by-field ──
+  const pair = pairFr ? {
+    pointsForts: (isEn && pairEn?.pointsForts) || pairFr.pointsForts,
+    vigilances:  (isEn && pairEn?.vigilances)  || pairFr.vigilances,
+    aApporte:    (isEn && pairEn?.aApporte)    || pairFr.aApporte,
+    bApporte:    (isEn && pairEn?.bApporte)    || pairFr.bApporte,
+    conseil:     (isEn && pairEn?.conseil)     || pairFr.conseil,
+    contexte: {
+      enfant: (isEn && pairEn?.contexte?.enfant) || pairFr.contexte.enfant,
+      couple: (isEn && pairEn?.contexte?.couple) || pairFr.contexte.couple,
+      adulte: (isEn && pairEn?.contexte?.adulte) || pairFr.contexte.adulte,
+    },
+  } : null;
+
+  // ── Perspective views (PARENT_VIEW / PEERS_VIEW) are FR-only for now. ──
+  // In EN, we skip them entirely and surface the base bilingual content
+  // through the symmetric aApporte/bApporte sections (same as adult context).
   const perspectiveView = (() => {
-    if (!pair) return null;
+    if (isEn) return null;
+    if (!pairFr) return null;
     if (context === 'pairs') return DUO_PEERS_VIEW[pairKey] ?? null;
     if (context === 'enfant') return DUO_PARENT_VIEW[pairKey] ?? null;
     return null;
   })();
 
-  // Resolved section content (perspective overrides default)
+  // Resolved section content (perspective overrides default in FR only)
   const pointsForts = perspectiveView?.pointsForts ?? pair?.pointsForts ?? '';
   const vigilances  = perspectiveView?.vigilances  ?? pair?.vigilances  ?? '';
   const conseil     = perspectiveView?.conseil     ?? pair?.conseil     ?? '';
-  // Parent-child specific sections: only set when context === 'enfant' (since
-  // DUO_PARENT_VIEW is the only view that populates these fields).
   const parentSoutien   = perspectiveView?.parentSoutien   ?? '';
   const parentChallenge = perspectiveView?.parentChallenge ?? '';
 
-  // For 'pairs' context, look up the dedicated peers table for the bottom tip
+  // For 'pairs' context, peer-peer tip — locale-aware
   const pairsText = (typeA && typeB)
-    ? (DUO_PAIRS_CONTEXT[`${typeA}-${typeB}`] ?? pair?.conseil ?? '')
+    ? (
+        (isEn && DUO_PAIRS_CONTEXT_EN[`${typeA}-${typeB}`]) ||
+        DUO_PAIRS_CONTEXT[`${typeA}-${typeB}`] ||
+        pair?.conseil ||
+        ''
+      )
     : '';
 
   const contextBodyText = (ctx: DuoContext): string => {
@@ -302,6 +324,15 @@ export default function DuoScreen() {
     return pair.contexte[ctx as Exclude<DuoContext, 'pairs'>] ?? '';
   };
 
+  // In EN, force the symmetric "what A brings / what B brings" layout
+  // (since parent-perspective-specific copy is FR-only).
+  const useParentChildLayout = !isEn && context === 'enfant';
+
+  const contextLabelText =
+    context === 'pairs'  ? t('duo.contextPairs')  :
+    context === 'enfant' ? t('duo.contextEnfant') :
+                           t('duo.contextAdulte');
+
   const colorA = typeA ? TYPE_COLORS[typeA - 1] : colors.accent;
   const colorB = typeB ? TYPE_COLORS[typeB - 1] : colors.accentLight;
 
@@ -309,8 +340,8 @@ export default function DuoScreen() {
     <View style={styles.screen}>
       {/* ── Title bar ── */}
       <View style={styles.titleBar}>
-        <Text style={styles.screenTitle}>Duo</Text>
-        <Text style={styles.screenSub}>Dynamiques entre profils Ennéagramme</Text>
+        <Text style={styles.screenTitle}>{t('duo.title')}</Text>
+        <Text style={styles.screenSub}>{t('duo.subtitle')}</Text>
       </View>
 
       <ScrollView
@@ -318,15 +349,13 @@ export default function DuoScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <EnComingSoonBanner />
-
         {/* ── Selectors ── */}
         <View style={styles.selectorsRow}>
 
           {/* Profil A */}
           <View style={styles.selectorBlock}>
-            <RoleStrip value={roleA} onChange={setRoleA} typeColor={colorA} />
-            <TypeGrid selected={typeA} onSelect={setTypeA} label="Profil A" />
+            <RoleStrip value={roleA} onChange={setRoleA} typeColor={colorA} roleLabels={ROLE_LABELS} />
+            <TypeGrid selected={typeA} onSelect={setTypeA} label={t('duo.profileA')} typeNames={TYPE_NAMES} />
           </View>
 
           {/* VS */}
@@ -338,17 +367,15 @@ export default function DuoScreen() {
 
           {/* Profil B */}
           <View style={styles.selectorBlock}>
-            <RoleStrip value={roleB} onChange={setRoleB} typeColor={colorB} />
-            <TypeGrid selected={typeB} onSelect={setTypeB} label="Profil B" />
+            <RoleStrip value={roleB} onChange={setRoleB} typeColor={colorB} roleLabels={ROLE_LABELS} />
+            <TypeGrid selected={typeB} onSelect={setTypeB} label={t('duo.profileB')} typeNames={TYPE_NAMES} />
           </View>
         </View>
 
         {/* ── Context label ── */}
         {(typeA || typeB) && (
           <View style={styles.contextBanner}>
-            <Text style={styles.contextBannerText}>
-              {contextLabel(context, roleA, roleB)}
-            </Text>
+            <Text style={styles.contextBannerText}>{contextLabelText}</Text>
           </View>
         )}
 
@@ -368,7 +395,7 @@ export default function DuoScreen() {
                     <Text style={styles.typeDotNum}>{typeA}</Text>
                   </View>
                   <View style={styles.resultTypeMeta}>
-                    <Text style={styles.resultTypeLabel}>Type {typeA}</Text>
+                    <Text style={styles.resultTypeLabel}>{t('duo.typePrefix')} {typeA}</Text>
                     <Text style={styles.resultTypeName}>{TYPE_NAMES[typeA! - 1]}</Text>
                   </View>
                 </View>
@@ -377,7 +404,7 @@ export default function DuoScreen() {
 
                 <View style={[styles.resultTypePill, { justifyContent: 'flex-end' }]}>
                   <View style={styles.resultTypeMeta}>
-                    <Text style={[styles.resultTypeLabel, { textAlign: 'right' }]}>Type {typeB}</Text>
+                    <Text style={[styles.resultTypeLabel, { textAlign: 'right' }]}>{t('duo.typePrefix')} {typeB}</Text>
                     <Text style={[styles.resultTypeName, { textAlign: 'right' }]}>{TYPE_NAMES[typeB! - 1]}</Text>
                   </View>
                   <View style={[styles.typeDot, { backgroundColor: colorB }]}>
@@ -391,9 +418,9 @@ export default function DuoScreen() {
             <FlatSection
               emoji="✨"
               title={
-                context === 'pairs' ? 'Ce qui les rapproche' :
-                context === 'enfant' ? 'Ce qui fonctionne entre vous' :
-                'Ce qui fonctionne bien entre vous'
+                context === 'pairs'  ? t('duo.sectionStrengthsPairs')  :
+                context === 'enfant' ? t('duo.sectionStrengthsEnfant') :
+                                       t('duo.sectionStrengthsAdulte')
               }
               body={pointsForts}
               colorA={colorA}
@@ -401,29 +428,26 @@ export default function DuoScreen() {
             <FlatSection
               emoji="⚠️"
               title={
-                context === 'pairs' ? 'Sources de friction entre eux' :
-                context === 'enfant' ? 'Points de vigilance pour vous, parent' :
-                'Points de friction à surveiller'
+                context === 'pairs'  ? t('duo.sectionFrictionPairs')  :
+                context === 'enfant' ? t('duo.sectionFrictionEnfant') :
+                                       t('duo.sectionFrictionAdulte')
               }
               body={vigilances}
               colorA={'#d4a03c'}
             />
-            {/* Middle sections — swap based on context:
-                - Parent-child: "comment l'aider" + "comment il vous challenge"
-                  (parent-centric, specific to this parent-child type pair)
-                - Otherwise (couple / peers / adult-adult): the generic
-                  symmetric "ce que X apporte à Y" / "Y apporte à X" */}
-            {context === 'enfant' ? (
+            {/* Middle sections — parent-child layout is FR-only (relies on
+                DUO_PARENT_VIEW). In EN we fall back to the symmetric layout. */}
+            {useParentChildLayout ? (
               <>
                 <FlatSection
                   emoji="🌱"
-                  title="Comment vous pouvez l'aider"
+                  title={t('duo.sectionSupport')}
                   body={parentSoutien}
                   colorA={colorA}
                 />
                 <FlatSection
                   emoji="🪞"
-                  title="En quoi cet enfant vous challenge"
+                  title={t('duo.sectionChallenge')}
                   body={parentChallenge}
                   colorA={colorB}
                 />
@@ -432,13 +456,13 @@ export default function DuoScreen() {
               <>
                 <FlatSection
                   emoji="🤲"
-                  title={`Ce que le Type ${typeA} apporte au Type ${typeB}`}
+                  title={t('duo.sectionAportsAtoB', { a: typeA, b: typeB })}
                   body={pair.aApporte}
                   colorA={colorA}
                 />
                 <FlatSection
                   emoji="🎁"
-                  title={`Ce que le Type ${typeB} apporte au Type ${typeA}`}
+                  title={t('duo.sectionAportsBtoA', { a: typeA, b: typeB })}
                   body={pair.bApporte}
                   colorA={colorB}
                 />
@@ -447,16 +471,16 @@ export default function DuoScreen() {
             <FlatSection
               emoji="💡"
               title={
-                context === 'pairs' ? 'Conseil pour vous, parent qui observe' :
-                context === 'enfant' ? 'Conseil pratique pour vous, parent' :
-                'Conseil pour mieux vivre ensemble'
+                context === 'pairs'  ? t('duo.sectionAdvicePairs')  :
+                context === 'enfant' ? t('duo.sectionAdviceEnfant') :
+                                       t('duo.sectionAdviceAdulte')
               }
               body={conseil}
               colorA={colorA}
             />
             <FlatSection
               emoji="🔍"
-              title="Dans votre situation"
+              title={t('duo.sectionContext')}
               body={contextBodyText(context)}
               colorA={colorA}
             />
@@ -465,10 +489,8 @@ export default function DuoScreen() {
           /* Empty state */
           <View style={styles.emptyCard}>
             <Text style={styles.emptyEmoji}>◎</Text>
-            <Text style={styles.emptyTitle}>Sélectionnez deux profils</Text>
-            <Text style={styles.emptyDesc}>
-              Choisissez un type à gauche et un à droite pour découvrir la dynamique entre ces deux personnalités.
-            </Text>
+            <Text style={styles.emptyTitle}>{t('duo.emptyTitle')}</Text>
+            <Text style={styles.emptyDesc}>{t('duo.emptyDesc')}</Text>
           </View>
         )}
       </ScrollView>
