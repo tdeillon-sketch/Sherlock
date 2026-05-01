@@ -10,8 +10,11 @@ import {
 import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
+import { TYPES as TYPES_V3 } from '../../../constants/quiz_v3';
+import type { EnneaType } from '../../../constants/quiz_v3';
+import { useT, getTypeText } from '../../../i18n';
 
-function ProfileCard({ type }: { type: typeof TYPES[0] }) {
+function ProfileCard({ type, name }: { type: typeof TYPES[0]; name: string }) {
   return (
     <Pressable
       onPress={() => router.push(`/profiles/${type.num}`)}
@@ -23,7 +26,7 @@ function ProfileCard({ type }: { type: typeof TYPES[0] }) {
       <View style={[styles.circle, { backgroundColor: type.color }]}>
         <Text style={styles.circleText}>{type.num}</Text>
       </View>
-      <Text style={styles.typeName}>{type.name}</Text>
+      <Text style={styles.typeName}>{name}</Text>
       <Text style={styles.typeShort} numberOfLines={3}>
         {type.short}
       </Text>
@@ -33,6 +36,7 @@ function ProfileCard({ type }: { type: typeof TYPES[0] }) {
 
 export default function ProfilesScreen() {
   const { width } = useWindowDimensions();
+  const { t, locale } = useT();
   const numColumns = width >= 900 ? 3 : width >= 550 ? 2 : 1;
 
   return (
@@ -47,19 +51,19 @@ export default function ProfilesScreen() {
         columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.title}>
-              Les 9 profils de l'Enneagramme
-            </Text>
-            <Text style={styles.subtitle}>
-              Decouvrez chaque type pour mieux comprendre votre enfant
-            </Text>
+            <Text style={styles.title}>{t('profilesList.title')}</Text>
+            <Text style={styles.subtitle}>{t('profilesList.subtitle')}</Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={numColumns > 1 ? { flex: 1, padding: spacing.xs } : undefined}>
-            <ProfileCard type={item} />
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const v3 = TYPES_V3[item.num as EnneaType];
+          const localizedName = v3 ? getTypeText(v3, 'name', locale) : item.name;
+          return (
+            <View style={numColumns > 1 ? { flex: 1, padding: spacing.xs } : undefined}>
+              <ProfileCard type={item} name={localizedName} />
+            </View>
+          );
+        }}
       />
     </View>
   );

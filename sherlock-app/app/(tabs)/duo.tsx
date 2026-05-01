@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT, DUO_PARENT_VIEW, DUO_PEERS_VIEW } from '../../constants/duo';
+import EnComingSoonBanner from '../../components/EnComingSoonBanner';
 
 // ── Type metadata ──────────────────────────────────────────────
 const TYPE_COLORS = [
@@ -317,6 +318,8 @@ export default function DuoScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <EnComingSoonBanner />
+
         {/* ── Selectors ── */}
         <View style={styles.selectorsRow}>
 

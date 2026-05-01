@@ -4,11 +4,14 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
 import { TYPE_WINGS, getWing } from '../../../constants/wings';
+import { useT } from '../../../i18n';
+import EnComingSoonBanner from '../../../components/EnComingSoonBanner';
 
 export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const typeIndex = parseInt(id ?? '1', 10) - 1;
   const type = TYPES[typeIndex];
+  const { t } = useT();
 
   // ── Wing selection (no persistence — resets on each open) ──
   // null = base type (no wing); number = wing type number
@@ -17,7 +20,7 @@ export default function ProfileDetailScreen() {
   if (!type) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Profil introuvable.</Text>
+        <Text style={styles.errorText}>{t('profile.notFound')}</Text>
       </View>
     );
   }
@@ -41,9 +44,12 @@ export default function ProfileDetailScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.topBarTitle}>Profil</Text>
+        <Text style={styles.topBarTitle}>{t('profile.pageTitle')}</Text>
         <View style={styles.backBtn} />
       </View>
+
+      {/* EN coming soon banner — only shows in EN mode */}
+      <EnComingSoonBanner />
 
       {/* Hero */}
       <View style={styles.header}>
@@ -112,43 +118,43 @@ export default function ProfileDetailScreen() {
 
       {/* Portrait */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Portrait</Text>
+        <Text style={styles.sectionTitle}>{t('profile.portraitTitle')}</Text>
         <Text style={styles.sectionBody}>{displayMetaphor}</Text>
       </View>
 
-      {/* La mécanique intérieure (NON affecté par l'aile — ce sont les fondations du type) */}
+      {/* Inner mechanics */}
       {type.belief && type.compulsion && type.virtue && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>La mécanique intérieure</Text>
+          <Text style={styles.sectionTitle}>{t('profile.mechanicsTitle')}</Text>
 
-          {/* Croyance racine */}
+          {/* Belief */}
           <View style={styles.beliefCard}>
-            <Text style={styles.beliefLabel}>SA CROYANCE RACINE</Text>
+            <Text style={styles.beliefLabel}>{t('profile.beliefLabel')}</Text>
             <Text style={styles.beliefText}>« {type.belief} »</Text>
           </View>
 
-          {/* Identité cristallisée */}
+          {/* Identity */}
           {type.identity && (
             <View style={styles.identityRow}>
-              <Text style={styles.identityLabel}>Son identité :</Text>
+              <Text style={styles.identityLabel}>{t('profile.identityLabel')}</Text>
               <Text style={styles.identityText}>« {type.identity} »</Text>
             </View>
           )}
 
-          {/* Compulsion → Vertu (le mouvement de transformation) */}
+          {/* Compulsion → Virtue */}
           <View style={styles.dynamicBox}>
             <View style={[styles.poleCard, styles.poleCompulsion]}>
-              <Text style={styles.poleLabel}>SA COMPULSION</Text>
+              <Text style={styles.poleLabel}>{t('profile.compulsionLabel')}</Text>
               <Text style={styles.poleName}>{type.compulsion.name}</Text>
               <Text style={styles.poleDesc}>{type.compulsion.desc}</Text>
             </View>
 
             <View style={styles.arrowRow}>
-              <Text style={styles.arrowText}>↓ chemin de libération ↓</Text>
+              <Text style={styles.arrowText}>{t('profile.pathToFreedom')}</Text>
             </View>
 
             <View style={[styles.poleCard, styles.poleVirtue, { borderColor: type.color }]}>
-              <Text style={[styles.poleLabel, { color: type.color }]}>SA VERTU</Text>
+              <Text style={[styles.poleLabel, { color: type.color }]}>{t('profile.virtueLabel')}</Text>
               <Text style={styles.poleName}>{type.virtue.name}</Text>
               <Text style={styles.poleDesc}>{type.virtue.desc}</Text>
             </View>
@@ -156,51 +162,49 @@ export default function ProfileDetailScreen() {
         </View>
       )}
 
-      {/* Mission libérée */}
+      {/* Liberated mission */}
       {type.missionLibre && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quand il se libère</Text>
+          <Text style={styles.sectionTitle}>{t('profile.liberatedTitle')}</Text>
           <Text style={styles.sectionBody}>{type.missionLibre}</Text>
         </View>
       )}
 
-      {/* Intégration & Désintégration (NON affecté par l'aile — ce sont des dynamiques du type de base) */}
+      {/* Integration & Disintegration */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Intégration & Désintégration</Text>
+        <Text style={styles.sectionTitle}>{t('profile.arrowsTitle')}</Text>
         <View style={styles.integrationBox}>
           <Text style={styles.integrationLabel}>
-            Intégration vers le type {type.integration.toward}
+            {t('profile.integrationToward', { n: type.integration.toward })}
           </Text>
           <Text style={styles.integrationDesc}>{type.integration.desc}</Text>
         </View>
         <View style={styles.integrationBox}>
           <Text style={styles.integrationLabel}>
-            Désintégration vers le type {type.disintegration.toward}
+            {t('profile.disintegrationToward', { n: type.disintegration.toward })}
           </Text>
           <Text style={styles.integrationDesc}>{type.disintegration.desc}</Text>
         </View>
       </View>
 
-      {/* Tranches d'âge */}
+      {/* Age bands */}
       {(['5-8', '8-12', '13-16'] as const).map((ageKey) => {
-        const labels: Record<string, string> = {
-          '5-8': 'De 5 à 8 ans',
-          '8-12': 'De 8 à 12 ans',
-          '13-16': 'De 13 à 16 ans',
+        const labelMap: Record<string, string> = {
+          '5-8': t('profile.age58'),
+          '8-12': t('profile.age812'),
+          '13-16': t('profile.age1316'),
         };
         return (
           <View key={ageKey} style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels[ageKey]}</Text>
+            <Text style={styles.sectionTitle}>{labelMap[ageKey]}</Text>
             <Text style={styles.sectionBody}>{displayAges[ageKey]}</Text>
           </View>
         );
       })}
 
-      {/* Clés */}
+      {/* Keys */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Trois clés pour accompagner votre enfant
-        </Text>
+        <Text style={styles.sectionTitle}>{t('profile.keysTitle')}</Text>
         {displayKeys.map((key, index) => (
           <View key={index} style={styles.keyCard}>
             <View style={styles.keyNumberCircle}>

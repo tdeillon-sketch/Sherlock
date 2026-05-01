@@ -10,6 +10,7 @@ import {
   type EnqueteCase, type CitationCase, type FauxAmisCase, type DetailCase,
 } from '../../constants/dossiers';
 import { useDossier, getRankInfo } from '../../hooks/useDossier';
+import EnComingSoonBanner from '../../components/EnComingSoonBanner';
 
 // ─────────────────────────────────────────────
 //  Petits composants réutilisables
@@ -724,6 +725,8 @@ function HubScreen({
 }) {
   return (
     <ScrollView style={styles.hubScroll} contentContainerStyle={styles.hubContent}>
+      <EnComingSoonBanner />
+
       {/* Hero */}
       <View style={styles.hubHero}>
         <Text style={styles.hubHeroTitle}>Les Dossiers Sherlock</Text>

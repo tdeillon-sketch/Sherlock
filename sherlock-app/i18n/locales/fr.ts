@@ -171,6 +171,39 @@ export const fr = {
     languageFr: 'Français',
     languageEn: 'English',
   },
+
+  // Profiles list page
+  profilesList: {
+    title: "Les 9 profils de l'Ennéagramme",
+    subtitle: 'Découvrez chaque type pour mieux comprendre votre enfant',
+  },
+
+  // Profile detail page
+  profile: {
+    notFound: 'Profil introuvable.',
+    pageTitle: 'Profil',
+    portraitTitle: 'Portrait',
+    mechanicsTitle: 'La mécanique intérieure',
+    beliefLabel: 'SA CROYANCE RACINE',
+    identityLabel: 'Son identité :',
+    compulsionLabel: 'SA COMPULSION',
+    virtueLabel: 'SA VERTU',
+    pathToFreedom: '↓ chemin de libération ↓',
+    liberatedTitle: 'Quand il se libère',
+    arrowsTitle: 'Intégration & Désintégration',
+    integrationToward: 'Intégration vers le type {{n}}',
+    disintegrationToward: 'Désintégration vers le type {{n}}',
+    keysTitle: 'Trois clés pour accompagner votre enfant',
+    age58: 'De 5 à 8 ans',
+    age812: 'De 8 à 12 ans',
+    age1316: 'De 13 à 16 ans',
+  },
+
+  // Banner for sections only available in French (Profiles content, Duo, Case files)
+  enComingSoon: {
+    label: 'EN CONTENU EN ANGLAIS À VENIR',
+    text: 'Cette section est encore disponible uniquement en français. La traduction anglaise est en cours.',
+  },
 };
 
 export type LocaleKeys = typeof fr;

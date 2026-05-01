@@ -160,4 +160,37 @@ export const en = {
     languageFr: 'Français',
     languageEn: 'English',
   },
+
+  // Profiles list page
+  profilesList: {
+    title: 'The 9 Enneagram profiles',
+    subtitle: 'Discover each type to better understand your child',
+  },
+
+  // Profile detail page
+  profile: {
+    notFound: 'Profile not found.',
+    pageTitle: 'Profile',
+    portraitTitle: 'Portrait',
+    mechanicsTitle: 'Inner mechanics',
+    beliefLabel: 'CORE BELIEF',
+    identityLabel: 'Their identity:',
+    compulsionLabel: 'COMPULSION',
+    virtueLabel: 'VIRTUE',
+    pathToFreedom: '↓ path to freedom ↓',
+    liberatedTitle: 'When they free themselves',
+    arrowsTitle: 'Integration & Disintegration',
+    integrationToward: 'Integration toward type {{n}}',
+    disintegrationToward: 'Disintegration toward type {{n}}',
+    keysTitle: 'Three keys to support your child',
+    age58: 'Ages 5 to 8',
+    age812: 'Ages 8 to 12',
+    age1316: 'Ages 13 to 16',
+  },
+
+  // Banner for sections still in French (Profiles content, Duo, Case files)
+  enComingSoon: {
+    label: '🇬🇧 ENGLISH CONTENT COMING SOON',
+    text: 'This section is currently available in French only. English translation is in progress — the rich content (book chapters, duo dynamics, case files) requires careful work and will land in a future update. For now, you can read the French version below.',
+  },
 };
