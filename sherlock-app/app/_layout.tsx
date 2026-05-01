@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AuthScreen from '../components/AuthScreen';
+import { LocaleProvider } from '../i18n';
 import {
   onAuthChange, getUserData, updateLastSeen, isThirdPartySignedIn,
 } from '../constants/firebase';
@@ -72,11 +73,17 @@ export default function RootLayout() {
 
   // ── Sign-in screen (Google + Apple) ──
   if (!signedIn) {
-    return <AuthScreen onSuccess={() => setSignedIn(true)} />;
+    return (
+      <LocaleProvider>
+        <AuthScreen onSuccess={() => setSignedIn(true)} />
+      </LocaleProvider>
+    );
   }
 
   // ── Authenticated: render the app ──
   return (
-    <Stack screenOptions={{ headerShown: false }} />
+    <LocaleProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </LocaleProvider>
   );
 }

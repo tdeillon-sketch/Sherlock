@@ -15,9 +15,11 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn,
 } from '../constants/firebase';
+import { useT } from '../i18n';
 
 export default function AccountScreen() {
   const [busy, setBusy] = useState<null | 'signout' | 'delete'>(null);
+  const { t, locale, setLocale } = useT();
 
   const user = auth.currentUser;
   const provider = isAppleSignedIn(user) ? 'Apple'
@@ -126,6 +128,37 @@ export default function AccountScreen() {
         )}
       </View>
 
+      {/* ── Language selector ── */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('account.languageSection')}</Text>
+        <View style={styles.langRow}>
+          <Pressable
+            onPress={() => setLocale('fr')}
+            style={({ pressed }) => [
+              styles.langBtn,
+              locale === 'fr' && styles.langBtnActive,
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <Text style={[styles.langBtnText, locale === 'fr' && styles.langBtnTextActive]}>
+              🇫🇷  {t('account.languageFr')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setLocale('en')}
+            style={({ pressed }) => [
+              styles.langBtn,
+              locale === 'en' && styles.langBtnActive,
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <Text style={[styles.langBtnText, locale === 'en' && styles.langBtnTextActive]}>
+              🇬🇧  {t('account.languageEn')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
       {/* ── Sign out ── */}
       <Pressable
         onPress={handleSignOut}
@@ -185,6 +218,24 @@ const styles = StyleSheet.create({
   },
   backBtnText: { fontFamily: fonts.sans, fontSize: 28, color: colors.text, lineHeight: 32 },
   topTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.text },
+
+  langRow: {
+    flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md,
+  },
+  langBtn: {
+    flex: 1,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    backgroundColor: colors.bgLight,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center',
+  },
+  langBtnActive: {
+    backgroundColor: colors.accentFill,
+    borderColor: colors.accent,
+  },
+  langBtnText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft },
+  langBtnTextActive: { color: colors.accent, fontWeight: '700' },
 
   card: {
     marginHorizontal: spacing.md,

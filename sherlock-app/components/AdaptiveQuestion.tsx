@@ -14,6 +14,7 @@ import type { Page } from '../hooks/useAdaptiveQuiz';
 import LikertSliderPage from './LikertSliderPage';
 import BudgetStepperPage from './BudgetStepperPage';
 import WingPage from './WingPage';
+import { useT } from '../i18n';
 
 interface Props {
   page: Page;
@@ -23,15 +24,15 @@ interface Props {
 }
 
 export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }: Props) {
+  const { t } = useT();
+
   if (page.kind === 'likert') {
     const n = pageIndex + 1;
-    const subtitle = n === 1
-      ? 'Pour chaque affirmation, à quel point ça te ressemble ?'
-      : 'On continue — glisse chaque curseur selon ta perception.';
-    const hint = 'Curseur au centre = sans avis. À droite si ça te ressemble, à gauche si non.';
+    const subtitle = n === 1 ? t('quiz.likertSubtitle1') : t('quiz.likertSubtitleN');
+    const hint = t('quiz.likertHint');
     return (
       <View style={styles.wrap}>
-        <Text style={styles.phaseLabel}>PAGE {n} · SCAN LIBRE</Text>
+        <Text style={styles.phaseLabel}>PAGE {n} · {t('quiz.likertPhase')}</Text>
         <LikertSliderPage
           stmtIds={page.stmtIds}
           responses={page.responses}
@@ -47,15 +48,15 @@ export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }:
   if (page.kind === 'budget') {
     return (
       <View style={styles.wrap}>
-        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · HIÉRARCHIE</Text>
+        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · {t('quiz.budgetPhase')}</Text>
         <BudgetStepperPage
           stmtIds={page.stmtIds}
           responses={page.responses}
           budget={page.budget}
           ageBand={ageBand}
           onChange={onChange}
-          subtitle="Répartis 10 points sur ces affirmations"
-          hint="Tu peux aller en négatif (jusqu'à −3) pour retirer du signal. Chaque point consomme du budget."
+          subtitle={t('quiz.budgetSubtitle')}
+          hint={t('quiz.budgetHint')}
         />
       </View>
     );
@@ -64,7 +65,7 @@ export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }:
   if (page.kind === 'final') {
     return (
       <View style={styles.wrap}>
-        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · DÉPARTAGE</Text>
+        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · {t('quiz.finalPhase')}</Text>
         <BudgetStepperPage
           stmtIds={page.stmtIds}
           responses={page.responses}
@@ -72,8 +73,8 @@ export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }:
           ageBand={ageBand}
           onChange={onChange}
           isFinal
-          subtitle="Départage tes finalistes"
-          hint="Chaque affirmation représente un des types en tête. 6 points pour trancher."
+          subtitle={t('quiz.finalSubtitle')}
+          hint={t('quiz.finalHint')}
         />
       </View>
     );

@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { HomeIcon, QuizIcon, ProfilesIcon, GameIcon, DuoIcon } from '../../components/TabIcons';
 import { colors, fonts } from '../../constants/theme';
+import { useT } from '../../i18n';
 
 // Wraps a tab icon so the active tab gets a horizontal orange accent bar
 // flush with the TOP edge of the tab bar (not floating above the icon).
@@ -46,6 +47,7 @@ function TabIcon({
 }
 
 export default function TabLayout() {
+  const { t } = useT();
   return (
     <Tabs
       screenOptions={{
@@ -70,7 +72,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accueil',
+          title: t('tabs.home'),
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon Icon={HomeIcon} color={color} size={size} focused={focused} />
           ),
@@ -79,7 +81,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="quiz"
         options={{
-          title: 'Quiz',
+          title: t('tabs.quiz'),
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon Icon={QuizIcon} color={color} size={size} focused={focused} />
           ),
@@ -88,7 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profiles"
         options={{
-          title: 'Profils',
+          title: t('tabs.profiles'),
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon Icon={ProfilesIcon} color={color} size={size} focused={focused} />
           ),
@@ -97,7 +99,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="celebrities"
         options={{
-          title: 'Testez-vous',
+          title: t('tabs.celebrities'),
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon Icon={GameIcon} color={color} size={size} focused={focused} />
           ),
@@ -106,7 +108,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="duo"
         options={{
-          title: 'Duo',
+          title: t('tabs.duo'),
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon Icon={DuoIcon} color={color} size={size} focused={focused} />
           ),

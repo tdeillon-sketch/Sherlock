@@ -4,49 +4,27 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { CHAPTERS } from '../../constants/data';
+import { useT } from '../../i18n';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
   emoji: string;
-  title: string;
-  desc: string;
+  titleKey: string;
+  descKey: string;
   route: string;
   accent: string;
 };
 
 const TOOLS: Tool[] = [
-  {
-    emoji: '🕐',
-    title: 'Quiz',
-    desc: "Découvrez votre profil — ou celui de votre enfant — en quelques minutes.",
-    route: '/quiz',
-    accent: '#c0713a',
-  },
-  {
-    emoji: '👥',
-    title: 'Profils',
-    desc: "Explorez les 9 types de l'Ennéagramme et leurs nuances (ailes incluses).",
-    route: '/profiles',
-    accent: '#5b8a9a',
-  },
-  {
-    emoji: '🔎',
-    title: 'Testez-vous',
-    desc: "Les Dossiers Sherlock : apprenez à reconnaître les profils en jouant.",
-    route: '/celebrities',
-    accent: '#d4a03c',
-  },
-  {
-    emoji: '◎',
-    title: 'Duo',
-    desc: "Découvrez la dynamique entre deux profils, dans tous les contextes.",
-    route: '/duo',
-    accent: '#8b6ca7',
-  },
+  { emoji: '🕐', titleKey: 'tools.quizTitle',        descKey: 'tools.quizDesc',        route: '/quiz',        accent: '#c0713a' },
+  { emoji: '👥', titleKey: 'tools.profilesTitle',    descKey: 'tools.profilesDesc',    route: '/profiles',    accent: '#5b8a9a' },
+  { emoji: '🔎', titleKey: 'tools.celebritiesTitle', descKey: 'tools.celebritiesDesc', route: '/celebrities', accent: '#d4a03c' },
+  { emoji: '◎', titleKey: 'tools.duoTitle',         descKey: 'tools.duoDesc',         route: '/duo',         accent: '#8b6ca7' },
 ];
 
 export default function HomeScreen() {
   const [chaptersOpen, setChaptersOpen] = useState(false);
+  const { t } = useT();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -60,41 +38,35 @@ export default function HomeScreen() {
         {/* Top-right account button */}
         <Pressable
           onPress={() => router.push('/account' as never)}
-          accessibilityLabel="Mon compte"
+          accessibilityLabel={t('account.title')}
           style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.6 }]}
           hitSlop={10}
         >
           <Text style={styles.accountBtnIcon}>👤</Text>
         </Pressable>
 
-        <Text style={styles.heroEyebrow}>Le compagnon de lecture</Text>
-        <Text style={styles.heroTitle}>On a tous besoin{'\n'}de quelqu'un d'autre</Text>
-        <Text style={styles.heroSubtitle}>
-          Le voyage intérieur de deux parents imparfaits
-        </Text>
+        <Text style={styles.heroEyebrow}>{t('home.eyebrow')}</Text>
+        <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+        <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
       </LinearGradient>
 
       {/* ── Introduction ── */}
       <View style={styles.introSection}>
-        <Text style={styles.introTitle}>Bonjour,</Text>
+        <Text style={styles.introTitle}>{t('home.introHello')}</Text>
+        <Text style={styles.introBody}>{t('home.introP1')}</Text>
         <Text style={styles.introBody}>
-          Je m'appelle Thomas. Je suis père de deux enfants, et comme vous, j'ai longtemps eu le sentiment de ne pas comprendre ce qui se passait dans la tête de mes enfants — pourquoi l'un se braque quand je le cadre, pourquoi l'autre se replie quand je crois bien faire.
+          {t('home.introP2Pre')}
+          <Text style={{ fontStyle: 'italic' }}>{t('home.introP2Italic')}</Text>
+          {t('home.introP2Post')}
         </Text>
-        <Text style={styles.introBody}>
-          Et moi c'est Solène, leur mère. J'ai d'abord cru que mon amour suffirait à les comprendre. Puis j'ai accepté cette évidence si difficile : <Text style={{ fontStyle: 'italic' }}>nos enfants ne sont pas nous</Text>. Ils ne ressentent pas le monde comme nous, ne sont pas nourris par les mêmes choses, ne souffrent pas pour les mêmes raisons.
-        </Text>
-        <Text style={styles.introBody}>
-          Nous avons écrit ce livre — qui sort bientôt — et conçu cette application pour partager un outil qui nous a beaucoup aidés : l'Ennéagramme. Ce n'est pas l'unique manière de comprendre nos enfants, et il a ses défauts. Mais il ouvre une porte.
-        </Text>
-        <Text style={styles.introBody}>
-          Les quatre outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer votre enfant autrement, à interroger vos propres réflexes, à entamer le dialogue. Prenez ce qui vous parle, laissez le reste. Et surtout, n'oubliez jamais qu'aucun livre, aucune app, ne remplacera votre regard d'amour sur lui.
-        </Text>
-        <Text style={styles.introSignature}>— Thomas & Solène</Text>
+        <Text style={styles.introBody}>{t('home.introP3')}</Text>
+        <Text style={styles.introBody}>{t('home.introP4')}</Text>
+        <Text style={styles.introSignature}>{t('home.introSignature')}</Text>
       </View>
 
       {/* ── Tools (entrées vers les onglets) ── */}
       <View style={styles.toolsSection}>
-        <Text style={styles.sectionLabel}>Les outils</Text>
+        <Text style={styles.sectionLabel}>{t('home.toolsLabel')}</Text>
 
         {TOOLS.map((tool) => (
           <Pressable
@@ -109,8 +81,8 @@ export default function HomeScreen() {
               <Text style={styles.toolEmoji}>{tool.emoji}</Text>
             </View>
             <View style={styles.toolBody}>
-              <Text style={styles.toolTitle}>{tool.title}</Text>
-              <Text style={styles.toolDesc}>{tool.desc}</Text>
+              <Text style={styles.toolTitle}>{t(tool.titleKey)}</Text>
+              <Text style={styles.toolDesc}>{t(tool.descKey)}</Text>
             </View>
             <Text style={[styles.toolChevron, { color: tool.accent }]}>›</Text>
           </Pressable>
@@ -126,9 +98,9 @@ export default function HomeScreen() {
           <View style={styles.chaptersHeaderLeft}>
             <Text style={styles.chaptersHeaderEmoji}>📖</Text>
             <View>
-              <Text style={styles.chaptersHeaderTitle}>Chapitres du livre</Text>
+              <Text style={styles.chaptersHeaderTitle}>{t('home.chaptersTitle')}</Text>
               <Text style={styles.chaptersHeaderSub}>
-                {chaptersOpen ? 'Fermer la table des matières' : 'Ouvrir la table des matières'}
+                {chaptersOpen ? t('home.chaptersClose') : t('home.chaptersOpen')}
               </Text>
             </View>
           </View>

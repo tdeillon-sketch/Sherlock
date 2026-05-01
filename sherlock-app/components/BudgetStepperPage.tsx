@@ -9,6 +9,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
 import { findStmt } from '../constants/quiz_v3';
+import { useT, getStmtText } from '../i18n';
 
 interface Props {
   stmtIds: string[];
@@ -33,6 +34,7 @@ export default function BudgetStepperPage({
 }: Props) {
   const MIN = isFinal ? -2 : -3;
   const MAX = isFinal ? 6 : 5;
+  const { t, locale } = useT();
 
   const used = stmtIds.reduce((s, id) => s + Math.abs(responses[id] ?? 0), 0);
   const meterColor =
@@ -46,7 +48,7 @@ export default function BudgetStepperPage({
       {hint && <Text style={styles.hint}>{hint}</Text>}
 
       <View style={styles.meter}>
-        <Text style={styles.meterLabel}>Budget à distribuer</Text>
+        <Text style={styles.meterLabel}>{t('quiz.budgetUsed')}</Text>
         <Text style={[styles.meterValue, { color: meterColor }]}>
           {used} / {budget}
         </Text>
@@ -68,7 +70,7 @@ export default function BudgetStepperPage({
         const canPlus = v < MAX && !(Math.abs(v + 1) > Math.abs(v) && used >= budget);
         return (
           <View key={sid} style={styles.row}>
-            <Text style={styles.label} numberOfLines={3}>{stmt.txt}</Text>
+            <Text style={styles.label} numberOfLines={3}>{getStmtText(stmt as any, locale)}</Text>
             <View style={styles.stepper}>
               <Pressable
                 onPress={() => tryIncrement(-1)}

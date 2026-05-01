@@ -9,6 +9,7 @@ import { View, Text, StyleSheet, LayoutChangeEvent, GestureResponderEvent } from
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
 import { findStmt } from '../constants/quiz_v3';
+import { useT, getStmtText } from '../i18n';
 
 interface Props {
   stmtIds: string[];
@@ -113,6 +114,7 @@ export default function LikertSliderPage({
   subtitle,
   hint,
 }: Props) {
+  const { locale } = useT();
   return (
     <View style={styles.container}>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -124,7 +126,7 @@ export default function LikertSliderPage({
         return (
           <SliderRow
             key={sid}
-            label={stmt.txt}
+            label={getStmtText(stmt as any, locale)}
             value={responses[sid] ?? 0}
             onChange={(v) => onChange(sid, v)}
           />

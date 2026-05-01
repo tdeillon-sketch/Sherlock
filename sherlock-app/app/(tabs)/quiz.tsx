@@ -14,16 +14,17 @@ import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
 import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
 import type { QuizSubject } from '../../constants/quiz_v3';
+import { useT } from '../../i18n';
 
-const SUBJECTS: { key: QuizSubject; emoji: string; title: string; desc: string }[] = [
-  { key: 'enfant', emoji: '🧒', title: 'Mon enfant', desc: 'Vous répondez pour votre enfant ou votre ado' },
-  { key: 'self',   emoji: '🪞', title: 'Moi-même',   desc: 'Auto-évaluation pour adulte' },
+const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
+  { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
+  { key: 'self',   emoji: '🪞', titleKey: 'subject.selfTitle',  descKey: 'subject.selfDesc' },
 ];
 
-const AGE_BANDS: { min: number; emoji: string; title: string; desc: string }[] = [
-  { min: 5,  emoji: '🧸', title: '5 - 8 ans',   desc: "Petite enfance / début d'école élémentaire" },
-  { min: 9,  emoji: '🎒', title: '9 - 12 ans',  desc: 'Fin d\'élémentaire / début de collège' },
-  { min: 13, emoji: '🎧', title: '13 - 17 ans', desc: 'Adolescence' },
+const AGE_BANDS: { min: number; emoji: string; titleKey: string; descKey: string }[] = [
+  { min: 5,  emoji: '🧸', titleKey: 'age.band58',   descKey: 'age.band58Desc' },
+  { min: 9,  emoji: '🎒', titleKey: 'age.band912',  descKey: 'age.band912Desc' },
+  { min: 13, emoji: '🎧', titleKey: 'age.band1317', descKey: 'age.band1317Desc' },
 ];
 
 const TYPE_COLORS: Record<number, string> = {
@@ -34,6 +35,7 @@ const TYPE_COLORS: Record<number, string> = {
 export default function QuizScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
+  const { t } = useT();
 
   const {
     phase, subject, ageBand, currentPage, scores,
@@ -71,11 +73,8 @@ export default function QuizScreen() {
     return (
       <View style={styles.selectContainer}>
         <View style={styles.selectInner}>
-          <Text style={styles.selectTitle}>Quel test souhaitez-vous faire ?</Text>
-          <Text style={styles.selectSub}>
-            Le quiz s'adapte au fur et à mesure de vos réponses pour identifier
-            le profil le plus probable.
-          </Text>
+          <Text style={styles.selectTitle}>{t('subject.title')}</Text>
+          <Text style={styles.selectSub}>{t('subject.subtitle')}</Text>
 
           {SUBJECTS.map((s) => (
             <Pressable
@@ -85,8 +84,8 @@ export default function QuizScreen() {
             >
               <Text style={styles.modeEmoji}>{s.emoji}</Text>
               <View style={styles.modeText}>
-                <Text style={styles.modeTitle}>{s.title}</Text>
-                <Text style={styles.modeDesc}>{s.desc}</Text>
+                <Text style={styles.modeTitle}>{t(s.titleKey)}</Text>
+                <Text style={styles.modeDesc}>{t(s.descKey)}</Text>
               </View>
             </Pressable>
           ))}
@@ -94,7 +93,7 @@ export default function QuizScreen() {
           {childProfiles.length > 0 && (
             <Pressable style={styles.historyBtn} onPress={goToHistory}>
               <Text style={styles.historyBtnText}>
-                📊 Voir l'historique ({childProfiles.length} profil{childProfiles.length > 1 ? 's' : ''})
+                📊 {t('subject.history')} ({childProfiles.length})
               </Text>
             </Pressable>
           )}
@@ -111,12 +110,10 @@ export default function QuizScreen() {
       <View style={styles.selectContainer}>
         <View style={styles.selectInner}>
           <Pressable onPress={reset} style={styles.backLink}>
-            <Text style={styles.backLinkText}>‹ Retour</Text>
+            <Text style={styles.backLinkText}>‹ {t('common.back')}</Text>
           </Pressable>
-          <Text style={styles.selectTitle}>Quel âge a votre enfant ?</Text>
-          <Text style={styles.selectSub}>
-            Les questions et le langage seront adaptés à sa tranche d'âge.
-          </Text>
+          <Text style={styles.selectTitle}>{t('age.title')}</Text>
+          <Text style={styles.selectSub}>{t('age.subtitle')}</Text>
 
           {AGE_BANDS.map((b) => (
             <Pressable
@@ -126,8 +123,8 @@ export default function QuizScreen() {
             >
               <Text style={styles.modeEmoji}>{b.emoji}</Text>
               <View style={styles.modeText}>
-                <Text style={styles.modeTitle}>{b.title}</Text>
-                <Text style={styles.modeDesc}>{b.desc}</Text>
+                <Text style={styles.modeTitle}>{t(b.titleKey)}</Text>
+                <Text style={styles.modeDesc}>{t(b.descKey)}</Text>
               </View>
             </Pressable>
           ))}
@@ -228,7 +225,7 @@ export default function QuizScreen() {
         <View style={styles.navRow}>
           {pageIndex > 0 ? (
             <Pressable onPress={goToPrevPage} style={({ pressed }) => [styles.navBtn, styles.navBtnGhost, pressed && { opacity: 0.7 }]}>
-              <Text style={styles.navBtnGhostText}>← Précédent</Text>
+              <Text style={styles.navBtnGhostText}>← {t('common.previous')}</Text>
             </Pressable>
           ) : <View style={{ width: 100 }} />}
           <Pressable
@@ -242,7 +239,7 @@ export default function QuizScreen() {
             ]}
           >
             <Text style={styles.navBtnPrimaryText}>
-              {currentPage.kind === 'wing' ? 'Voir mon profil →' : 'Page suivante →'}
+              {currentPage.kind === 'wing' ? t('quiz.seeProfile') : t('quiz.nextPage')}
             </Text>
           </Pressable>
         </View>

@@ -8,6 +8,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, fonts, spacing } from '../constants/theme';
 import type { AgeBand, EnneaType } from '../constants/quiz_v3';
 import LikertSliderPage from './LikertSliderPage';
+import { useT } from '../i18n';
 
 interface Props {
   stmtIds: string[];
@@ -21,16 +22,16 @@ interface Props {
 export default function WingPage({
   stmtIds, responses, ageBand, topType, wings, onChange,
 }: Props) {
+  const { t } = useT();
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
-        <Text style={styles.bannerLabel}>DERNIÈRE ÉTAPE · AILE</Text>
+        <Text style={styles.bannerLabel}>{t('quiz.wingPhaseLabel')}</Text>
         <Text style={styles.bannerTitle}>
-          Type {topType} — quelle teinte ?
+          {t('quiz.wingTitle', { topType })}
         </Text>
         <Text style={styles.bannerHint}>
-          Deux ailes possibles pour ton Type {topType} : aile {wings[0]} ou aile {wings[1]}.
-          Celle qui te parle le plus l'emporte.
+          {t('quiz.wingHint', { topType, w1: wings[0], w2: wings[1] })}
         </Text>
       </View>
 
