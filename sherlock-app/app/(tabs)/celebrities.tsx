@@ -6,23 +6,106 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import {
-  FICHES, RANKS, TYPE_NAMES, TYPE_COLORS, FUN_FACTS,
+  FICHES, TYPE_NAMES, TYPE_COLORS, FUN_FACTS,
   type EnqueteCase, type CitationCase, type FauxAmisCase, type DetailCase,
 } from '../../constants/dossiers';
+import {
+  RANKS_EN, TYPE_NAMES_EN, FICHES_EN, CASES_EN, FUN_FACTS_EN,
+  type EnqueteCaseEn, type CitationCaseEn, type FauxAmisCaseEn, type DetailCaseEn,
+} from '../../i18n/dossiers_en';
 import { useDossier, getRankInfo } from '../../hooks/useDossier';
-import EnComingSoonBanner from '../../components/EnComingSoonBanner';
+import { useT, type Locale } from '../../i18n';
+
+// ── Locale-aware lookups (field-level fallback) ──
+// In EN, prefer the EN translation; if a field is missing, fall back to FR.
+
+function getFicheLocalized(id: string, locale: Locale) {
+  const fr = FICHES.find(f => f.id === id);
+  if (!fr) return null;
+  const en = locale === 'en' ? FICHES_EN[id] : null;
+  return {
+    ...fr,
+    name:        en?.name        ?? fr.name,
+    quote:       en?.quote       ?? fr.quote,
+    quoteSource: en?.quoteSource ?? fr.quoteSource,
+    coreFear:    en?.coreFear    ?? fr.coreFear,
+    coreDesire:  en?.coreDesire  ?? fr.coreDesire,
+    whyThisType: en?.whyThisType ?? fr.whyThisType,
+  };
+}
+
+function getTypeName(typeNum: number, locale: Locale): string {
+  if (locale === 'en' && TYPE_NAMES_EN[typeNum]) return TYPE_NAMES_EN[typeNum];
+  return TYPE_NAMES[typeNum];
+}
+
+function getRankTitle(title: string, id: number, locale: Locale): string {
+  if (locale === 'en' && RANKS_EN[id]) return RANKS_EN[id];
+  return title;
+}
+
+function getCaseLocalized<C extends EnqueteCase | CitationCase | FauxAmisCase | DetailCase>(
+  cas: C,
+  locale: Locale,
+): C {
+  if (locale !== 'en') return cas;
+  const en = CASES_EN[cas.id];
+  if (!en) return cas;
+  if (cas.format === 'enquete') {
+    const eEn = en as EnqueteCaseEn;
+    return {
+      ...cas,
+      indices: eEn.indices ?? cas.indices,
+      explanation: eEn.explanation ?? cas.explanation,
+    } as C;
+  }
+  if (cas.format === 'citation') {
+    const cEn = en as CitationCaseEn;
+    return {
+      ...cas,
+      quote: cEn.quote ?? cas.quote,
+      author: cEn.author ?? cas.author,
+      explanation: cEn.explanation ?? cas.explanation,
+    } as C;
+  }
+  if (cas.format === 'faux_amis') {
+    const fEn = en as FauxAmisCaseEn;
+    return {
+      ...cas,
+      descA: fEn.descA ?? cas.descA,
+      descB: fEn.descB ?? cas.descB,
+      keyDiff: fEn.keyDiff ?? cas.keyDiff,
+    } as C;
+  }
+  if (cas.format === 'detail') {
+    const dEn = en as DetailCaseEn;
+    return {
+      ...cas,
+      scene: dEn.scene ?? cas.scene,
+      keyDetail: dEn.keyDetail ?? cas.keyDetail,
+      explanation: dEn.explanation ?? cas.explanation,
+    } as C;
+  }
+  return cas;
+}
+
+function getFunFactLocalized(id: string, locale: Locale): string | undefined {
+  if (locale === 'en' && FUN_FACTS_EN[id]) return FUN_FACTS_EN[id];
+  return FUN_FACTS[id];
+}
 
 // ─────────────────────────────────────────────
 //  Petits composants réutilisables
 // ─────────────────────────────────────────────
 
 function TypeBadge({ typeNum, size = 'md' }: { typeNum: number; size?: 'sm' | 'md' }) {
+  const { locale } = useT();
   const color = TYPE_COLORS[typeNum] ?? colors.accent;
   const isSmall = size === 'sm';
   return (
     <View style={[styles.typeBadge, { backgroundColor: color + '33', borderColor: color }, isSmall && styles.typeBadgeSm]}>
       <Text style={[styles.typeBadgeNum, { color }, isSmall && styles.typeBadgeNumSm]}>{typeNum}</Text>
-      {!isSmall && <Text style={[styles.typeBadgeName, { color }]} numberOfLines={1}>{TYPE_NAMES[typeNum]}</Text>}
+      {!isSmall && <Text style={[styles.typeBadgeName, { color }]} numberOfLines={1}>{getTypeName(typeNum, locale)}</Text>}
     </View>
   );
 }
@@ -45,6 +128,7 @@ function XpChip({ value }: { value: number }) {
 // explicit "next rank" preview) because the hub only has 2 play cards,
 // leaving room for progression to shine. ──
 function SherlockBar({ xp }: { xp: number }) {
+  const { t, locale } = useT();
   const info = getRankInfo(xp);
   const animWidth = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -52,6 +136,8 @@ function SherlockBar({ xp }: { xp: number }) {
   }, [info.progress]);
 
   const xpToNext = info.next ? info.next.xpRequired - xp : 0;
+  const currentTitle = getRankTitle(info.current.title, info.current.id, locale);
+  const nextTitle = info.next ? getRankTitle(info.next.title, info.next.id, locale) : '';
 
   return (
     <View style={styles.sherlockBarWrap}>
@@ -59,11 +145,11 @@ function SherlockBar({ xp }: { xp: number }) {
         <View style={styles.sherlockBarRankRow}>
           <Text style={styles.sherlockBarEmoji}>{info.current.emoji}</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.sherlockBarRankLabel}>Rang actuel</Text>
-            <Text style={styles.sherlockBarRankName}>{info.current.title}</Text>
+            <Text style={styles.sherlockBarRankLabel}>{t('dossiers.rankCurrent')}</Text>
+            <Text style={styles.sherlockBarRankName}>{currentTitle}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={styles.sherlockBarXPLabel}>XP Sherlock</Text>
+            <Text style={styles.sherlockBarXPLabel}>{t('dossiers.rankXp')}</Text>
             <Text style={styles.sherlockBarXPValue}>{xp}</Text>
           </View>
         </View>
@@ -81,11 +167,11 @@ function SherlockBar({ xp }: { xp: number }) {
         {info.next ? (
           <Text style={styles.sherlockBarNext}>
             <Text style={{ color: colors.accent, fontWeight: '700' }}>{xpToNext} XP</Text>
-            {' avant '}
-            <Text style={{ color: colors.text }}>{info.next.emoji} {info.next.title}</Text>
+            {` ${t('dossiers.rankUntil')} `}
+            <Text style={{ color: colors.text }}>{info.next.emoji} {nextTitle}</Text>
           </Text>
         ) : (
-          <Text style={styles.sherlockBarNext}>🏆 Rang maximum atteint !</Text>
+          <Text style={styles.sherlockBarNext}>{t('dossiers.rankMax')}</Text>
         )}
       </View>
     </View>
@@ -137,19 +223,21 @@ function CelebrationBurst() {
 function EnqueteScreen({ cas, playState, onRevealNext, onSubmit }: {
   cas: EnqueteCase; playState: any; onRevealNext: () => void; onSubmit: (type: number) => void;
 }) {
-  const canRevealMore = playState.revealedIndices < cas.indices.length;
+  const { t, locale } = useT();
+  const localCas = getCaseLocalized(cas, locale);
+  const canRevealMore = playState.revealedIndices < localCas.indices.length;
   const answered = playState.answered;
 
   return (
     <View style={styles.playCard}>
       <View style={styles.playFormatTag}>
-        <Text style={styles.playFormatText}>🔍 Enquête progressive</Text>
+        <Text style={styles.playFormatText}>{t('dossiers.formatEnquete')}</Text>
         <Text style={styles.playXpHint}>
-          {cas.xpValues[Math.min(playState.revealedIndices - 1, cas.xpValues.length - 1)]} XP si correct
+          {t('dossiers.xpIfCorrect', { n: localCas.xpValues[Math.min(playState.revealedIndices - 1, localCas.xpValues.length - 1)] })}
         </Text>
       </View>
 
-      {cas.indices.slice(0, playState.revealedIndices).map((indice, idx) => (
+      {localCas.indices.slice(0, playState.revealedIndices).map((indice, idx) => (
         <View key={idx} style={[styles.indiceRow, idx === playState.revealedIndices - 1 && styles.indiceRowNew]}>
           <Text style={styles.indiceNum}>#{idx + 1}</Text>
           <Text style={styles.indiceText}>{indice}</Text>
@@ -159,14 +247,14 @@ function EnqueteScreen({ cas, playState, onRevealNext, onSubmit }: {
       {!answered && canRevealMore && (
         <Pressable onPress={onRevealNext} style={({ pressed }) => [styles.revealBtn, pressed && styles.revealBtnPressed]}>
           <Text style={styles.revealBtnText}>
-            Indice suivant (-{cas.xpValues[playState.revealedIndices] ?? 0} XP)
+            {t('dossiers.nextIndice', { n: localCas.xpValues[playState.revealedIndices] ?? 0 })}
           </Text>
         </Pressable>
       )}
 
       {!answered && (
         <>
-          <Text style={styles.playPrompt}>Quel est ce type ?</Text>
+          <Text style={styles.playPrompt}>{t('dossiers.promptType')}</Text>
           <TypeGrid onSelect={onSubmit} disabled={false} correct={null} selected={null} />
         </>
       )}
@@ -177,6 +265,8 @@ function EnqueteScreen({ cas, playState, onRevealNext, onSubmit }: {
 function CitationScreen({ cas, playState, onSubmit }: {
   cas: CitationCase; playState: any; onSubmit: (type: number) => void;
 }) {
+  const { t, locale } = useT();
+  const localCas = getCaseLocalized(cas, locale);
   const answered = playState.answered;
   const stableOptions = [cas.answer, ...cas.wrongOptions].sort((a, b) => {
     const seed = cas.id.charCodeAt(0);
@@ -186,16 +276,16 @@ function CitationScreen({ cas, playState, onSubmit }: {
   return (
     <View style={styles.playCard}>
       <View style={styles.playFormatTag}>
-        <Text style={styles.playFormatText}>💬 Citation révélatrice</Text>
-        <Text style={styles.playXpHint}>300 XP</Text>
+        <Text style={styles.playFormatText}>{t('dossiers.formatCitation')}</Text>
+        <Text style={styles.playXpHint}>{t('dossiers.citationXp')}</Text>
       </View>
 
       <View style={styles.quoteBlock}>
-        <Text style={styles.quoteText}>"{cas.quote}"</Text>
-        <Text style={styles.quoteAuthor}>— {cas.author}</Text>
+        <Text style={styles.quoteText}>"{localCas.quote}"</Text>
+        <Text style={styles.quoteAuthor}>— {localCas.author}</Text>
       </View>
 
-      <Text style={styles.playPrompt}>Quel type a dit cela ?</Text>
+      <Text style={styles.playPrompt}>{t('dossiers.promptCitationType')}</Text>
 
       <View style={styles.citationOptions}>
         {stableOptions.map(typeNum => {
@@ -224,15 +314,16 @@ function CitationScreen({ cas, playState, onSubmit }: {
 function TypeGrid({ onSelect, disabled, correct, selected }: {
   onSelect: (t: number) => void; disabled: boolean; correct: number | null; selected: number | null;
 }) {
+  const { locale } = useT();
   return (
     <View style={styles.typeGrid}>
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(t => {
-        const isCorrect = correct !== null && t === correct;
-        const isWrong = selected !== null && t === selected && t !== correct;
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(typeNum => {
+        const isCorrect = correct !== null && typeNum === correct;
+        const isWrong = selected !== null && typeNum === selected && typeNum !== correct;
         return (
           <Pressable
-            key={t}
-            onPress={() => !disabled && onSelect(t)}
+            key={typeNum}
+            onPress={() => !disabled && onSelect(typeNum)}
             disabled={disabled}
             style={({ pressed }) => [
               styles.typeGridBtn,
@@ -241,9 +332,9 @@ function TypeGrid({ onSelect, disabled, correct, selected }: {
               pressed && !disabled && styles.optPressed,
             ]}
           >
-            <Text style={[styles.typeGridNum, isCorrect && styles.textCorrect, isWrong && styles.textWrong]}>{t}</Text>
+            <Text style={[styles.typeGridNum, isCorrect && styles.textCorrect, isWrong && styles.textWrong]}>{typeNum}</Text>
             <Text style={[styles.typeGridName, isCorrect && styles.textCorrect]} numberOfLines={1}>
-              {TYPE_NAMES[t]}
+              {getTypeName(typeNum, locale)}
             </Text>
           </Pressable>
         );
@@ -263,6 +354,7 @@ function FauxAmisChoiceBtn({
   disabled: boolean;
   onPress: () => void;
 }) {
+  const { locale } = useT();
   const color = TYPE_COLORS[typeNum] ?? colors.accent;
   return (
     <Pressable
@@ -284,7 +376,7 @@ function FauxAmisChoiceBtn({
         adjustsFontSizeToFit
         minimumFontScale={0.8}
       >
-        {TYPE_NAMES[typeNum]}
+        {getTypeName(typeNum, locale)}
       </Text>
     </Pressable>
   );
@@ -293,6 +385,8 @@ function FauxAmisChoiceBtn({
 function FauxAmisScreen({ cas, playState, onSubmit }: {
   cas: FauxAmisCase; playState: any; onSubmit: (side: 'a' | 'b', type: number) => void;
 }) {
+  const { t, locale } = useT();
+  const localCas = getCaseLocalized(cas, locale);
   const { fauxAmisAnswers, answered } = playState;
   const correctA = answered && fauxAmisAnswers.a === cas.typeA;
   const correctB = answered && fauxAmisAnswers.b === cas.typeB;
@@ -300,16 +394,16 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
   return (
     <View style={styles.playCard}>
       <View style={styles.playFormatTag}>
-        <Text style={styles.playFormatText}>⚔️ Faux amis</Text>
-        <Text style={styles.playXpHint}>{cas.xp} XP</Text>
+        <Text style={styles.playFormatText}>{t('dossiers.formatFauxAmis')}</Text>
+        <Text style={styles.playXpHint}>{t('dossiers.xpFlat', { n: cas.xp })}</Text>
       </View>
       <Text style={styles.fauxAmisIntro}>
-        Ces deux profils sont souvent confondus. Associez chaque description au bon type.
+        {t('dossiers.fauxAmisIntro')}
       </Text>
 
       <View style={[styles.fauxAmisBlock, answered && correctA && styles.fauxAmisBlockCorrect, answered && !correctA && styles.fauxAmisBlockWrong]}>
-        <Text style={styles.fauxAmisLabel}>Profil A</Text>
-        <Text style={styles.fauxAmisDesc}>{cas.descA}</Text>
+        <Text style={styles.fauxAmisLabel}>{t('dossiers.fauxAmisProfileA')}</Text>
+        <Text style={styles.fauxAmisDesc}>{localCas.descA}</Text>
         {!answered || fauxAmisAnswers.a === null ? (
           <View style={styles.fauxAmisTypes}>
             {[cas.typeA, cas.typeB].sort().map(t => (
@@ -328,8 +422,8 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
       </View>
 
       <View style={[styles.fauxAmisBlock, answered && correctB && styles.fauxAmisBlockCorrect, answered && !correctB && styles.fauxAmisBlockWrong]}>
-        <Text style={styles.fauxAmisLabel}>Profil B</Text>
-        <Text style={styles.fauxAmisDesc}>{cas.descB}</Text>
+        <Text style={styles.fauxAmisLabel}>{t('dossiers.fauxAmisProfileB')}</Text>
+        <Text style={styles.fauxAmisDesc}>{localCas.descB}</Text>
         {!answered || fauxAmisAnswers.b === null ? (
           <View style={styles.fauxAmisTypes}>
             {[cas.typeA, cas.typeB].sort().map(t => (
@@ -349,8 +443,8 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
 
       {answered && (
         <View style={styles.keyDiffBox}>
-          <Text style={styles.keyDiffLabel}>La nuance clé</Text>
-          <Text style={styles.keyDiffText}>{cas.keyDiff}</Text>
+          <Text style={styles.keyDiffLabel}>{t('dossiers.keyDiffLabel')}</Text>
+          <Text style={styles.keyDiffText}>{localCas.keyDiff}</Text>
         </View>
       )}
     </View>
@@ -360,26 +454,28 @@ function FauxAmisScreen({ cas, playState, onSubmit }: {
 function DetailScreen({ cas, playState, onSubmit }: {
   cas: DetailCase; playState: any; onSubmit: (type: number) => void;
 }) {
+  const { t, locale } = useT();
+  const localCas = getCaseLocalized(cas, locale);
   const answered = playState.answered;
   return (
     <View style={styles.playCard}>
       <View style={styles.playFormatTag}>
-        <Text style={styles.playFormatText}>👁️ Le détail qui tue</Text>
-        <Text style={styles.playXpHint}>{cas.xp} XP</Text>
+        <Text style={styles.playFormatText}>{t('dossiers.formatDetail')}</Text>
+        <Text style={styles.playXpHint}>{t('dossiers.xpFlat', { n: cas.xp })}</Text>
       </View>
 
       <View style={styles.sceneBlock}>
-        <Text style={styles.sceneText}>{cas.scene}</Text>
+        <Text style={styles.sceneText}>{localCas.scene}</Text>
       </View>
 
-      <Text style={styles.playPrompt}>Quel type se cache derrière ce comportement ?</Text>
+      <Text style={styles.playPrompt}>{t('dossiers.promptDetailType')}</Text>
 
       {!answered ? (
         <TypeGrid onSelect={onSubmit} disabled={false} correct={null} selected={null} />
       ) : (
         <View style={styles.detailReveal}>
-          <Text style={styles.detailKeyLabel}>Le détail révélateur</Text>
-          <Text style={styles.detailKeyText}>{cas.keyDetail}</Text>
+          <Text style={styles.detailKeyLabel}>{t('dossiers.detailKeyLabel')}</Text>
+          <Text style={styles.detailKeyText}>{localCas.keyDetail}</Text>
         </View>
       )}
     </View>
@@ -397,20 +493,23 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
   onBack: () => void;
   onQuit: () => void;
 }) {
+  const { t, locale } = useT();
   const c = playState.currentCase;
   const ficheId = (c as any).ficheId as string | undefined;
-  const fiche = ficheId ? FICHES.find(f => f.id === ficheId) : null;
+  const fiche = ficheId ? getFicheLocalized(ficheId, locale) : null;
   const answerType = c.format === 'faux_amis' ? null : (c as any).answer as number;
-  const funFact = ficheId ? FUN_FACTS[ficheId] : null;
+  const funFact = ficheId ? getFunFactLocalized(ficheId, locale) : null;
+
+  // Locale-aware case content for the explanation/keyDiff body
+  const localC = getCaseLocalized(c, locale);
+  const explanationOrKeyDiff = (localC as any).explanation ?? (localC as any).keyDiff;
 
   const mode = playState.mode as 'entrainement' | 'daily';
   // Combo banner shows during the daily mission (which is the only mode that
   // now accumulates a combo with a bonus payout at the end).
   const showCombo = mode === 'daily' && playState.comboCount >= 2;
   const isLastInDaily = mode === 'daily' && playState.casesPlayedInSession + 1 >= 3;
-  const nextLabel = isLastInDaily
-    ? 'Voir le bilan →'
-    : 'Cas suivant →';
+  const nextLabel = isLastInDaily ? t('dossiers.seeSummary') : t('dossiers.nextCase');
 
   return (
     <View style={{ flex: 1 }}>
@@ -419,7 +518,7 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
         <Text style={styles.screenTitle}>
-          {mode === 'daily' ? '🎯 Mission du jour' : '🎓 Entraînement'}
+          {mode === 'daily' ? t('dossiers.headerDaily') : t('dossiers.headerTraining')}
         </Text>
         <View style={{ width: 44 }} />
       </View>
@@ -431,7 +530,7 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
           <Text style={styles.revealResultIconBig}>{playState.correct ? '✓' : '✗'}</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.revealResultLabel}>
-              {playState.correct ? 'Bien joué !' : 'Pas cette fois'}
+              {playState.correct ? t('dossiers.revealCorrect') : t('dossiers.revealWrong')}
             </Text>
             {playState.xpEarned > 0 && <XpChip value={playState.xpEarned} />}
           </View>
@@ -441,8 +540,9 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
         {showCombo && (
           <View style={styles.comboBanner}>
             <Text style={styles.comboBannerText}>
-              🔥 Combo × {playState.comboCount}
-              {playState.comboCount >= 3 ? ' — bonus garanti !' : ''}
+              {playState.comboCount >= 3
+                ? t('dossiers.comboBannerBonus', { n: playState.comboCount })
+                : t('dossiers.comboBanner', { n: playState.comboCount })}
             </Text>
           </View>
         )}
@@ -450,42 +550,42 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
         {answerType && (
           <View style={styles.revealTypeRow}>
             <TypeBadge typeNum={answerType} />
-            <Text style={styles.revealTypeName}>{TYPE_NAMES[answerType]}</Text>
+            <Text style={styles.revealTypeName}>{getTypeName(answerType, locale)}</Text>
           </View>
         )}
 
         <View style={styles.revealExplanation}>
-          <Text style={styles.revealExplanationText}>{(c as any).explanation ?? (c as any).keyDiff}</Text>
+          <Text style={styles.revealExplanationText}>{explanationOrKeyDiff}</Text>
         </View>
 
-        {/* Le saviez-vous ? */}
+        {/* Did you know? */}
         {funFact && (
           <View style={styles.funFactCard}>
-            <Text style={styles.funFactLabel}>💡 Le saviez-vous ?</Text>
+            <Text style={styles.funFactLabel}>{t('dossiers.funFactLabel')}</Text>
             <Text style={styles.funFactText}>{funFact}</Text>
           </View>
         )}
 
-        {/* Fiche débloquée */}
+        {/* Suspect file unlocked */}
         {fiche && playState.correct && (
           <Pressable onPress={() => onViewFiche(fiche.id)} style={styles.ficheUnlockCard}>
             <View style={[styles.ficheUnlockDot, { backgroundColor: TYPE_COLORS[fiche.type] }]} />
             <View style={styles.ficheUnlockInfo}>
-              <Text style={styles.ficheUnlockLabel}>Fiche ajoutée à votre Pokédex</Text>
+              <Text style={styles.ficheUnlockLabel}>{t('dossiers.ficheUnlockLabel')}</Text>
               <Text style={styles.ficheUnlockName}>{fiche.name}</Text>
             </View>
             <Text style={styles.ficheUnlockArrow}>›</Text>
           </Pressable>
         )}
 
-        {/* Boutons */}
+        {/* Buttons */}
         <Pressable onPress={onNext} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
           <Text style={styles.nextBtnText}>{nextLabel}</Text>
         </Pressable>
 
         {mode === 'entrainement' && (
           <Pressable onPress={onQuit} style={styles.quitBtn}>
-            <Text style={styles.quitBtnText}>Arrêter l'entraînement</Text>
+            <Text style={styles.quitBtnText}>{t('dossiers.quitTraining')}</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -503,52 +603,53 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
 function SessionSummaryScreen({ summary, onHome, onEntrainement }: {
   summary: any; onHome: () => void; onEntrainement: () => void;
 }) {
+  const { t } = useT();
   const allCorrect = summary.correct === summary.cases;
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.screenHeader}>
         <View style={{ width: 44 }} />
-        <Text style={styles.screenTitle}>🎯 Mission du jour</Text>
+        <Text style={styles.screenTitle}>{t('dossiers.headerDaily')}</Text>
         <View style={{ width: 44 }} />
       </View>
       <ScrollView contentContainerStyle={styles.summaryContent}>
         {allCorrect && <CelebrationBurst />}
         <Text style={styles.summaryEmoji}>{allCorrect ? '🏆' : '✓'}</Text>
         <Text style={styles.summaryTitle}>
-          {allCorrect ? 'Sans-faute !' : 'Mission validée'}
+          {allCorrect ? t('dossiers.summaryTitleAll') : t('dossiers.summaryTitle')}
         </Text>
-        <Text style={styles.summaryScore}>{summary.correct} / {summary.cases} bonnes réponses</Text>
+        <Text style={styles.summaryScore}>{t('dossiers.summaryScore', { correct: summary.correct, total: summary.cases })}</Text>
 
         <View style={styles.summaryStats}>
           <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>XP gagné</Text>
+            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryXpEarned')}</Text>
             <Text style={styles.summaryStatValue}>+{summary.xpTotal} XP</Text>
           </View>
           {summary.comboBonus > 0 && (
             <View style={styles.summaryStatRow}>
-              <Text style={styles.summaryStatLabel}>🔥 Bonus combo</Text>
+              <Text style={styles.summaryStatLabel}>{t('dossiers.summaryComboBonus')}</Text>
               <Text style={[styles.summaryStatValue, { color: colors.accent }]}>+{summary.comboBonus} XP</Text>
             </View>
           )}
           <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>Meilleur combo</Text>
+            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryBestCombo')}</Text>
             <Text style={styles.summaryStatValue}>× {summary.bestCombo}</Text>
           </View>
           <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>🔥 Streak</Text>
-            <Text style={[styles.summaryStatValue, { color: colors.accent }]}>+1 jour</Text>
+            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryStreak')}</Text>
+            <Text style={[styles.summaryStatValue, { color: colors.accent }]}>{t('dossiers.summaryStreakValue')}</Text>
           </View>
         </View>
 
         <Text style={styles.summaryTomorrow}>
-          Revenez demain pour une nouvelle mission. D'ici là, vous pouvez continuer en Entraînement.
+          {t('dossiers.summaryTomorrow')}
         </Text>
 
         <Pressable onPress={onEntrainement} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
-          <Text style={styles.nextBtnText}>🎓 Continuer en entraînement</Text>
+          <Text style={styles.nextBtnText}>{t('dossiers.summaryContinueTraining')}</Text>
         </Pressable>
         <Pressable onPress={onHome} style={styles.quitBtn}>
-          <Text style={styles.quitBtnText}>Retour à l'accueil</Text>
+          <Text style={styles.quitBtnText}>{t('dossiers.summaryHome')}</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -562,9 +663,11 @@ function SessionSummaryScreen({ summary, onHome, onEntrainement }: {
 function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
   unlockedFiches: string[]; onFiche: (id: string) => void; onBack: () => void;
 }) {
+  const { t, locale } = useT();
   const { width } = useWindowDimensions();
   const cols = width >= 768 ? 6 : 4;
   const cellSize = (width - spacing.md * 2 - (cols - 1) * spacing.sm) / cols;
+  const remaining = FICHES.length - unlockedFiches.length;
 
   return (
     <ScrollView style={styles.collectionScroll} contentContainerStyle={styles.collectionContent}>
@@ -572,7 +675,7 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
         <Pressable onPress={onBack} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.screenTitle}>Pokédex</Text>
+        <Text style={styles.screenTitle}>{t('dossiers.pokedexHeaderTitle')}</Text>
         <Text style={styles.collectionCount}>{unlockedFiches.length}/{FICHES.length}</Text>
       </View>
 
@@ -588,8 +691,10 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
         </View>
         <Text style={styles.pokedexHintText}>
           {unlockedFiches.length === FICHES.length
-            ? '🏆 Pokédex complété !'
-            : `${FICHES.length - unlockedFiches.length} suspect${FICHES.length - unlockedFiches.length > 1 ? 's' : ''} encore à découvrir`}
+            ? t('dossiers.pokedexComplete')
+            : (remaining > 1
+                ? t('dossiers.pokedexRemainingPlural', { n: remaining })
+                : t('dossiers.pokedexRemaining', { n: remaining }))}
         </Text>
       </View>
 
@@ -601,7 +706,7 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
             <View style={styles.collectionTypeHeader}>
               <View style={[styles.collectionTypeDot, { backgroundColor: TYPE_COLORS[typeNum] }]} />
               <Text style={styles.collectionTypeLabel}>
-                Type {typeNum} — {TYPE_NAMES[typeNum]}
+                {t('dossiers.pokedexTypeLabel', { n: typeNum, name: getTypeName(typeNum, locale) })}
               </Text>
               <Text style={styles.collectionTypeCount}>{typeUnlocked}/{typeFiches.length}</Text>
             </View>
@@ -609,6 +714,8 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
             <View style={styles.pokedexGrid}>
               {typeFiches.map(fiche => {
                 const unlocked = unlockedFiches.includes(fiche.id);
+                const localFiche = unlocked ? getFicheLocalized(fiche.id, locale) : null;
+                const displayName = localFiche?.name ?? fiche.name;
                 return (
                   <Pressable
                     key={fiche.id}
@@ -625,9 +732,9 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
                     {unlocked ? (
                       <>
                         <Text style={[styles.pokedexInitial, { color: TYPE_COLORS[typeNum] }]}>
-                          {fiche.name.charAt(0)}
+                          {displayName.charAt(0)}
                         </Text>
-                        <Text style={styles.pokedexName} numberOfLines={1}>{fiche.name}</Text>
+                        <Text style={styles.pokedexName} numberOfLines={1}>{displayName}</Text>
                       </>
                     ) : (
                       <>
@@ -651,10 +758,11 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
 // ─────────────────────────────────────────────
 
 function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void }) {
-  const fiche = FICHES.find(f => f.id === ficheId);
+  const { t, locale } = useT();
+  const fiche = getFicheLocalized(ficheId, locale);
   if (!fiche) return null;
   const typeColor = TYPE_COLORS[fiche.type];
-  const funFact = FUN_FACTS[fiche.id];
+  const funFact = getFunFactLocalized(fiche.id, locale);
 
   return (
     <ScrollView style={styles.ficheScroll} contentContainerStyle={styles.ficheContent}>
@@ -662,7 +770,7 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
         <Pressable onPress={onBack} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.screenTitle}>Fiche</Text>
+        <Text style={styles.screenTitle}>{t('dossiers.ficheTitle')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -683,24 +791,24 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
 
       <View style={styles.ficheInfoCard}>
         <View style={styles.ficheInfoRow}>
-          <Text style={styles.ficheInfoLabel}>Peur centrale</Text>
+          <Text style={styles.ficheInfoLabel}>{t('dossiers.ficheCoreFear')}</Text>
           <Text style={styles.ficheInfoValue}>{fiche.coreFear}</Text>
         </View>
         <View style={styles.ficheInfoDivider} />
         <View style={styles.ficheInfoRow}>
-          <Text style={styles.ficheInfoLabel}>Désir profond</Text>
+          <Text style={styles.ficheInfoLabel}>{t('dossiers.ficheCoreDesire')}</Text>
           <Text style={styles.ficheInfoValue}>{fiche.coreDesire}</Text>
         </View>
       </View>
 
       <View style={styles.ficheWhyCard}>
-        <Text style={styles.ficheWhyLabel}>Pourquoi ce type ?</Text>
+        <Text style={styles.ficheWhyLabel}>{t('dossiers.ficheWhy')}</Text>
         <Text style={styles.ficheWhyText}>{fiche.whyThisType}</Text>
       </View>
 
       {funFact && (
         <View style={styles.funFactCard}>
-          <Text style={styles.funFactLabel}>💡 Le saviez-vous ?</Text>
+          <Text style={styles.funFactLabel}>{t('dossiers.funFactLabel')}</Text>
           <Text style={styles.funFactText}>{funFact}</Text>
         </View>
       )}
@@ -723,14 +831,13 @@ function HubScreen({
   onStartEntrainement: () => void;
   onCollection: () => void;
 }) {
+  const { t } = useT();
   return (
     <ScrollView style={styles.hubScroll} contentContainerStyle={styles.hubContent}>
-      <EnComingSoonBanner />
-
       {/* Hero */}
       <View style={styles.hubHero}>
-        <Text style={styles.hubHeroTitle}>Les Dossiers Sherlock</Text>
-        <Text style={styles.hubHeroSub}>Apprenez à reconnaître les profils en jouant</Text>
+        <Text style={styles.hubHeroTitle}>{t('dossiers.hubTitle')}</Text>
+        <Text style={styles.hubHeroSub}>{t('dossiers.hubSubtitle')}</Text>
       </View>
 
       {/* Sherlock rank card — XP progression + next rank preview */}
@@ -741,11 +848,15 @@ function HubScreen({
         <View style={styles.streakWrap}>
           <Text style={styles.streakIcon}>🔥</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.streakNumber}>{progress.streak} jour{progress.streak > 1 ? 's' : ''} d'affilée</Text>
+            <Text style={styles.streakNumber}>
+              {progress.streak > 1
+                ? t('dossiers.streakDays', { n: progress.streak })
+                : t('dossiers.streakDay', { n: progress.streak })}
+            </Text>
             <Text style={styles.streakSub}>
               {isDailyAvailable
-                ? "Faites la mission du jour pour ne pas perdre votre série"
-                : "Mission du jour validée — à demain !"}
+                ? t('dossiers.streakActive')
+                : t('dossiers.streakDone')}
             </Text>
           </View>
         </View>
@@ -772,15 +883,15 @@ function HubScreen({
           <View style={styles.modeRow}>
             <Text style={styles.modeEmoji}>🎯</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>Mission du jour</Text>
+              <Text style={styles.modeTitle}>{t('dossiers.dailyTitle')}</Text>
               <Text style={styles.modeDesc}>
                 {isDailyAvailable
-                  ? "3 cas enchaînés · combo ×3 = bonus · streak +1"
-                  : "✓ Validée pour aujourd'hui — revenez demain"}
+                  ? t('dossiers.dailyDescAvailable')
+                  : t('dossiers.dailyDescDone')}
               </Text>
               {isDailyAvailable && progress.bestCombo > 0 && (
                 <Text style={[styles.modeStat, { color: colors.white }]}>
-                  🔥 Meilleur combo : × {progress.bestCombo}
+                  {t('dossiers.dailyBestCombo', { n: progress.bestCombo })}
                 </Text>
               )}
             </View>
@@ -789,7 +900,7 @@ function HubScreen({
         </LinearGradient>
       </Pressable>
 
-      {/* Mode Entraînement */}
+      {/* Training mode */}
       <Pressable
         onPress={onStartEntrainement}
         style={({ pressed }) => [styles.modeCard, pressed && { opacity: 0.85 }]}
@@ -800,15 +911,15 @@ function HubScreen({
               <Text style={styles.modeEmoji}>🎓</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>Entraînement</Text>
-              <Text style={styles.modeDesc}>Cas en continu, à votre rythme. Apprenez sans pression.</Text>
+              <Text style={styles.modeTitle}>{t('dossiers.trainingTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('dossiers.trainingDesc')}</Text>
             </View>
             <Text style={[styles.modeChevron, { color: '#5b8a9a' }]}>→</Text>
           </View>
         </View>
       </Pressable>
 
-      {/* Pokédex shortcut */}
+      {/* Casebook shortcut */}
       <Pressable
         onPress={onCollection}
         style={({ pressed }) => [styles.modeCard, pressed && { opacity: 0.85 }]}
@@ -819,9 +930,9 @@ function HubScreen({
               <Text style={styles.modeEmoji}>📔</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>Pokédex</Text>
+              <Text style={styles.modeTitle}>{t('dossiers.pokedexTitle')}</Text>
               <Text style={styles.modeDesc}>
-                {progress.unlockedFiches.length} / {FICHES.length} suspects découverts
+                {t('dossiers.pokedexDesc', { unlocked: progress.unlockedFiches.length, total: FICHES.length })}
               </Text>
             </View>
             <Text style={[styles.modeChevron, { color: '#d4a03c' }]}>→</Text>
@@ -844,14 +955,15 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
   onConfirm: () => void;
   onBack: () => void;
 }) {
+  const { t } = useT();
   const c = playState.currentCase;
   const mode = playState.mode as 'entrainement' | 'daily';
 
-  // Daily shows "Cas X / 3" progress (the mission is a 3-case session).
-  // Entrainement is continuous so we just show the static title.
+  // Daily shows "Case X / 3" progress (the mission is a 3-case session).
+  // Training is continuous so we just show the static title.
   const headerTitle = mode === 'daily'
-    ? `🎯 Cas ${playState.casesPlayedInSession + 1} / 3`
-    : '🎓 Entraînement';
+    ? t('dossiers.headerDailyCase', { n: playState.casesPlayedInSession + 1 })
+    : t('dossiers.headerTraining');
 
   return (
     <View style={styles.playingContainer}>
@@ -883,7 +995,7 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
 
         {playState.answered && (
           <Pressable onPress={onConfirm} style={({ pressed }) => [styles.confirmBtn, pressed && { opacity: 0.85 }]}>
-            <Text style={styles.confirmBtnText}>Voir le résultat →</Text>
+            <Text style={styles.confirmBtnText}>{t('dossiers.seeResult')}</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -896,6 +1008,7 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
 // ─────────────────────────────────────────────
 
 export default function CelebritiesScreen() {
+  const { t } = useT();
   const {
     screen, progress, playState, sessionSummary, selectedFicheId, loading,
     openCollection, openFiche, goBack, goHub,
@@ -906,7 +1019,7 @@ export default function CelebritiesScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Chargement…</Text>
+        <Text style={styles.loadingText}>{t('dossiers.loading')}</Text>
       </View>
     );
   }
