@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { DuoContext, getDuoPair, DUO_PAIRS_CONTEXT, DUO_PARENT_VIEW, DUO_PEERS_VIEW } from '../../constants/duo';
 import { DUO_DATA_EN, DUO_PAIRS_CONTEXT_EN } from '../../i18n/duo_en';
+import { DUO_PARENT_VIEW_EN, DUO_PEERS_VIEW_EN } from '../../i18n/duo_views_en';
 import { useT } from '../../i18n';
 
 // ── Type metadata ──────────────────────────────────────────────
@@ -290,14 +291,33 @@ export default function DuoScreen() {
     },
   } : null;
 
-  // ── Perspective views (PARENT_VIEW / PEERS_VIEW) are FR-only for now. ──
-  // In EN, we skip them entirely and surface the base bilingual content
-  // through the symmetric aApporte/bApporte sections (same as adult context).
+  // ── Perspective views with field-level fallback (EN ?? FR) ──
+  // Parent-child context → DUO_PARENT_VIEW (parentSoutien/parentChallenge)
+  // Peers context → DUO_PEERS_VIEW (parent observing two kids/teens)
   const perspectiveView = (() => {
-    if (isEn) return null;
     if (!pairFr) return null;
-    if (context === 'pairs') return DUO_PEERS_VIEW[pairKey] ?? null;
-    if (context === 'enfant') return DUO_PARENT_VIEW[pairKey] ?? null;
+    if (context === 'pairs') {
+      const fr = DUO_PEERS_VIEW[pairKey];
+      const en = isEn ? DUO_PEERS_VIEW_EN[pairKey] : null;
+      if (!fr && !en) return null;
+      return {
+        pointsForts: (en?.pointsForts) || fr?.pointsForts || '',
+        vigilances:  (en?.vigilances)  || fr?.vigilances  || '',
+        conseil:     (en?.conseil)     || fr?.conseil     || '',
+      };
+    }
+    if (context === 'enfant') {
+      const fr = DUO_PARENT_VIEW[pairKey];
+      const en = isEn ? DUO_PARENT_VIEW_EN[pairKey] : null;
+      if (!fr && !en) return null;
+      return {
+        pointsForts:     (en?.pointsForts)     || fr?.pointsForts     || '',
+        vigilances:      (en?.vigilances)      || fr?.vigilances      || '',
+        conseil:         (en?.conseil)         || fr?.conseil         || '',
+        parentSoutien:   (en?.parentSoutien)   || fr?.parentSoutien   || '',
+        parentChallenge: (en?.parentChallenge) || fr?.parentChallenge || '',
+      };
+    }
     return null;
   })();
 
@@ -324,9 +344,8 @@ export default function DuoScreen() {
     return pair.contexte[ctx as Exclude<DuoContext, 'pairs'>] ?? '';
   };
 
-  // In EN, force the symmetric "what A brings / what B brings" layout
-  // (since parent-perspective-specific copy is FR-only).
-  const useParentChildLayout = !isEn && context === 'enfant';
+  // Use the parent-perspective layout for parent-child context (now translated in EN too).
+  const useParentChildLayout = context === 'enfant';
 
   const contextLabelText =
     context === 'pairs'  ? t('duo.contextPairs')  :
