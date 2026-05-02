@@ -35,7 +35,7 @@ export default function AccountScreen() {
       // state and render the AuthScreen.
       router.replace('/');
     } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? 'Impossible de se déconnecter');
+      Alert.alert(t('account.signOutErrorTitle'), e?.message ?? t('account.signOutErrorBody'));
     } finally {
       setBusy(null);
     }
@@ -52,23 +52,23 @@ export default function AccountScreen() {
       const code = e?.code as string | undefined;
       if (code === 'auth/requires-recent-login') {
         Alert.alert(
-          'Reconnexion requise',
-          "Pour des raisons de sécurité, reconnectez-vous à votre compte puis relancez la suppression depuis cet écran.",
+          t('account.reauthTitle'),
+          t('account.reauthBody'),
           [
             {
-              text: 'Se reconnecter',
+              text: t('account.reauthAction'),
               onPress: async () => {
                 try { await signOut(); } catch {}
                 router.replace('/');
               },
             },
-            { text: 'Annuler', style: 'cancel' },
+            { text: t('account.cancel'), style: 'cancel' },
           ],
         );
       } else {
         Alert.alert(
-          'Suppression impossible',
-          e?.message ?? "Une erreur s'est produite. Réessayez plus tard.",
+          t('account.deleteFailedTitle'),
+          e?.message ?? t('account.deleteFailedBody'),
         );
       }
     } finally {
@@ -79,22 +79,22 @@ export default function AccountScreen() {
   const handleDelete = () => {
     if (busy) return;
     Alert.alert(
-      'Supprimer définitivement votre compte ?',
-      "Cette action est irréversible. Toutes vos données seront effacées :\n\n• Profils enfants et historiques\n• Résultats de quiz\n• Progression du Pokédex et XP Sherlock\n\nCela ne peut pas être annulé.",
+      t('account.deleteConfirmTitle'),
+      t('account.deleteConfirmBody'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('account.cancel'), style: 'cancel' },
         {
-          text: 'Supprimer définitivement',
+          text: t('account.deleteConfirmAction'),
           style: 'destructive',
           onPress: () => {
             // Second confirmation, per Apple's "prevent accidental deletion"
             Alert.alert(
-              'Êtes-vous absolument sûr ?',
-              'Dernière confirmation. Voulez-vous vraiment supprimer votre compte et toutes vos données ?',
+              t('account.deleteConfirm2Title'),
+              t('account.deleteConfirm2Body'),
               [
-                { text: 'Annuler', style: 'cancel' },
+                { text: t('account.cancel'), style: 'cancel' },
                 {
-                  text: 'Oui, supprimer',
+                  text: t('account.deleteConfirm2Action'),
                   style: 'destructive',
                   onPress: performDelete,
                 },
@@ -112,17 +112,17 @@ export default function AccountScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.topTitle}>Mon compte</Text>
+        <Text style={styles.topTitle}>{t('account.title')}</Text>
         <View style={styles.backBtn} />
       </View>
 
       {/* ── Identity card ── */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Connecté avec</Text>
+        <Text style={styles.cardLabel}>{t('account.connectedWith')}</Text>
         <Text style={styles.cardValue}>{provider}</Text>
         {user?.email && (
           <>
-            <Text style={[styles.cardLabel, { marginTop: spacing.md }]}>Email</Text>
+            <Text style={[styles.cardLabel, { marginTop: spacing.md }]}>{t('account.emailLabel')}</Text>
             <Text style={styles.cardValue}>{user.email}</Text>
           </>
         )}
@@ -171,17 +171,15 @@ export default function AccountScreen() {
         {busy === 'signout' ? (
           <ActivityIndicator color={colors.text} />
         ) : (
-          <Text style={styles.actionBtnText}>Se déconnecter</Text>
+          <Text style={styles.actionBtnText}>{t('account.signOut')}</Text>
         )}
       </Pressable>
 
       {/* ── Danger zone ── */}
       <View style={styles.dangerZone}>
-        <Text style={styles.dangerLabel}>Zone sensible</Text>
+        <Text style={styles.dangerLabel}>{t('account.dangerLabel')}</Text>
         <Text style={styles.dangerDesc}>
-          La suppression de votre compte efface définitivement vos profils enfants,
-          vos résultats de quiz, votre historique et votre progression. Cette action
-          est irréversible.
+          {t('account.dangerDesc')}
         </Text>
         <Pressable
           onPress={handleDelete}
@@ -194,7 +192,7 @@ export default function AccountScreen() {
           {busy === 'delete' ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.deleteBtnText}>Supprimer mon compte</Text>
+            <Text style={styles.deleteBtnText}>{t('account.deleteBtn')}</Text>
           )}
         </Pressable>
       </View>
