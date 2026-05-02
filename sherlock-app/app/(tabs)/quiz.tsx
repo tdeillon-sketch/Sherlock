@@ -163,8 +163,10 @@ export default function QuizScreen() {
 
   const subjectLabel =
     subject === 'self'
-      ? '🪞 Moi-même'
-      : `🧒 Mon enfant${ageBand ? ` · ${ageBand} ans` : ''}`;
+      ? t('subject.headerSelf')
+      : ageBand
+        ? t('subject.headerChildAge', { age: ageBand })
+        : t('subject.headerChild');
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
@@ -174,7 +176,7 @@ export default function QuizScreen() {
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
           <Text style={styles.legendText}>
-            {subject === 'self' ? 'Votre profil' : 'Profil de votre enfant'}
+            {subject === 'self' ? t('subject.legendSelf') : t('subject.legendChild')}
           </Text>
         </View>
       )}
@@ -439,7 +441,7 @@ function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack:
             <View style={styles.historyCardHeader}>
               <Text style={styles.historyCardName}>{p.name}</Text>
               {p.age !== undefined && (
-                <Text style={styles.historyCardAge}>{p.age} ans</Text>
+                <Text style={styles.historyCardAge}>{t('subject.yearsOld', { n: p.age })}</Text>
               )}
             </View>
 

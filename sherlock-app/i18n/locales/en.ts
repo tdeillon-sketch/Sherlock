@@ -65,6 +65,12 @@ export const en = {
     selfTitle: 'Myself',
     selfDesc: 'Self-assessment for adults',
     history: 'View history',
+    headerSelf: '🪞 Myself',
+    headerChild: '🧒 My child',
+    headerChildAge: '🧒 My child · age {{age}}',
+    legendSelf: 'Your profile',
+    legendChild: "Your child's profile",
+    yearsOld: 'age {{n}}',
   },
 
   age: {

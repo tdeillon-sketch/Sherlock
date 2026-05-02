@@ -70,6 +70,12 @@ export const fr = {
     selfTitle: 'Moi-même',
     selfDesc: 'Auto-évaluation pour adulte',
     history: 'Voir l\'historique',
+    headerSelf: '🪞 Moi-même',
+    headerChild: '🧒 Mon enfant',
+    headerChildAge: '🧒 Mon enfant · {{age}} ans',
+    legendSelf: 'Votre profil',
+    legendChild: 'Profil de votre enfant',
+    yearsOld: '{{n}} ans',
   },
 
   // Quiz: age picker

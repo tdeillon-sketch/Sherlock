@@ -58,7 +58,7 @@ function SliderRow({
 
   return (
     <View style={styles.row}>
-      <Text style={styles.label} numberOfLines={2}>{label}</Text>
+      <Text style={styles.label}>{label}</Text>
 
       <View style={styles.sliderWrap}>
         <Text style={[styles.polarity, styles.polarityLeft]}>−</Text>

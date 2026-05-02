@@ -70,7 +70,7 @@ export default function BudgetStepperPage({
         const canPlus = v < MAX && !(Math.abs(v + 1) > Math.abs(v) && used >= budget);
         return (
           <View key={sid} style={styles.row}>
-            <Text style={styles.label} numberOfLines={3}>{getStmtText(stmt as any, locale)}</Text>
+            <Text style={styles.label}>{getStmtText(stmt as any, locale)}</Text>
             <View style={styles.stepper}>
               <Pressable
                 onPress={() => tryIncrement(-1)}

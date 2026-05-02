@@ -12,9 +12,10 @@ import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
 import { TYPES as TYPES_V3 } from '../../../constants/quiz_v3';
 import type { EnneaType } from '../../../constants/quiz_v3';
+import { TYPES_EN } from '../../../i18n/types_en';
 import { useT, getTypeText } from '../../../i18n';
 
-function ProfileCard({ type, name }: { type: typeof TYPES[0]; name: string }) {
+function ProfileCard({ type, name, shortText }: { type: typeof TYPES[0]; name: string; shortText: string }) {
   return (
     <Pressable
       onPress={() => router.push(`/profiles/${type.num}`)}
@@ -27,8 +28,8 @@ function ProfileCard({ type, name }: { type: typeof TYPES[0]; name: string }) {
         <Text style={styles.circleText}>{type.num}</Text>
       </View>
       <Text style={styles.typeName}>{name}</Text>
-      <Text style={styles.typeShort} numberOfLines={3}>
-        {type.short}
+      <Text style={styles.typeShort}>
+        {shortText}
       </Text>
     </Pressable>
   );
@@ -58,9 +59,12 @@ export default function ProfilesScreen() {
         renderItem={({ item }) => {
           const v3 = TYPES_V3[item.num as EnneaType];
           const localizedName = v3 ? getTypeText(v3, 'name', locale) : item.name;
+          const localizedShort = locale === 'en'
+            ? (TYPES_EN[item.num]?.short ?? item.short)
+            : item.short;
           return (
             <View style={numColumns > 1 ? { flex: 1, padding: spacing.xs } : undefined}>
-              <ProfileCard type={item} name={localizedName} />
+              <ProfileCard type={item} name={localizedName} shortText={localizedShort} />
             </View>
           );
         }}
