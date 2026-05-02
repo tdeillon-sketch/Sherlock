@@ -32,21 +32,75 @@ export const fr = {
 
   // Home screen
   home: {
-    eyebrow: 'Le compagnon de lecture',
+    eyebrow: 'AVANT-PROPOS DU LIVRE — À PARAÎTRE',
     heroTitle: "On a tous besoin\nde quelqu'un d'autre",
     heroSubtitle: 'Le voyage intérieur de deux parents imparfaits',
-    introHello: 'Bonjour,',
-    introP1: "Je m'appelle Thomas. Je suis père de deux enfants, et comme vous, j'ai longtemps eu le sentiment de ne pas comprendre ce qui se passait dans la tête de mes enfants — pourquoi l'un se braque quand je le cadre, pourquoi l'autre se replie quand je crois bien faire.",
-    introP2Pre: "Et moi c'est Solène, leur mère. J'ai d'abord cru que mon amour suffirait à les comprendre. Puis j'ai accepté cette évidence si difficile : ",
-    introP2Italic: 'nos enfants ne sont pas nous',
-    introP2Post: ". Ils ne ressentent pas le monde comme nous, ne sont pas nourris par les mêmes choses, ne souffrent pas pour les mêmes raisons.",
-    introP3: "Nous avons écrit ce livre — qui sort bientôt — et conçu cette application pour partager un outil qui nous a beaucoup aidés : l'Ennéagramme. Ce n'est pas l'unique manière de comprendre nos enfants, et il a ses défauts. Mais il ouvre une porte.",
-    introP4: "Les quatre outils ci-dessous ne sont pas des tests à valider, ni des étiquettes à coller. Ce sont des invitations — à observer votre enfant autrement, à interroger vos propres réflexes, à entamer le dialogue. Prenez ce qui vous parle, laissez le reste. Et surtout, n'oubliez jamais qu'aucun livre, aucune app, ne remplacera votre regard d'amour sur lui.",
+
+    // Section 1 — Le seul animal
+    s1Title: 'Le seul animal',
+    s1Body1Bold: "L'homme est le seul animal qui ne sait pas élever ses petits.",
+    s1Body2: "Le veau marche en quinze minutes. Le poussin sait quoi picorer dès la sortie de l'œuf. Vous, vous tenez un nourrisson dans les bras, et personne ne vous a remis le mode d'emploi.",
+    s1Body3Pre: "Cette nudité-là, c'est notre point de départ. Pas une faille — une liberté vertigineuse. ",
+    s1Body3Italic: 'Tout est à construire.',
+
+    // Section 2 — Vos lunettes ne sont pas les leurs
+    s2Title: 'Vos lunettes ne sont pas les leurs',
+    s2Body1: 'Vous regardez votre enfant. Vous croyez le voir.',
+    s2Body2Pre: 'En réalité, vous le voyez ',
+    s2Body2Bold: 'à travers vos lunettes',
+    s2Body2Post: " — celles que la vie vous a posées sur le nez sans vous demander votre avis. Lui en a d'autres. Et votre conjoint·e encore d'autres.",
+    s2Body3Pre: "C'est ça, l'",
+    s2Body3Bold: 'Ennéagramme',
+    s2Body3Post: " : neuf façons radicalement différentes de regarder le même monde. Neuf moteurs intérieurs. Neuf manières d'aimer, de souffrir, de se braquer.",
+    s2Body4: "Ce n'est pas un test. C'est une carte.",
+
+    // Section 3 — Quand vous criez, ce n'est pas vous
+    s3Title: "Quand vous criez, ce n'est pas vous",
+    s3Body1: 'Un soir, votre enfant fait une petite bêtise. Vous explosez.',
+    s3Body2Pre: 'Trois secondes plus tard, vous vous demandez : ',
+    s3Body2Italic: "« Mais qu'est-ce qui m'a pris ? »",
+    s3Body3Pre: "Ce qui vous a pris, ce n'est pas vous. ",
+    s3Body3Bold: "C'est l'un de vos monstres.",
+    s3CorbeauName: 'Le Corbeau',
+    s3CorbeauDesc: ", qui critique tout — vous d'abord, eux ensuite.",
+    s3ChameauName: 'Le Chameau',
+    s3ChameauDesc: ', qui porte trop, et qui craque quand on lui demande encore une chose.',
+    s3RenardName: 'Le Renard',
+    s3RenardDesc: ', qui se faufile pour ne jamais rien sentir vraiment.',
+    s3Body4: "Le livre vous apprend à les reconnaître. Et à les nommer pour qu'ils cessent de parler à votre place.",
+
+    // Section 4 — Une forêt, pas une monoculture
+    s4Title: 'Une forêt, pas une monoculture',
+    s4Body1: "Une forêt avec dix essences différentes traverse la tempête. Une monoculture s'effondre au premier vent.",
+    s4Body2Pre: "C'est aussi vrai d'une famille. ",
+    s4Body2Bold: 'Plus elle accepte ses différences, plus elle tient.',
+    s4Body2Post: " Votre enfant Type 4 qui pleure devant un coucher de soleil n'est pas un problème à corriger — c'est une essence d'arbre que la forêt familiale a la chance d'avoir.",
+    s4Body3Pre: 'Votre conjoint·e qui ne « comprend pas » vos émotions ne vous aime pas moins. Il ou elle aime ',
+    s4Body3Italic: 'autrement',
+    s4Body3Post: ". Et c'est précisément ce qui rend la forêt vivante.",
+
+    // Section 5 — L'amour est un verbe
+    s5Title: "L'amour est un verbe",
+    s5Body1: "L'amour parental n'est pas un sentiment qui vous tombe dessus.",
+    s5Body2Bold: "C'est un verbe. Un choix. Un acte quotidien.",
+    s5Body3: "Aimer son enfant Type 1, ce n'est pas l'aimer comme on aimerait un Type 7. Aimer son conjoint·e Type 8, ce n'est pas l'aimer comme on aimerait un Type 9.",
+    s5Body4Pre: "Comprendre le profil de l'autre, c'est apprendre à conjuguer le verbe ",
+    s5Body4Italic: 'aimer',
+    s5Body4Post: ' dans sa langue à lui — pas la vôtre.',
+
+    // Transition vers les outils
+    transition1Pre: 'Ce livre — ',
+    transition1Bold: 'à paraître prochainement',
+    transition1Post: " — raconte tout ça. Les neuf profils, les trois monstres, l'amour comme verbe, la forêt familiale, le pardon comme ciment, et la main qu'on apprend à lâcher quand ils grandissent.",
+    transition2Pre: "En attendant qu'il arrive entre vos mains, on a construit cette app. ",
+    transition2Bold: 'Quatre outils pour commencer maintenant.',
+
     introSignature: '— Thomas & Solène',
     toolsLabel: 'Les outils',
-    chaptersTitle: 'Chapitres du livre',
-    chaptersOpen: 'Ouvrir la table des matières',
-    chaptersClose: 'Fermer la table des matières',
+    chaptersTitle: '📖 Le livre, en 5 parties',
+    chaptersOpen: "Cliquez pour découvrir comment il s'articule.",
+    chaptersClose: 'Refermer la table des matières',
+    chaptersIntro: "Une carte du voyage. De la nudité de départ jusqu'à la main qu'on lâche.",
   },
 
   // Tool cards (home screen)

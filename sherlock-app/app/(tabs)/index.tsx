@@ -53,18 +53,113 @@ export default function HomeScreen() {
         <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
       </LinearGradient>
 
-      {/* ── Introduction ── */}
+      {/* ── Avant-propos en 5 sections ── */}
       <View style={styles.introSection}>
-        <Text style={styles.introTitle}>{t('home.introHello')}</Text>
-        <Text style={styles.introBody}>{t('home.introP1')}</Text>
-        <Text style={styles.introBody}>
-          {t('home.introP2Pre')}
-          <Text style={{ fontStyle: 'italic' }}>{t('home.introP2Italic')}</Text>
-          {t('home.introP2Post')}
-        </Text>
-        <Text style={styles.introBody}>{t('home.introP3')}</Text>
-        <Text style={styles.introBody}>{t('home.introP4')}</Text>
-        <Text style={styles.introSignature}>{t('home.introSignature')}</Text>
+
+        {/* Section 1 — Le seul animal */}
+        <View style={styles.section}>
+          <Text style={styles.sectionNum}>I.</Text>
+          <Text style={styles.sectionTitle}>{t('home.s1Title')}</Text>
+          <Text style={[styles.introBody, styles.bold]}>{t('home.s1Body1Bold')}</Text>
+          <Text style={styles.introBody}>{t('home.s1Body2')}</Text>
+          <Text style={styles.introBody}>
+            {t('home.s1Body3Pre')}
+            <Text style={styles.italic}>{t('home.s1Body3Italic')}</Text>
+          </Text>
+        </View>
+
+        {/* Section 2 — Vos lunettes */}
+        <View style={styles.section}>
+          <Text style={styles.sectionNum}>II.</Text>
+          <Text style={styles.sectionTitle}>{t('home.s2Title')}</Text>
+          <Text style={styles.introBody}>{t('home.s2Body1')}</Text>
+          <Text style={styles.introBody}>
+            {t('home.s2Body2Pre')}
+            <Text style={styles.bold}>{t('home.s2Body2Bold')}</Text>
+            {t('home.s2Body2Post')}
+          </Text>
+          <Text style={styles.introBody}>
+            {t('home.s2Body3Pre')}
+            <Text style={styles.bold}>{t('home.s2Body3Bold')}</Text>
+            {t('home.s2Body3Post')}
+          </Text>
+          <Text style={[styles.introBody, styles.bold]}>{t('home.s2Body4')}</Text>
+        </View>
+
+        {/* Section 3 — Quand vous criez */}
+        <View style={styles.section}>
+          <Text style={styles.sectionNum}>III.</Text>
+          <Text style={styles.sectionTitle}>{t('home.s3Title')}</Text>
+          <Text style={styles.introBody}>{t('home.s3Body1')}</Text>
+          <Text style={styles.introBody}>
+            {t('home.s3Body2Pre')}
+            <Text style={styles.italic}>{t('home.s3Body2Italic')}</Text>
+          </Text>
+          <Text style={styles.introBody}>
+            {t('home.s3Body3Pre')}
+            <Text style={styles.bold}>{t('home.s3Body3Bold')}</Text>
+          </Text>
+          <View style={styles.monstreList}>
+            <Text style={styles.introBody}>
+              <Text style={styles.bold}>{t('home.s3CorbeauName')}</Text>
+              {t('home.s3CorbeauDesc')}
+            </Text>
+            <Text style={styles.introBody}>
+              <Text style={styles.bold}>{t('home.s3ChameauName')}</Text>
+              {t('home.s3ChameauDesc')}
+            </Text>
+            <Text style={styles.introBody}>
+              <Text style={styles.bold}>{t('home.s3RenardName')}</Text>
+              {t('home.s3RenardDesc')}
+            </Text>
+          </View>
+          <Text style={styles.introBody}>{t('home.s3Body4')}</Text>
+        </View>
+
+        {/* Section 4 — Une forêt */}
+        <View style={styles.section}>
+          <Text style={styles.sectionNum}>IV.</Text>
+          <Text style={styles.sectionTitle}>{t('home.s4Title')}</Text>
+          <Text style={styles.introBody}>{t('home.s4Body1')}</Text>
+          <Text style={styles.introBody}>
+            {t('home.s4Body2Pre')}
+            <Text style={styles.bold}>{t('home.s4Body2Bold')}</Text>
+            {t('home.s4Body2Post')}
+          </Text>
+          <Text style={styles.introBody}>
+            {t('home.s4Body3Pre')}
+            <Text style={styles.italic}>{t('home.s4Body3Italic')}</Text>
+            {t('home.s4Body3Post')}
+          </Text>
+        </View>
+
+        {/* Section 5 — L'amour est un verbe */}
+        <View style={styles.section}>
+          <Text style={styles.sectionNum}>V.</Text>
+          <Text style={styles.sectionTitle}>{t('home.s5Title')}</Text>
+          <Text style={styles.introBody}>{t('home.s5Body1')}</Text>
+          <Text style={[styles.introBody, styles.bold]}>{t('home.s5Body2Bold')}</Text>
+          <Text style={styles.introBody}>{t('home.s5Body3')}</Text>
+          <Text style={styles.introBody}>
+            {t('home.s5Body4Pre')}
+            <Text style={styles.italic}>{t('home.s5Body4Italic')}</Text>
+            {t('home.s5Body4Post')}
+          </Text>
+        </View>
+
+        {/* Transition vers les outils */}
+        <View style={styles.transitionBlock}>
+          <Text style={styles.introBody}>
+            {t('home.transition1Pre')}
+            <Text style={styles.bold}>{t('home.transition1Bold')}</Text>
+            {t('home.transition1Post')}
+          </Text>
+          <Text style={styles.introBody}>
+            {t('home.transition2Pre')}
+            <Text style={styles.bold}>{t('home.transition2Bold')}</Text>
+          </Text>
+          <Text style={styles.introSignature}>{t('home.introSignature')}</Text>
+        </View>
       </View>
 
       {/* ── Tools (entrées vers les onglets) ── */}
@@ -112,6 +207,7 @@ export default function HomeScreen() {
 
         {chaptersOpen && (
           <View style={styles.chaptersList}>
+            <Text style={styles.chaptersIntro}>{t('home.chaptersIntro')}</Text>
             {chaptersData.map((part, partIndex) => (
               <View key={partIndex} style={styles.partContainer}>
                 <Text style={styles.partTitle}>{part.part}</Text>
@@ -199,17 +295,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ── Introduction ──
+  // ── Avant-propos (5 sections) ──
   introSection: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
     paddingBottom: spacing.lg,
   },
-  introTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 22,
+  section: {
+    marginBottom: spacing.xl,
+  },
+  sectionNum: {
+    fontFamily: fonts.serifItalic,
+    fontSize: 13,
     color: colors.accent,
+    letterSpacing: 1,
+    marginBottom: spacing.xs,
+  },
+  sectionTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 24,
+    lineHeight: 30,
+    color: colors.text,
     marginBottom: spacing.md,
+  },
+  monstreList: {
+    paddingLeft: spacing.md,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.accent + '55',
+    marginBottom: spacing.md,
+    gap: 4,
+  },
+  transitionBlock: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  bold: {
+    fontWeight: '700',
+    color: colors.text,
+  },
+  italic: {
+    fontStyle: 'italic',
   },
   introBody: {
     fontFamily: fonts.sans,
@@ -222,7 +349,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serifItalic,
     fontSize: 15,
     color: colors.accent,
-    marginTop: spacing.xs,
+    marginTop: spacing.md,
   },
 
   // ── Tools section ──
@@ -332,6 +459,14 @@ const styles = StyleSheet.create({
   // ── Chapters list (when open) ──
   chaptersList: {
     marginTop: spacing.md,
+  },
+  chaptersIntro: {
+    fontFamily: fonts.serifItalic,
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSoft,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   partContainer: {
     marginTop: spacing.lg,
