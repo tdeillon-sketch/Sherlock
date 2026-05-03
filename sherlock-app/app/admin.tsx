@@ -69,7 +69,6 @@ export default function AdminScreen() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [subscribers, setSubscribers] = useState<AdminLaunchSubscriberRow[]>([]);
   const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
-  const [showAnonymous, setShowAnonymous] = useState(false);
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -106,9 +105,13 @@ export default function AdminScreen() {
     loadData(true);
   }, [loadData]);
 
+  // In prod, users only sign in via Google/Apple — no anonymous accounts.
+  // (signInAnon is only used in a dev bypass visible in Expo Go.)
   const totalUsers = users.length;
-  const signedInUsers = users.filter(u => u.provider !== 'anonymous');
-  const anonUsers = users.filter(u => u.provider === 'anonymous');
+  const usersByProvider = {
+    google: users.filter(u => u.provider === 'google').length,
+    apple: users.filter(u => u.provider === 'apple').length,
+  };
   const usersWithEmail = users.filter(u => !!u.email);
   const subsWithPush = subscribers.filter(s => s.pushGranted);
   const subsWithEmail = subscribers.filter(s => !!s.email);
@@ -242,7 +245,7 @@ export default function AdminScreen() {
             style={[styles.tab, tab === k && styles.tabActive]}
           >
             <Text style={[styles.tabText, tab === k && styles.tabTextActive]}>
-              {k === 'overview' ? 'Vue d\'ensemble' : k === 'users' ? `Comptes (${signedInUsers.length})` : `Abonnés (${subscribers.length})`}
+              {k === 'overview' ? 'Vue d\'ensemble' : k === 'users' ? `Comptes (${totalUsers})` : `Abonnés (${subscribers.length})`}
             </Text>
           </Pressable>
         ))}
@@ -257,9 +260,13 @@ export default function AdminScreen() {
               <Text style={styles.statHint}>(proxy "installations actives")</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statValue}>{signedInUsers.length}</Text>
-              <Text style={styles.statLabel}>Connectés Google/Apple</Text>
-              <Text style={styles.statHint}>{anonUsers.length} anonymes</Text>
+              <Text style={styles.statValue}>
+                {usersByProvider.apple}
+                <Text style={{ fontSize: 14, color: colors.textMuted }}>  ·  </Text>
+                {usersByProvider.google}
+              </Text>
+              <Text style={styles.statLabel}>Apple · Google</Text>
+              <Text style={styles.statHint}>répartition par provider</Text>
             </View>
           </View>
           <View style={styles.statRow}>
@@ -458,27 +465,15 @@ export default function AdminScreen() {
 
       {tab === 'users' && (
         <View style={styles.section}>
-          <View style={styles.usersHeader}>
-            <Text style={styles.listLabel}>
-              {showAnonymous
-                ? `Tous les comptes (${users.length})`
-                : `Comptes connectés (${signedInUsers.length})`}
-            </Text>
-            <Pressable
-              onPress={() => setShowAnonymous(v => !v)}
-              style={({ pressed }) => [styles.toggleBtn, pressed && { opacity: 0.7 }]}
-            >
-              <Text style={styles.toggleBtnText}>
-                {showAnonymous ? '✓ Afficher les anonymes' : 'Afficher les anonymes'}
-              </Text>
-            </Pressable>
-          </View>
+          <Text style={styles.listLabel}>
+            Comptes ({users.length}) · triés par engagement
+          </Text>
           <Text style={styles.legendText}>
             Légende — 🕐 quiz · 👥 profils enfants · 🔎 XP Sherlock · 📔 fiches Pokédex/45 · 🔥 streak · 🏅 badges
           </Text>
           <Text style={styles.legendHint}>Tap une carte pour voir le détail.</Text>
 
-          {[...(showAnonymous ? users : signedInUsers)]
+          {[...users]
             .sort((a, b) => b.engagement - a.engagement)
             .map(u => {
               const expanded = expandedUid === u.uid;
