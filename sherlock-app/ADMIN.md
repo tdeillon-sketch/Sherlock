@@ -30,6 +30,8 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
       allow read: if isAdmin();
+      // Admin can delete orphan docs (left behind after Auth-only deletion)
+      allow delete: if isAdmin();
     }
 
     // /launch_subscribers/{deviceId}

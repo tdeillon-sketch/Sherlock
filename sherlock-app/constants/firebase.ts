@@ -425,6 +425,18 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
   });
 }
 
+/**
+ * Admin only — delete a user's /users/{uid} doc.
+ * Used to clean up orphan docs left over after deleting the Auth user
+ * from the Firebase console (Auth deletion doesn't cascade to Firestore).
+ *
+ * Requires Firestore rule:
+ *   match /users/{uid} { allow delete: if isAdmin(); }
+ */
+export async function deleteUserDocAsAdmin(uid: string): Promise<void> {
+  await deleteDoc(userDocRef(uid));
+}
+
 /** Admin only — read all /launch_subscribers docs */
 export async function listAllLaunchSubscribers(): Promise<AdminLaunchSubscriberRow[]> {
   const snap = await getDocs(query(collection(db, 'launch_subscribers'), orderBy('subscribedAt', 'desc'), limit(500)));

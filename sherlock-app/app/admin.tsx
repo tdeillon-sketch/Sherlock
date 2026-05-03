@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   auth, isAdmin,
-  listAllUsers, listAllLaunchSubscribers,
+  listAllUsers, listAllLaunchSubscribers, deleteUserDocAsAdmin,
   type AdminUserRow, type AdminLaunchSubscriberRow,
 } from '../constants/firebase';
 
@@ -926,6 +926,48 @@ export default function AdminScreen() {
                           })}
                         </View>
                       )}
+
+                      {/* Danger zone — delete the orphan Firestore doc */}
+                      <View style={styles.detailDanger}>
+                        <Text style={styles.detailDangerLabel}>Zone sensible</Text>
+                        <Pressable
+                          onPress={(e) => {
+                            // Stop the parent card from collapsing
+                            (e as any)?.stopPropagation?.();
+                            Alert.alert(
+                              'Supprimer ce doc Firestore ?',
+                              `Cela supprime le document /users/${u.uid} de Firestore.\n\nUtile uniquement pour nettoyer les "orphelins" — comptes Auth déjà supprimés mais dont le doc Firestore subsiste.\n\nIRRÉVERSIBLE.`,
+                              [
+                                { text: 'Annuler', style: 'cancel' },
+                                {
+                                  text: 'Supprimer',
+                                  style: 'destructive',
+                                  onPress: async () => {
+                                    try {
+                                      await deleteUserDocAsAdmin(u.uid);
+                                      // Optimistic local update
+                                      setUsers(prev => prev.filter(x => x.uid !== u.uid));
+                                      setExpandedUid(null);
+                                    } catch (err: any) {
+                                      Alert.alert(
+                                        'Suppression impossible',
+                                        err?.message ?? 'Vérifiez vos règles Firestore (allow delete: if isAdmin();).',
+                                      );
+                                    }
+                                  },
+                                },
+                              ],
+                            );
+                          }}
+                          style={({ pressed }) => [
+                            styles.detailDangerBtn,
+                            pressed && { opacity: 0.85 },
+                          ]}
+                        >
+                          <Ionicons name="trash-outline" size={14} color={colors.error} />
+                          <Text style={styles.detailDangerBtnText}>Supprimer le doc Firestore</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   )}
                 </Pressable>
@@ -1454,5 +1496,28 @@ const styles = StyleSheet.create({
   detailQuizName: {
     flex: 1,
     fontFamily: fonts.sans, fontSize: 11, color: colors.text,
+  },
+  detailDanger: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1, borderTopColor: 'rgba(233,69,96,0.2)',
+  },
+  detailDangerLabel: {
+    fontFamily: fonts.sans, fontSize: 10, fontWeight: '700',
+    color: colors.error,
+    letterSpacing: 0.8, textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
+  detailDangerBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 8, paddingHorizontal: spacing.sm,
+    backgroundColor: 'rgba(233,69,96,0.08)',
+    borderWidth: 1, borderColor: 'rgba(233,69,96,0.4)',
+    borderRadius: radius.sm,
+    alignSelf: 'flex-start',
+  },
+  detailDangerBtnText: {
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '600',
+    color: colors.error,
   },
 });
