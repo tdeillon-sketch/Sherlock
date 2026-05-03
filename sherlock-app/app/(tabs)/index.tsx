@@ -75,10 +75,6 @@ export default function HomeScreen() {
     );
   };
 
-  const handleSolenePress = () => {
-    openSubscribe();
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* ── Top bar (brand + account) ── */}
@@ -238,16 +234,6 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
-
-      {/* ── Solène teaser (the strategic block) ── */}
-      <Pressable
-        onPress={handleSolenePress}
-        style={({ pressed }) => [styles.soleneCard, pressed && { opacity: 0.9 }]}
-      >
-        <Text style={styles.soleneEyebrow}>{t('home.soleneEyebrow')}</Text>
-        <Text style={styles.soleneText}>{t('home.soleneText')}</Text>
-        <Text style={styles.soleneCta}>{t('home.soleneCta')}  →</Text>
-      </Pressable>
 
       {/* ── Tools (les outils du voyage) ── */}
       <View style={styles.toolsSection}>
@@ -498,26 +484,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   seasonLockIconText: { fontSize: 10, color: colors.textMuted, lineHeight: 12 },
-
-  // ── Solène teaser ──
-  soleneCard: {
-    marginHorizontal: spacing.md, marginTop: spacing.lg,
-    backgroundColor: colors.accentFill,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  soleneEyebrow: {
-    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
-    color: colors.accent, fontWeight: '700', marginBottom: 6,
-  },
-  soleneText: {
-    fontFamily: fonts.serifItalic, fontSize: 14, lineHeight: 22,
-    color: colors.text,
-  },
-  soleneCta: {
-    fontFamily: fonts.sans, fontSize: 13, fontWeight: '700',
-    color: colors.accent, marginTop: spacing.sm,
-  },
 
   // ── Tools section ──
   toolsSection: {
