@@ -213,6 +213,27 @@ export const en = {
     evolution: '⚡ Change observed: Type {{from}} → Type {{to}}',
   },
 
+  // Sign-in / Auth screen
+  auth: {
+    title: 'Sign in',
+    subtitle: 'To save your progress, your child profiles, and access the app on all your devices.',
+    benefit1: 'Your child profiles saved and synced',
+    benefit2: 'Find your data on any device',
+    benefit3: 'Sherlock XP and Casebook preserved for life',
+    appleBtn: 'Continue with Apple',
+    googleBtn: 'Continue with Google',
+    privacyHint: 'Your data stays private. No sharing, no advertising.',
+    errorNoGoogleIdToken: 'No id_token received from Google',
+    errorGoogleFailed: 'Google sign-in failed',
+    errorGoogleRetry: 'Google sign-in failed. Please try again.',
+    errorGoogleNotConfigured: 'Google OAuth credentials are not yet configured. See constants/google_oauth.ts for instructions.',
+    errorGoogleInit: 'Google initialization in progress — try again in 1 second.',
+    errorGoogleImpossible: 'Google sign-in not available',
+    errorAppleNoToken: 'No identityToken received from Apple',
+    errorAppleFailed: 'Apple sign-in failed',
+    errorBypassFailed: 'Bypass failed',
+  },
+
   account: {
     title: 'My account',
     languageSection: 'Language',

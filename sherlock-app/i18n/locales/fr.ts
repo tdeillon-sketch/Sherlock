@@ -223,6 +223,27 @@ export const fr = {
     evolution: '⚡ Évolution observée : Type {{from}} → Type {{to}}',
   },
 
+  // Sign-in / Auth screen
+  auth: {
+    title: 'Connectez-vous',
+    subtitle: "Pour sauvegarder vos progrès, vos profils d'enfants et accéder à l'app sur tous vos appareils.",
+    benefit1: 'Vos profils enfants sauvés et synchronisés',
+    benefit2: "Retrouvez vos données sur n'importe quel appareil",
+    benefit3: 'XP Sherlock et Pokédex préservés à vie',
+    appleBtn: 'Continuer avec Apple',
+    googleBtn: 'Continuer avec Google',
+    privacyHint: 'Vos données restent privées. Aucun partage, aucune publicité.',
+    errorNoGoogleIdToken: "Pas d'id_token reçu de Google",
+    errorGoogleFailed: 'Connexion Google échouée',
+    errorGoogleRetry: "La connexion Google a échoué. Réessayez.",
+    errorGoogleNotConfigured: "Les identifiants Google OAuth ne sont pas encore configurés. Voir constants/google_oauth.ts pour les instructions.",
+    errorGoogleInit: "Initialisation Google en cours, réessayez dans 1 seconde.",
+    errorGoogleImpossible: 'Connexion Google impossible',
+    errorAppleNoToken: "Pas d'identityToken reçu d'Apple",
+    errorAppleFailed: 'Connexion Apple échouée',
+    errorBypassFailed: 'Bypass échoué',
+  },
+
   // Account / settings
   account: {
     title: 'Mon compte',

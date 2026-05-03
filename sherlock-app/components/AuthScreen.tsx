@@ -21,6 +21,7 @@ import {
   getUserData, createUserData, updateLastSeen,
 } from '../constants/firebase';
 import { GOOGLE_OAUTH, isGoogleConfigured } from '../constants/google_oauth';
+import { useT } from '../i18n';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -44,6 +45,7 @@ async function generateAppleNonce(): Promise<{ raw: string; hashed: string }> {
 }
 
 export default function AuthScreen({ onSuccess }: Props) {
+  const { t, locale, setLocale } = useT();
   const [loading, setLoading] = useState<null | 'google' | 'apple'>(null);
   const [error, setError] = useState<string | null>(null);
   const [appleAvailable, setAppleAvailable] = useState(false);
@@ -97,16 +99,16 @@ export default function AuthScreen({ onSuccess }: Props) {
         try {
           const idToken = response.authentication?.idToken
             ?? (response.params as any)?.id_token;
-          if (!idToken) throw new Error("Pas d'id_token reçu de Google");
+          if (!idToken) throw new Error(t('auth.errorNoGoogleIdToken'));
           const user = await signInWithGoogleIdToken(idToken);
           await finishSignIn(user.uid);
         } catch (e: any) {
-          setError(e?.message ?? 'Connexion Google échouée');
+          setError(e?.message ?? t('auth.errorGoogleFailed'));
         } finally {
           setLoading(null);
         }
       } else if (response?.type === 'error') {
-        setError("La connexion Google a échoué. Réessayez.");
+        setError(t('auth.errorGoogleRetry'));
       }
     };
     handleResponse();
@@ -115,20 +117,17 @@ export default function AuthScreen({ onSuccess }: Props) {
   const onPressGoogle = async () => {
     setError(null);
     if (!isGoogleConfigured()) {
-      setError(
-        "Les identifiants Google OAuth ne sont pas encore configurés. " +
-        "Voir constants/google_oauth.ts pour les instructions."
-      );
+      setError(t('auth.errorGoogleNotConfigured'));
       return;
     }
     if (!request) {
-      setError("Initialisation Google en cours, réessayez dans 1 seconde.");
+      setError(t('auth.errorGoogleInit'));
       return;
     }
     try {
       await promptAsync();
     } catch (e: any) {
-      setError(e?.message ?? 'Connexion Google impossible');
+      setError(e?.message ?? t('auth.errorGoogleImpossible'));
     }
   };
 
@@ -146,7 +145,7 @@ export default function AuthScreen({ onSuccess }: Props) {
         nonce: hashed,
       });
       if (!credential.identityToken) {
-        throw new Error("Pas d'identityToken reçu d'Apple");
+        throw new Error(t('auth.errorAppleNoToken'));
       }
       const user = await signInWithAppleIdToken(credential.identityToken, raw);
       await finishSignIn(user.uid);
@@ -155,7 +154,7 @@ export default function AuthScreen({ onSuccess }: Props) {
       if (e?.code === 'ERR_REQUEST_CANCELED' || e?.code === 'ERR_CANCELED') {
         // Silent cancel — no error display
       } else {
-        setError(e?.message ?? 'Connexion Apple échouée');
+        setError(e?.message ?? t('auth.errorAppleFailed'));
       }
     } finally {
       setLoading(null);
@@ -165,24 +164,50 @@ export default function AuthScreen({ onSuccess }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.inner}>
+        {/* ── Language toggle (top of screen) ── */}
+        <View style={styles.langToggle}>
+          <Pressable
+            onPress={() => setLocale('fr')}
+            style={({ pressed }) => [
+              styles.langBtn,
+              locale === 'fr' && styles.langBtnActive,
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <Text style={[styles.langBtnText, locale === 'fr' && styles.langBtnTextActive]}>
+              🇫🇷  Français
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setLocale('en')}
+            style={({ pressed }) => [
+              styles.langBtn,
+              locale === 'en' && styles.langBtnActive,
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <Text style={[styles.langBtnText, locale === 'en' && styles.langBtnTextActive]}>
+              🇬🇧  English
+            </Text>
+          </Pressable>
+        </View>
+
         <Text style={styles.emoji}>🔐</Text>
-        <Text style={styles.title}>Connectez-vous</Text>
-        <Text style={styles.subtitle}>
-          Pour sauvegarder vos progrès, vos profils d'enfants et accéder à l'app sur tous vos appareils.
-        </Text>
+        <Text style={styles.title}>{t('auth.title')}</Text>
+        <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
 
         <View style={styles.benefitsBox}>
           <View style={styles.benefitRow}>
             <Text style={styles.benefitIcon}>☁️</Text>
-            <Text style={styles.benefitText}>Vos profils enfants sauvés et synchronisés</Text>
+            <Text style={styles.benefitText}>{t('auth.benefit1')}</Text>
           </View>
           <View style={styles.benefitRow}>
             <Text style={styles.benefitIcon}>📱</Text>
-            <Text style={styles.benefitText}>Retrouvez vos données sur n'importe quel appareil</Text>
+            <Text style={styles.benefitText}>{t('auth.benefit2')}</Text>
           </View>
           <View style={styles.benefitRow}>
             <Text style={styles.benefitIcon}>🏆</Text>
-            <Text style={styles.benefitText}>XP Sherlock et Pokédex préservés à vie</Text>
+            <Text style={styles.benefitText}>{t('auth.benefit3')}</Text>
           </View>
         </View>
 
@@ -201,7 +226,7 @@ export default function AuthScreen({ onSuccess }: Props) {
             ) : (
               <>
                 <Text style={styles.appleLogo}></Text>
-                <Text style={styles.appleBtnText}>Continuer avec Apple</Text>
+                <Text style={styles.appleBtnText}>{t('auth.appleBtn')}</Text>
               </>
             )}
           </Pressable>
@@ -222,7 +247,7 @@ export default function AuthScreen({ onSuccess }: Props) {
           ) : (
             <>
               <Text style={styles.googleG}>G</Text>
-              <Text style={styles.googleBtnText}>Continuer avec Google</Text>
+              <Text style={styles.googleBtnText}>{t('auth.googleBtn')}</Text>
             </>
           )}
         </Pressable>
@@ -233,9 +258,7 @@ export default function AuthScreen({ onSuccess }: Props) {
           </View>
         )}
 
-        <Text style={styles.hint}>
-          Vos données restent privées. Aucun partage, aucune publicité.
-        </Text>
+        <Text style={styles.hint}>{t('auth.privacyHint')}</Text>
 
         {/* ── DEV BYPASS ── (visible only in Expo Go / __DEV__) */}
         {(__DEV__ || isExpoGo) && (
@@ -275,6 +298,39 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
     alignItems: 'center',
   },
+
+  // Language toggle (top of screen)
+  langToggle: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    width: '100%',
+    maxWidth: 360,
+    marginBottom: spacing.xl,
+  },
+  langBtn: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.bgLight,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  langBtnActive: {
+    backgroundColor: colors.accentFill,
+    borderColor: colors.accent,
+  },
+  langBtnText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.textSoft,
+  },
+  langBtnTextActive: {
+    color: colors.accent,
+    fontWeight: '700',
+  },
+
   emoji: { fontSize: 48, marginBottom: 24 },
   title: {
     fontFamily: fonts.serif, fontSize: 26, color: colors.text,
