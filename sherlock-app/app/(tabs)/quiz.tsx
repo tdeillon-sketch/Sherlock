@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { TYPES } from '../../constants/data';
 import { useAdaptiveQuiz } from '../../hooks/useAdaptiveQuiz';
+import { trackScreen } from '../../constants/firebase';
 import RadarChart from '../../components/RadarChart';
 import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
@@ -36,6 +37,7 @@ export default function QuizScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
   const { t } = useT();
+  useEffect(() => { trackScreen('quiz').catch(() => {}); }, []);
 
   const {
     phase, subject, ageBand, currentPage, scores,

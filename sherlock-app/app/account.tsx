@@ -6,20 +6,21 @@
 //  the entry point for that.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn,
+  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, trackScreen,
 } from '../constants/firebase';
 import { useT } from '../i18n';
 
 export default function AccountScreen() {
   const [busy, setBusy] = useState<null | 'signout' | 'delete'>(null);
   const { t, locale, setLocale } = useT();
+  useEffect(() => { trackScreen('account').catch(() => {}); }, []);
 
   const user = auth.currentUser;
   const provider = isAppleSignedIn(user) ? 'Apple'

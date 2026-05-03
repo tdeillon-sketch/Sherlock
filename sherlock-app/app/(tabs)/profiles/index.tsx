@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { trackScreen } from '../../../constants/firebase';
 import {
   View,
   Text,
@@ -39,6 +40,7 @@ export default function ProfilesScreen() {
   const { width } = useWindowDimensions();
   const { t, locale } = useT();
   const numColumns = width >= 900 ? 3 : width >= 550 ? 2 : 1;
+  useEffect(() => { trackScreen('profiles').catch(() => {}); }, []);
 
   return (
     <View style={styles.container}>

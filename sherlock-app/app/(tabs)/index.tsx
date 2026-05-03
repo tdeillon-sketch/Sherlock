@@ -6,7 +6,7 @@ import { useT } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
 import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
-import { auth, isAdmin, onAuthChange } from '../../constants/firebase';
+import { auth, isAdmin, onAuthChange, trackScreen } from '../../constants/firebase';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -45,6 +45,11 @@ export default function HomeScreen() {
   // Re-evaluate admin status when auth changes
   useEffect(() => {
     return onAuthChange((u) => setAdmin(isAdmin(u)));
+  }, []);
+
+  // Track screen view (analytics)
+  useEffect(() => {
+    trackScreen('home').catch(() => {});
   }, []);
 
   const openSubscribe = () => setSubscribeOpen(true);

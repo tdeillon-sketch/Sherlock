@@ -3,7 +3,7 @@
 //  The marketing centerpiece: actually reading the book.
 // ═══════════════════════════════════════════════════════════════
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,11 +11,13 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import { CHAPTER_1_FR, CHAPTER_1_EN, type Paragraph } from '../constants/chapter1';
 import { useT } from '../i18n';
 import LaunchSubscribeModal from '../components/LaunchSubscribeModal';
+import { trackScreen } from '../constants/firebase';
 
 export default function PilotScreen() {
   const { t, locale } = useT();
   const chapter = locale === 'en' ? CHAPTER_1_EN : CHAPTER_1_FR;
   const [subscribeOpen, setSubscribeOpen] = useState(false);
+  useEffect(() => { trackScreen('pilot').catch(() => {}); }, []);
 
   const openSubscribe = () => setSubscribeOpen(true);
 

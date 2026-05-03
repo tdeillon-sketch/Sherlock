@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { trackScreen } from '../../constants/firebase';
 import {
   View,
   Text,
@@ -264,6 +265,8 @@ export default function DuoScreen() {
     adulte: t('duo.roleAdulte'),
     enfant: t('duo.roleEnfant'),
   };
+
+  useEffect(() => { trackScreen('duo').catch(() => {}); }, []);
 
   // Defaults: Adulte (gauche) / Enfant (droite) — le cas d'usage le plus
   // probable dans une app destinée aux parents.

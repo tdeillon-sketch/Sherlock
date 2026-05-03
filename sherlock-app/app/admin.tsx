@@ -129,7 +129,57 @@ export default function AdminScreen() {
   const totalCases = users.reduce((sum, u) => sum + u.completedCases, 0);
   const heavyUsers = users.filter(u => u.engagement >= 50).length;
   const ghostUsers = users.filter(u => u.engagement === 0).length;
-  // Tab usage proxies (number of users who used each feature at least once)
+  // ── Real screen-view analytics ──
+  // Counts of users who visited each screen at least once (from screenViews map).
+  const screensList: Array<{ key: keyof NonNullable<AdminUserRow['screenViews']>; emoji: string; label: string }> = [
+    { key: 'home',        emoji: '🏠', label: 'Accueil' },
+    { key: 'pilot',       emoji: '📖', label: 'Pilote (Chap. 1)' },
+    { key: 'quiz',        emoji: '🕐', label: 'Quiz' },
+    { key: 'profiles',    emoji: '👥', label: 'Profils' },
+    { key: 'celebrities', emoji: '🔎', label: 'Testez-vous' },
+    { key: 'duo',         emoji: '◎',  label: 'Duo' },
+    { key: 'journal',     emoji: '📓', label: 'Journal' },
+    { key: 'account',     emoji: '👤', label: 'Compte' },
+  ];
+  const screenStats = screensList.map(s => {
+    const usersUsingIt = users.filter(u => (u.screenViews?.[s.key] || 0) > 0).length;
+    const totalViews = users.reduce((sum, u) => sum + (u.screenViews?.[s.key] || 0), 0);
+    return { ...s, usersUsingIt, totalViews };
+  });
+
+  // ── 30-day signup history (from createdAt) ──
+  // Build an array of [day, count] for the last 30 days, then a cumulative total.
+  const signupHistory: { day: string; count: number; cumulative: number }[] = [];
+  {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = 30;
+    // Cumulative count from BEFORE the window
+    let cumBefore = 0;
+    for (const u of users) {
+      if (!u.createdAt) continue;
+      const d = new Date(u.createdAt);
+      d.setHours(0, 0, 0, 0);
+      const diff = (today.getTime() - d.getTime()) / 86400000;
+      if (diff > days - 1) cumBefore++;
+    }
+    let cumulative = cumBefore;
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      const count = users.filter(u => {
+        if (!u.createdAt) return false;
+        const ud = new Date(u.createdAt);
+        return ud.toISOString().split('T')[0] === key;
+      }).length;
+      cumulative += count;
+      signupHistory.push({ day: key, count, cumulative });
+    }
+  }
+  const maxDailySignup = Math.max(1, ...signupHistory.map(d => d.count));
+
+  // Legacy proxies (kept for backward compat / fallback when screenViews is empty)
   const usedQuiz = users.filter(u => u.quizCount > 0).length;
   const usedProfiles = users.filter(u => u.childProfilesCount > 0).length;
   const usedSherlock = users.filter(u => u.sherlockXp > 0 || u.completedCases > 0).length;
@@ -336,28 +386,57 @@ export default function AdminScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionLabel}>Usage par menu (au moins 1 fois)</Text>
+          <Text style={styles.sectionLabel}>Usage par menu</Text>
+          <Text style={styles.sectionHint}>
+            Visites par écran (et utilisateurs uniques l'ayant visité au moins 1x).
+          </Text>
           <View style={styles.usageBox}>
-            <View style={styles.usageRow}>
-              <Text style={styles.usageLabel}>🕐  Quiz</Text>
-              <Text style={styles.usageValue}>{usedQuiz}</Text>
-              <Text style={styles.usagePct}>
-                {totalUsers > 0 ? Math.round((usedQuiz / totalUsers) * 100) : 0}%
-              </Text>
+            {screenStats.map(s => (
+              <View key={s.key} style={styles.usageRow}>
+                <Text style={styles.usageLabel}>{s.emoji}  {s.label}</Text>
+                <Text style={styles.usageValue}>{s.totalViews}</Text>
+                <Text style={styles.usagePct}>{s.usersUsingIt} u.</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Cumulative signups over 30 days */}
+          <Text style={styles.sectionLabel}>Inscriptions sur 30 jours</Text>
+          <Text style={styles.sectionHint}>
+            Barres = nouveaux par jour · ligne = cumul.
+          </Text>
+          <View style={styles.chartBox}>
+            <View style={styles.chartBars}>
+              {signupHistory.map((d, i) => {
+                const h = (d.count / maxDailySignup) * 60;
+                return (
+                  <View key={d.day} style={styles.chartBarCol}>
+                    <View style={[styles.chartBar, { height: Math.max(2, h), backgroundColor: d.count > 0 ? colors.accent : colors.border }]} />
+                  </View>
+                );
+              })}
             </View>
-            <View style={styles.usageRow}>
-              <Text style={styles.usageLabel}>👥  Profils enfants sauvés</Text>
-              <Text style={styles.usageValue}>{usedProfiles}</Text>
-              <Text style={styles.usagePct}>
-                {totalUsers > 0 ? Math.round((usedProfiles / totalUsers) * 100) : 0}%
-              </Text>
+            <View style={styles.chartFooter}>
+              <Text style={styles.chartLabel}>il y a 30j</Text>
+              <Text style={styles.chartLabel}>aujourd'hui</Text>
             </View>
-            <View style={styles.usageRow}>
-              <Text style={styles.usageLabel}>🔎  Testez-vous (Sherlock)</Text>
-              <Text style={styles.usageValue}>{usedSherlock}</Text>
-              <Text style={styles.usagePct}>
-                {totalUsers > 0 ? Math.round((usedSherlock / totalUsers) * 100) : 0}%
-              </Text>
+            <View style={styles.chartStatRow}>
+              <View style={styles.chartStat}>
+                <Text style={styles.chartStatValue}>
+                  {signupHistory.reduce((s, d) => s + d.count, 0)}
+                </Text>
+                <Text style={styles.chartStatLabel}>en 30 jours</Text>
+              </View>
+              <View style={styles.chartStat}>
+                <Text style={styles.chartStatValue}>
+                  {Math.round(signupHistory.reduce((s, d) => s + d.count, 0) / 30 * 10) / 10}
+                </Text>
+                <Text style={styles.chartStatLabel}>moyenne/jour</Text>
+              </View>
+              <View style={styles.chartStat}>
+                <Text style={styles.chartStatValue}>{totalUsers}</Text>
+                <Text style={styles.chartStatLabel}>cumul total</Text>
+              </View>
             </View>
           </View>
 
@@ -823,6 +902,54 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
     color: colors.textMuted, letterSpacing: 1, textTransform: 'uppercase',
     marginTop: spacing.lg, marginBottom: spacing.sm,
+  },
+
+  sectionHint: {
+    fontFamily: fonts.sans, fontSize: 11,
+    color: colors.textMuted, marginBottom: spacing.sm,
+    fontStyle: 'italic',
+  },
+
+  // Chart (signups over 30d)
+  chartBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md,
+  },
+  chartBars: {
+    flexDirection: 'row', alignItems: 'flex-end',
+    height: 60, gap: 2,
+    marginBottom: 4,
+  },
+  chartBarCol: {
+    flex: 1, alignItems: 'center', justifyContent: 'flex-end',
+  },
+  chartBar: {
+    width: '100%',
+    borderRadius: 1,
+  },
+  chartFooter: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  chartLabel: {
+    fontFamily: fonts.sans, fontSize: 10,
+    color: colors.textMuted,
+  },
+  chartStatRow: {
+    flexDirection: 'row', justifyContent: 'space-around',
+    paddingTop: spacing.sm,
+    borderTopWidth: 1, borderTopColor: colors.border,
+  },
+  chartStat: { alignItems: 'center' },
+  chartStatValue: {
+    fontFamily: fonts.serif, fontSize: 18, fontWeight: '700',
+    color: colors.accent,
+  },
+  chartStatLabel: {
+    fontFamily: fonts.sans, fontSize: 10,
+    color: colors.textMuted, marginTop: 2,
   },
 
   // Distribution box (profiles found)

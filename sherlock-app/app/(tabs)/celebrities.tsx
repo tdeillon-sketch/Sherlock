@@ -14,6 +14,7 @@ import {
   type EnqueteCaseEn, type CitationCaseEn, type FauxAmisCaseEn, type DetailCaseEn,
 } from '../../i18n/dossiers_en';
 import { useDossier, getRankInfo } from '../../hooks/useDossier';
+import { trackScreen } from '../../constants/firebase';
 import { useT, type Locale } from '../../i18n';
 
 // ── Locale-aware lookups (field-level fallback) ──
@@ -1009,6 +1010,7 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
 
 export default function CelebritiesScreen() {
   const { t } = useT();
+  useEffect(() => { trackScreen('celebrities').catch(() => {}); }, []);
   const {
     screen, progress, playState, sessionSummary, selectedFicheId, loading,
     openCollection, openFiche, goBack, goHub,

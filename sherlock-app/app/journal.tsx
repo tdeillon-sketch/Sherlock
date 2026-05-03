@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { loadJournal, deleteAnswer, formatEntryDate, type RitualEntry } from '../constants/ritualJournal';
 import { useT } from '../i18n';
+import { trackScreen } from '../constants/firebase';
 
 export default function JournalScreen() {
   const { t, locale } = useT();
@@ -26,6 +27,7 @@ export default function JournalScreen() {
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { trackScreen('journal').catch(() => {}); }, []);
 
   const handleDelete = (entry: RitualEntry) => {
     Alert.alert(

@@ -17,6 +17,7 @@ import {
   query,
   orderBy,
   limit,
+  increment,
 } from 'firebase/firestore';
 
 // ── Admin allowlist ──
@@ -235,6 +236,27 @@ export async function updateLastSeen(uid: string): Promise<void> {
   });
 }
 
+// ── Screen view tracking ──
+// Each tab/screen calls trackScreen('quiz') when it gains focus.
+// Increments /users/{uid}.screenViews.{name} and updates lastSeen.
+// Best-effort: errors are swallowed (no throw to UI).
+export type Screen =
+  | 'home' | 'quiz' | 'profiles' | 'celebrities' | 'duo'
+  | 'pilot' | 'journal' | 'account';
+
+export async function trackScreen(screen: Screen): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await updateDoc(userDocRef(user.uid), {
+      [`screenViews.${screen}`]: increment(1),
+      lastSeen: serverTimestamp(),
+    });
+  } catch {
+    // doc may not exist yet (e.g. just signed in, race condition) — ignore
+  }
+}
+
 // ── Dossier progress ──
 
 export interface DossierProgressData {
@@ -323,6 +345,8 @@ export interface AdminUserRow {
   // Raw arrays — for the detail expand & for distribution stats
   quizResults: QuizResult[];
   childProfiles: ChildProfile[];
+  // Screen views (incremented by trackScreen). May be undefined for legacy users.
+  screenViews?: Partial<Record<Screen, number>>;
 }
 
 export interface AdminLaunchSubscriberRow {
@@ -396,6 +420,7 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       engagement,
       quizResults,
       childProfiles,
+      screenViews: data.screenViews && typeof data.screenViews === 'object' ? data.screenViews : {},
     };
   });
 }
