@@ -320,6 +320,9 @@ export interface AdminUserRow {
   streak: number;             // Daily mission streak
   /** Aggregated engagement: 0 (none) → 100 (heavy user) */
   engagement: number;
+  // Raw arrays — for the detail expand & for distribution stats
+  quizResults: QuizResult[];
+  childProfiles: ChildProfile[];
 }
 
 export interface AdminLaunchSubscriberRow {
@@ -365,15 +368,15 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
   return snap.docs.map(d => {
     const data = d.data() as any;
     const dossier = data.dossierProgress || {};
-    const quizCount = Array.isArray(data.quizResults) ? data.quizResults.length : 0;
-    const childProfilesCount = Array.isArray(data.childProfiles) ? data.childProfiles.length : 0;
+    const quizResults: QuizResult[] = Array.isArray(data.quizResults) ? data.quizResults : [];
+    const childProfiles: ChildProfile[] = Array.isArray(data.childProfiles) ? data.childProfiles : [];
     const sherlockXp = typeof dossier.totalXP === 'number' ? dossier.totalXP : 0;
     const unlockedFiches = Array.isArray(dossier.unlockedFiches) ? dossier.unlockedFiches.length : 0;
     const completedCases = Array.isArray(dossier.completedCases) ? dossier.completedCases.length : 0;
     const badgesArr = Array.isArray(data.badges) ? data.badges : [];
     const streak = typeof dossier.streak === 'number' ? dossier.streak : 0;
     const engagement = computeEngagement({
-      quizCount, childProfiles: childProfilesCount, sherlockXp,
+      quizCount: quizResults.length, childProfiles: childProfiles.length, sherlockXp,
       unlockedFiches, badges: badgesArr.length,
     });
     return {
@@ -383,14 +386,16 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       provider: data.provider ?? 'unknown',
       createdAt: tsToMillis(data.createdAt),
       lastSeen: tsToMillis(data.lastSeen),
-      quizCount,
-      childProfilesCount,
+      quizCount: quizResults.length,
+      childProfilesCount: childProfiles.length,
       sherlockXp,
       unlockedFiches,
       completedCases,
       badges: badgesArr.length,
       streak,
       engagement,
+      quizResults,
+      childProfiles,
     };
   });
 }

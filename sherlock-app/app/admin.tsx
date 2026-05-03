@@ -24,6 +24,24 @@ function formatDate(ts: number | null): string {
   });
 }
 
+function daysSince(ts: number | null): number | null {
+  if (!ts) return null;
+  return Math.floor((Date.now() - ts) / 86400000);
+}
+
+function formatDuration(days: number | null): string {
+  if (days === null) return '—';
+  if (days === 0) return "aujourd'hui";
+  if (days === 1) return 'hier';
+  if (days < 30) return `il y a ${days}j`;
+  if (days < 365) {
+    const months = Math.floor(days / 30);
+    return `il y a ${months} mois`;
+  }
+  const years = Math.floor(days / 365);
+  return `il y a ${years} an${years > 1 ? 's' : ''}`;
+}
+
 export default function AdminScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +49,7 @@ export default function AdminScreen() {
   const [subscribers, setSubscribers] = useState<AdminLaunchSubscriberRow[]>([]);
   const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
   const [showAnonymous, setShowAnonymous] = useState(false);
+  const [expandedUid, setExpandedUid] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -73,6 +92,47 @@ export default function AdminScreen() {
   const usedQuiz = users.filter(u => u.quizCount > 0).length;
   const usedProfiles = users.filter(u => u.childProfilesCount > 0).length;
   const usedSherlock = users.filter(u => u.sherlockXp > 0 || u.completedCases > 0).length;
+
+  // ── Distribution of profiles found by the quiz ──
+  // We split adult tests vs child tests (both kids 'enfant' and teens 'ado').
+  type Dist = { counts: Record<number, number>; total: number };
+  const emptyDist: Dist = { counts: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0}, total: 0 };
+  const distAdult: Dist = JSON.parse(JSON.stringify(emptyDist));
+  const distChild: Dist = JSON.parse(JSON.stringify(emptyDist));
+  for (const u of users) {
+    for (const r of u.quizResults) {
+      if (!r || typeof r.topType !== 'number') continue;
+      const target = r.mode === 'adulte' ? distAdult : distChild;
+      target.counts[r.topType] = (target.counts[r.topType] || 0) + 1;
+      target.total++;
+    }
+  }
+  const TYPE_LABELS_FR: Record<number, string> = {
+    1: 'Perfectionniste', 2: 'Altruiste', 3: 'Battant', 4: 'Romantique',
+    5: 'Investigateur', 6: 'Loyaliste', 7: 'Épicurien', 8: 'Chef', 9: 'Médiateur',
+  };
+  const TYPE_COLORS: Record<number, string> = {
+    1: '#7b8e6e', 2: '#c0713a', 3: '#d4a03c', 4: '#8b6ca7',
+    5: '#5b8a9a', 6: '#6b7b8e', 7: '#d4853c', 8: '#9b4a4a', 9: '#7a9a7b',
+  };
+
+  // ── Retention buckets ──
+  const activeLast7d = users.filter(u => {
+    const d = daysSince(u.lastSeen);
+    return d !== null && d <= 7;
+  }).length;
+  const activeLast30d = users.filter(u => {
+    const d = daysSince(u.lastSeen);
+    return d !== null && d <= 30;
+  }).length;
+  const inactive30d = users.filter(u => {
+    const d = daysSince(u.lastSeen);
+    return d !== null && d > 30;
+  }).length;
+  const newLast7d = users.filter(u => {
+    const d = daysSince(u.createdAt);
+    return d !== null && d <= 7;
+  }).length;
 
   const exportEmails = async (list: string[], label: string) => {
     if (list.length === 0) {
@@ -159,6 +219,33 @@ export default function AdminScreen() {
             </View>
           </View>
 
+          {/* ── Retention ── */}
+          <Text style={styles.sectionLabel}>Rétention</Text>
+          <View style={styles.statRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{activeLast7d}</Text>
+              <Text style={styles.statLabel}>Actifs 7j</Text>
+              <Text style={styles.statHint}>vu il y a ≤ 7 jours</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{activeLast30d}</Text>
+              <Text style={styles.statLabel}>Actifs 30j</Text>
+              <Text style={styles.statHint}>vu il y a ≤ 30 jours</Text>
+            </View>
+          </View>
+          <View style={styles.statRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{newLast7d}</Text>
+              <Text style={styles.statLabel}>Nouveaux 7j</Text>
+              <Text style={styles.statHint}>créés il y a ≤ 7 jours</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{inactive30d}</Text>
+              <Text style={styles.statLabel}>Inactifs &gt; 30j</Text>
+              <Text style={styles.statHint}>candidats au churn</Text>
+            </View>
+          </View>
+
           {/* ── Engagement signals ── */}
           <Text style={styles.sectionLabel}>Engagement</Text>
           <View style={styles.statRow}>
@@ -198,6 +285,71 @@ export default function AdminScreen() {
               </Text>
             </View>
           </View>
+
+          {/* ── Distribution of profiles found by the quiz ── */}
+          <Text style={styles.sectionLabel}>Profils trouvés par le quiz</Text>
+          {(distAdult.total === 0 && distChild.total === 0) ? (
+            <View style={styles.usageBox}>
+              <Text style={[styles.usageLabel, { color: colors.textMuted }]}>
+                Pas encore de quiz complétés.
+              </Text>
+            </View>
+          ) : (
+            <>
+              {distAdult.total > 0 && (
+                <View style={styles.distBox}>
+                  <Text style={styles.distTitle}>
+                    Parents (mode adulte) · {distAdult.total} test{distAdult.total > 1 ? 's' : ''}
+                  </Text>
+                  {[1,2,3,4,5,6,7,8,9].map(t => {
+                    const count = distAdult.counts[t] || 0;
+                    const pct = distAdult.total > 0 ? Math.round((count / distAdult.total) * 100) : 0;
+                    return (
+                      <View key={t} style={styles.distRow}>
+                        <View style={[styles.distNum, { backgroundColor: TYPE_COLORS[t] }]}>
+                          <Text style={styles.distNumText}>{t}</Text>
+                        </View>
+                        <Text style={styles.distLabel} numberOfLines={1}>{TYPE_LABELS_FR[t]}</Text>
+                        <View style={styles.distBarTrack}>
+                          <View style={[styles.distBarFill, {
+                            width: `${pct}%` as any,
+                            backgroundColor: TYPE_COLORS[t],
+                          }]} />
+                        </View>
+                        <Text style={styles.distPct}>{pct}%</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+              {distChild.total > 0 && (
+                <View style={styles.distBox}>
+                  <Text style={styles.distTitle}>
+                    Enfants (modes enfant + ado) · {distChild.total} test{distChild.total > 1 ? 's' : ''}
+                  </Text>
+                  {[1,2,3,4,5,6,7,8,9].map(t => {
+                    const count = distChild.counts[t] || 0;
+                    const pct = distChild.total > 0 ? Math.round((count / distChild.total) * 100) : 0;
+                    return (
+                      <View key={t} style={styles.distRow}>
+                        <View style={[styles.distNum, { backgroundColor: TYPE_COLORS[t] }]}>
+                          <Text style={styles.distNumText}>{t}</Text>
+                        </View>
+                        <Text style={styles.distLabel} numberOfLines={1}>{TYPE_LABELS_FR[t]}</Text>
+                        <View style={styles.distBarTrack}>
+                          <View style={[styles.distBarFill, {
+                            width: `${pct}%` as any,
+                            backgroundColor: TYPE_COLORS[t],
+                          }]} />
+                        </View>
+                        <Text style={styles.distPct}>{pct}%</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </>
+          )}
 
           <Text style={styles.sectionLabel}>Volume total</Text>
           <View style={styles.usageBox}>
@@ -265,62 +417,160 @@ export default function AdminScreen() {
               </Text>
             </Pressable>
           </View>
+          <Text style={styles.legendText}>
+            Légende — 🕐 quiz · 👥 profils enfants · 🔎 XP Sherlock · 📔 fiches Pokédex/45 · 🔥 streak · 🏅 badges
+          </Text>
+          <Text style={styles.legendHint}>Tap une carte pour voir le détail.</Text>
+
           {[...(showAnonymous ? users : signedInUsers)]
             .sort((a, b) => b.engagement - a.engagement)
-            .map(u => (
-              <View key={u.uid} style={styles.userCard}>
-                <View style={styles.userCardHeader}>
-                  <View style={[styles.rowDot, {
-                    backgroundColor:
-                      u.provider === 'google' ? '#4285f4' :
-                      u.provider === 'apple' ? colors.text :
-                      colors.textDim,
-                  }]} />
-                  <View style={styles.rowBody}>
-                    <Text style={styles.rowTitle}>
-                      {u.email ?? u.displayName ?? `(anonyme · ${u.uid.slice(0, 6)})`}
-                    </Text>
-                    <Text style={styles.rowSub}>
-                      {u.provider} · créé {formatDate(u.createdAt)} · vu {formatDate(u.lastSeen)}
-                    </Text>
+            .map(u => {
+              const expanded = expandedUid === u.uid;
+              const ageDays = daysSince(u.createdAt);
+              const lastDays = daysSince(u.lastSeen);
+              return (
+                <Pressable
+                  key={u.uid}
+                  onPress={() => setExpandedUid(expanded ? null : u.uid)}
+                  style={({ pressed }) => [
+                    styles.userCard,
+                    expanded && styles.userCardExpanded,
+                    pressed && { opacity: 0.95 },
+                  ]}
+                >
+                  <View style={styles.userCardHeader}>
+                    <View style={[styles.rowDot, {
+                      backgroundColor:
+                        u.provider === 'google' ? '#4285f4' :
+                        u.provider === 'apple' ? colors.text :
+                        colors.textDim,
+                    }]} />
+                    <View style={styles.rowBody}>
+                      <Text style={styles.rowTitle}>
+                        {u.email ?? u.displayName ?? `(anonyme · ${u.uid.slice(0, 6)})`}
+                      </Text>
+                      <Text style={styles.rowSub}>
+                        {u.provider} · inscrit {formatDuration(ageDays)} · vu {formatDuration(lastDays)}
+                      </Text>
+                    </View>
+                    <View style={[styles.engagementBadge, {
+                      backgroundColor:
+                        u.engagement >= 50 ? colors.accent :
+                        u.engagement > 0 ? colors.accentFill :
+                        colors.surface,
+                    }]}>
+                      <Text style={[styles.engagementText, {
+                        color: u.engagement >= 50 ? colors.white : colors.accent,
+                      }]}>{u.engagement}</Text>
+                    </View>
                   </View>
-                  <View style={[styles.engagementBadge, {
-                    backgroundColor:
-                      u.engagement >= 50 ? colors.accent :
-                      u.engagement > 0 ? colors.accentFill :
-                      colors.surface,
-                  }]}>
-                    <Text style={[styles.engagementText, {
-                      color: u.engagement >= 50 ? colors.white : colors.accent,
-                    }]}>{u.engagement}</Text>
+                  <View style={styles.usageChips}>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>🕐 {u.quizCount}</Text>
+                    </View>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>👥 {u.childProfilesCount}</Text>
+                    </View>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>🔎 {u.sherlockXp} XP</Text>
+                    </View>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>📔 {u.unlockedFiches}/45</Text>
+                    </View>
+                    {u.streak > 0 && (
+                      <View style={[styles.chip, { backgroundColor: '#ff6b3522' }]}>
+                        <Text style={[styles.chipText, { color: '#e07b54' }]}>🔥 {u.streak}j</Text>
+                      </View>
+                    )}
+                    {u.badges > 0 && (
+                      <View style={[styles.chip, { backgroundColor: colors.accentFill }]}>
+                        <Text style={[styles.chipText, { color: colors.accent }]}>🏅 {u.badges}</Text>
+                      </View>
+                    )}
                   </View>
-                </View>
-                <View style={styles.usageChips}>
-                  <View style={styles.chip}>
-                    <Text style={styles.chipText}>🕐 {u.quizCount}</Text>
-                  </View>
-                  <View style={styles.chip}>
-                    <Text style={styles.chipText}>👥 {u.childProfilesCount}</Text>
-                  </View>
-                  <View style={styles.chip}>
-                    <Text style={styles.chipText}>🔎 {u.sherlockXp} XP</Text>
-                  </View>
-                  <View style={styles.chip}>
-                    <Text style={styles.chipText}>📔 {u.unlockedFiches}/45</Text>
-                  </View>
-                  {u.streak > 0 && (
-                    <View style={[styles.chip, { backgroundColor: '#ff6b3522' }]}>
-                      <Text style={[styles.chipText, { color: '#e07b54' }]}>🔥 {u.streak}j</Text>
+
+                  {expanded && (
+                    <View style={styles.detailWrap}>
+                      {/* Dates précises */}
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Date d'inscription</Text>
+                        <Text style={styles.detailValue}>
+                          {formatDate(u.createdAt)} ({ageDays !== null ? `${ageDays}j` : '—'})
+                        </Text>
+                      </View>
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Dernière session</Text>
+                        <Text style={styles.detailValue}>
+                          {formatDate(u.lastSeen)} ({lastDays !== null ? `il y a ${lastDays}j` : '—'})
+                        </Text>
+                      </View>
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>UID</Text>
+                        <Text style={[styles.detailValue, { fontSize: 11 }]} numberOfLines={1}>
+                          {u.uid}
+                        </Text>
+                      </View>
+
+                      {/* Quizzes */}
+                      {u.quizResults.length > 0 && (
+                        <View style={styles.detailSection}>
+                          <Text style={styles.detailSectionLabel}>Quizzes complétés ({u.quizResults.length})</Text>
+                          {u.quizResults.slice(-10).reverse().map((q, idx) => (
+                            <View key={idx} style={styles.detailQuizRow}>
+                              <Text style={styles.detailQuizDate}>
+                                {q.completedAt ? new Date(q.completedAt).toLocaleDateString('fr-FR', {
+                                  day: '2-digit', month: 'short',
+                                }) : '—'}
+                              </Text>
+                              <Text style={styles.detailQuizMode}>{q.mode}</Text>
+                              <View style={[styles.distNum, { backgroundColor: TYPE_COLORS[q.topType] || colors.accent }]}>
+                                <Text style={styles.distNumText}>{q.topType}</Text>
+                              </View>
+                              <Text style={styles.detailQuizName}>
+                                {TYPE_LABELS_FR[q.topType] ?? '?'}
+                                {q.wingType ? ` · aile ${q.wingType}` : ''}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+
+                      {/* Child profiles */}
+                      {u.childProfiles.length > 0 && (
+                        <View style={styles.detailSection}>
+                          <Text style={styles.detailSectionLabel}>Profils enfants enregistrés ({u.childProfiles.length})</Text>
+                          {u.childProfiles.map((c) => {
+                            const last = c.history?.[c.history.length - 1];
+                            return (
+                              <View key={c.id} style={styles.detailQuizRow}>
+                                <Text style={styles.detailQuizDate}>
+                                  {c.age ? `${c.age} ans` : '—'}
+                                </Text>
+                                <Text style={[styles.detailQuizMode, { flex: 1 }]} numberOfLines={1}>
+                                  {c.name}
+                                </Text>
+                                {last ? (
+                                  <>
+                                    <View style={[styles.distNum, { backgroundColor: TYPE_COLORS[last.topType] || colors.accent }]}>
+                                      <Text style={styles.distNumText}>{last.topType}</Text>
+                                    </View>
+                                    <Text style={styles.detailQuizName}>
+                                      {TYPE_LABELS_FR[last.topType] ?? '?'} · {c.history.length} test{c.history.length > 1 ? 's' : ''}
+                                    </Text>
+                                  </>
+                                ) : (
+                                  <Text style={styles.detailQuizName}>—</Text>
+                                )}
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
                     </View>
                   )}
-                  {u.badges > 0 && (
-                    <View style={[styles.chip, { backgroundColor: colors.accentFill }]}>
-                      <Text style={[styles.chipText, { color: colors.accent }]}>🏅 {u.badges}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            ))}
+                </Pressable>
+              );
+            })}
         </View>
       )}
 
@@ -470,6 +720,42 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg, marginBottom: spacing.sm,
   },
 
+  // Distribution box (profiles found)
+  distBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  distTitle: {
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
+    color: colors.text, marginBottom: spacing.sm,
+  },
+  distRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingVertical: 4,
+  },
+  distNum: {
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  distNumText: { fontFamily: fonts.serif, fontSize: 11, fontWeight: '700', color: colors.white },
+  distLabel: {
+    width: 80,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textSoft,
+  },
+  distBarTrack: {
+    flex: 1, height: 8, borderRadius: 4,
+    backgroundColor: colors.bg,
+    overflow: 'hidden',
+  },
+  distBarFill: { height: 8, borderRadius: 4 },
+  distPct: {
+    width: 36, textAlign: 'right',
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, fontWeight: '600',
+  },
+
   // Usage box (overview)
   usageBox: {
     backgroundColor: colors.surface,
@@ -526,5 +812,58 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontFamily: fonts.sans, fontSize: 11, color: colors.textSoft, fontWeight: '600',
+  },
+  legendText: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    lineHeight: 17, marginBottom: 2,
+  },
+  legendHint: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.accent,
+    fontStyle: 'italic', marginBottom: spacing.sm,
+  },
+
+  // User card expanded detail
+  userCardExpanded: {
+    borderColor: colors.accent,
+  },
+  detailWrap: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1, borderTopColor: colors.border,
+  },
+  detailRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 4,
+  },
+  detailLabel: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5,
+  },
+  detailValue: {
+    flex: 1, textAlign: 'right',
+    fontFamily: fonts.sans, fontSize: 12, color: colors.text,
+    marginLeft: spacing.sm,
+  },
+  detailSection: { marginTop: spacing.md },
+  detailSectionLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
+    color: colors.accent, letterSpacing: 0.5, textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
+  detailQuizRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingVertical: 4,
+  },
+  detailQuizDate: {
+    width: 60,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+  },
+  detailQuizMode: {
+    width: 50,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textSoft,
+  },
+  detailQuizName: {
+    flex: 1,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.text,
   },
 });
