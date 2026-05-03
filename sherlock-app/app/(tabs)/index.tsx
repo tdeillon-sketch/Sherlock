@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet, Alert, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
@@ -6,6 +6,7 @@ import { useT } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
 import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
+import { auth, isAdmin, onAuthChange } from '../../constants/firebase';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -36,9 +37,15 @@ export default function HomeScreen() {
   const [ritualOpen, setRitualOpen] = useState(false);
   const [ritualNote, setRitualNote] = useState('');
   const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [admin, setAdmin] = useState(isAdmin(auth.currentUser));
   const dailyQuestion = getDailyQuestion();
   const ritualDate = formatRitualDate(new Date(), locale);
   const ritualText = locale === 'en' ? dailyQuestion.en : dailyQuestion.fr;
+
+  // Re-evaluate admin status when auth changes
+  useEffect(() => {
+    return onAuthChange((u) => setAdmin(isAdmin(u)));
+  }, []);
 
   const openSubscribe = () => setSubscribeOpen(true);
 
@@ -77,14 +84,26 @@ export default function HomeScreen() {
           </View>
           <Text style={styles.brandLabel}>{t('home.brandLabel')}</Text>
         </View>
-        <Pressable
-          onPress={() => router.push('/account' as never)}
-          accessibilityLabel={t('account.title')}
-          style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.6 }]}
-          hitSlop={10}
-        >
-          <Text style={styles.accountBtnIcon}>👤</Text>
-        </Pressable>
+        <View style={styles.topBarRight}>
+          {admin && (
+            <Pressable
+              onPress={() => router.push('/admin' as never)}
+              accessibilityLabel="Admin"
+              style={({ pressed }) => [styles.adminBtn, pressed && { opacity: 0.6 }]}
+              hitSlop={10}
+            >
+              <Text style={styles.adminBtnText}>★</Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={() => router.push('/account' as never)}
+            accessibilityLabel={t('account.title')}
+            style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.6 }]}
+            hitSlop={10}
+          >
+            <Text style={styles.accountBtnIcon}>👤</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* ── Hero quote ── */}
@@ -291,12 +310,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600',
   },
+  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   accountBtn: {
     width: 38, height: 38, borderRadius: 19,
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center',
   },
   accountBtnIcon: { fontSize: 18 },
+  adminBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  adminBtnText: { color: colors.white, fontSize: 18, fontWeight: '700' },
 
   // ── Hero ──
   hero: {

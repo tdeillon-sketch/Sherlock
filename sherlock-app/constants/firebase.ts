@@ -12,7 +12,21 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
 } from 'firebase/firestore';
+
+// ── Admin allowlist ──
+// Only this email gets access to the admin dashboard.
+const ADMIN_EMAILS = ['tdeillon@gmail.com'];
+
+export function isAdmin(user: User | null): boolean {
+  if (!user || !user.email) return false;
+  return ADMIN_EMAILS.includes(user.email.toLowerCase());
+}
 
 // ── Config Firebase ──
 const firebaseConfig = {
@@ -44,6 +58,8 @@ export function onAuthChange(callback: (user: User | null) => void) {
 export async function signInWithGoogleIdToken(idToken: string): Promise<User> {
   const credential = GoogleAuthProvider.credential(idToken);
   const result = await signInWithCredential(auth, credential);
+  // Best-effort backfill of email/provider on the user doc
+  syncUserProfile(result.user).catch(() => {});
   return result.user;
 }
 
@@ -60,6 +76,7 @@ export async function signInWithAppleIdToken(
     rawNonce,
   });
   const result = await signInWithCredential(auth, credential);
+  syncUserProfile(result.user).catch(() => {});
   return result.user;
 }
 
@@ -114,8 +131,20 @@ export async function deleteAccount(): Promise<void> {
 export interface UserData {
   createdAt: any;
   lastSeen: any;
+  /** Email if signed in with Google/Apple, null for anonymous */
+  email?: string | null;
+  /** 'google' | 'apple' | 'anonymous' */
+  provider?: string;
+  /** Display name from the OAuth provider, if any */
+  displayName?: string | null;
   quizResults: QuizResult[];
   badges: Badge[];
+}
+
+function detectProvider(user: User): 'google' | 'apple' | 'anonymous' {
+  if (user.providerData.some(p => p.providerId === 'google.com')) return 'google';
+  if (user.providerData.some(p => p.providerId === 'apple.com')) return 'apple';
+  return 'anonymous';
 }
 
 export interface QuizResult {
@@ -142,12 +171,34 @@ export async function getUserData(uid: string): Promise<UserData | null> {
 }
 
 export async function createUserData(uid: string): Promise<void> {
+  const user = auth.currentUser;
   await setDoc(userDocRef(uid), {
     createdAt: serverTimestamp(),
     lastSeen: serverTimestamp(),
+    email: user?.email ?? null,
+    displayName: user?.displayName ?? null,
+    provider: user ? detectProvider(user) : 'anonymous',
     quizResults: [],
     badges: [],
   });
+}
+
+/**
+ * Backfill email/provider/displayName on every login.
+ * Existing user docs that predate this feature don't have those fields —
+ * call this whenever you have a fresh `user` object after sign-in.
+ */
+export async function syncUserProfile(user: User): Promise<void> {
+  try {
+    await updateDoc(userDocRef(user.uid), {
+      email: user.email ?? null,
+      displayName: user.displayName ?? null,
+      provider: detectProvider(user),
+      lastSeen: serverTimestamp(),
+    });
+  } catch {
+    // Doc may not exist yet — ignore. createUserData will populate it.
+  }
 }
 
 export async function saveQuizResult(uid: string, result: QuizResult): Promise<void> {
@@ -243,5 +294,120 @@ export async function saveChildProfiles(uid: string, profiles: ChildProfile[]): 
   await updateDoc(userDocRef(uid), {
     childProfiles: profiles,
     lastSeen: serverTimestamp(),
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ADMIN — list all users + launch subscribers
+//  Requires Firestore rules that allow the admin email to read the
+//  full /users and /launch_subscribers collections.
+// ═══════════════════════════════════════════════════════════════
+
+export interface AdminUserRow {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  provider: string;
+  createdAt: number | null;
+  lastSeen: number | null;
+  // Usage signals (computed from the user doc)
+  quizCount: number;          // # quizzes completed
+  childProfilesCount: number; // # saved child profiles
+  sherlockXp: number;         // Total XP in the Dossiers / Testez-vous game
+  unlockedFiches: number;     // Suspect files unlocked (Pokédex)
+  completedCases: number;     // Sherlock cases completed
+  badges: number;             // Achievement badges earned
+  streak: number;             // Daily mission streak
+  /** Aggregated engagement: 0 (none) → 100 (heavy user) */
+  engagement: number;
+}
+
+export interface AdminLaunchSubscriberRow {
+  deviceId: string;
+  email: string | null;
+  pushGranted: boolean;
+  pushToken: string | null;
+  locale: string;
+  platform: string;
+  subscribedAt: number | null;
+}
+
+function tsToMillis(value: any): number | null {
+  if (!value) return null;
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (typeof value === 'number') return value;
+  return null;
+}
+
+/**
+ * Compute a 0–100 engagement score from raw signals.
+ * Heuristic — tweak weights as you learn from real data.
+ */
+function computeEngagement(args: {
+  quizCount: number;
+  childProfiles: number;
+  sherlockXp: number;
+  unlockedFiches: number;
+  badges: number;
+}): number {
+  const score =
+    args.quizCount * 8 +           // each quiz = +8
+    args.childProfiles * 12 +      // each saved profile = +12
+    Math.min(args.sherlockXp / 50, 30) + // up to 30 pts from XP (1500 XP cap)
+    args.unlockedFiches * 2 +      // each fiche = +2
+    args.badges * 6;               // each badge = +6
+  return Math.min(Math.round(score), 100);
+}
+
+/** Admin only — read all /users docs */
+export async function listAllUsers(): Promise<AdminUserRow[]> {
+  const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(500)));
+  return snap.docs.map(d => {
+    const data = d.data() as any;
+    const dossier = data.dossierProgress || {};
+    const quizCount = Array.isArray(data.quizResults) ? data.quizResults.length : 0;
+    const childProfilesCount = Array.isArray(data.childProfiles) ? data.childProfiles.length : 0;
+    const sherlockXp = typeof dossier.totalXP === 'number' ? dossier.totalXP : 0;
+    const unlockedFiches = Array.isArray(dossier.unlockedFiches) ? dossier.unlockedFiches.length : 0;
+    const completedCases = Array.isArray(dossier.completedCases) ? dossier.completedCases.length : 0;
+    const badgesArr = Array.isArray(data.badges) ? data.badges : [];
+    const streak = typeof dossier.streak === 'number' ? dossier.streak : 0;
+    const engagement = computeEngagement({
+      quizCount, childProfiles: childProfilesCount, sherlockXp,
+      unlockedFiches, badges: badgesArr.length,
+    });
+    return {
+      uid: d.id,
+      email: data.email ?? null,
+      displayName: data.displayName ?? null,
+      provider: data.provider ?? 'unknown',
+      createdAt: tsToMillis(data.createdAt),
+      lastSeen: tsToMillis(data.lastSeen),
+      quizCount,
+      childProfilesCount,
+      sherlockXp,
+      unlockedFiches,
+      completedCases,
+      badges: badgesArr.length,
+      streak,
+      engagement,
+    };
+  });
+}
+
+/** Admin only — read all /launch_subscribers docs */
+export async function listAllLaunchSubscribers(): Promise<AdminLaunchSubscriberRow[]> {
+  const snap = await getDocs(query(collection(db, 'launch_subscribers'), orderBy('subscribedAt', 'desc'), limit(500)));
+  return snap.docs.map(d => {
+    const data = d.data() as any;
+    return {
+      deviceId: d.id,
+      email: data.email ?? null,
+      pushGranted: !!data.pushGranted,
+      pushToken: data.pushToken ?? null,
+      locale: data.locale ?? 'unknown',
+      platform: data.platform ?? 'unknown',
+      subscribedAt: tsToMillis(data.subscribedAt),
+    };
   });
 }
