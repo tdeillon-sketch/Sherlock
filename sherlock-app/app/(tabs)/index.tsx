@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, Pressable, StyleSheet, Alert, Linking, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { CHAPTERS } from '../../constants/data';
-import { CHAPTERS_EN, findChapterEn } from '../../i18n/chapters_en';
 import { useT } from '../../i18n';
+import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -23,22 +22,72 @@ const TOOLS: Tool[] = [
   { emoji: '◎', titleKey: 'tools.duoTitle',         descKey: 'tools.duoDesc',         route: '/duo',         accent: '#8b6ca7' },
 ];
 
+// ── Seasons (4 parts of the book) ──
+const SEASONS = [
+  { num: 1, titleKey: 'home.season1Title', subKey: 'home.season1Sub', episodes: 3, unlocked: true,  firstChapter: 1 },
+  { num: 2, titleKey: 'home.season2Title', subKey: 'home.seasonLockedSub', episodes: 3, unlocked: false, firstChapter: null },
+  { num: 3, titleKey: 'home.season3Title', subKey: 'home.seasonLockedSub', episodes: 3, unlocked: false, firstChapter: null },
+  { num: 4, titleKey: 'home.season4Title', subKey: 'home.seasonLockedSub', episodes: 1, unlocked: false, firstChapter: null },
+];
+
+// ── Mailto for "notify at launch" CTAs ──
+const NOTIFY_EMAIL = 'thomas.deillon@eshmedias.ch';
+const NOTIFY_SUBJECT_FR = 'Sortie du livre — m\'avertir';
+const NOTIFY_SUBJECT_EN = 'Book launch — notify me';
+const NOTIFY_BODY_FR = "Bonjour,\n\nJ'aimerais être prévenu·e à la sortie du livre « On a tous besoin de quelqu'un d'autre ».\n\nMerci !";
+const NOTIFY_BODY_EN = "Hello,\n\nI'd like to be notified when the book \"We all need someone else\" is released.\n\nThank you!";
+
 export default function HomeScreen() {
-  const [chaptersOpen, setChaptersOpen] = useState(false);
   const { t, locale } = useT();
-  // Use EN chapters structure when locale is 'en' (preserves part names + ordering)
-  const chaptersData = locale === 'en' ? CHAPTERS_EN : CHAPTERS;
+  const [ritualOpen, setRitualOpen] = useState(false);
+  const [ritualNote, setRitualNote] = useState('');
+  const dailyQuestion = getDailyQuestion();
+  const ritualDate = formatRitualDate(new Date(), locale);
+  const ritualText = locale === 'en' ? dailyQuestion.en : dailyQuestion.fr;
+
+  const openMailto = () => {
+    const subject = locale === 'en' ? NOTIFY_SUBJECT_EN : NOTIFY_SUBJECT_FR;
+    const body = locale === 'en' ? NOTIFY_BODY_EN : NOTIFY_BODY_FR;
+    const url = `mailto:${NOTIFY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    Linking.openURL(url).catch(() => {});
+  };
+
+  const handleSeasonPress = (season: typeof SEASONS[number]) => {
+    if (season.unlocked && season.firstChapter !== null) {
+      router.push(`/chapter/${season.firstChapter}` as never);
+      return;
+    }
+    Alert.alert(
+      t('home.seasonLockedAlertTitle'),
+      t('home.seasonLockedAlertBody'),
+      [
+        { text: t('home.seasonLockedAlertCancel'), style: 'cancel' },
+        { text: t('home.seasonLockedAlertCta'), onPress: openMailto },
+      ],
+    );
+  };
+
+  const handleSolenePress = () => {
+    Alert.alert(
+      t('home.soleneAlertTitle'),
+      t('home.soleneAlertBody'),
+      [
+        { text: t('home.soleneAlertCancel'), style: 'cancel' },
+        { text: t('home.soleneAlertCta'), onPress: openMailto },
+      ],
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* ── Hero ── */}
-      <LinearGradient
-        colors={[colors.surface, colors.bg]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.hero}
-      >
-        {/* Top-right account button */}
+      {/* ── Top bar (brand + account) ── */}
+      <View style={styles.topBar}>
+        <View style={styles.brandRow}>
+          <View style={styles.brandSquare}>
+            <Text style={styles.brandSquareLetter}>L</Text>
+          </View>
+          <Text style={styles.brandLabel}>{t('home.brandLabel')}</Text>
+        </View>
         <Pressable
           onPress={() => router.push('/account' as never)}
           accessibilityLabel={t('account.title')}
@@ -47,124 +96,138 @@ export default function HomeScreen() {
         >
           <Text style={styles.accountBtnIcon}>👤</Text>
         </Pressable>
+      </View>
 
-        <Text style={styles.heroEyebrow}>{t('home.eyebrow')}</Text>
-        <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+      {/* ── Hero quote ── */}
+      <View style={styles.hero}>
+        <Text style={styles.heroQuote}>{t('home.heroQuote')}</Text>
+        <Text style={styles.heroAuthor}>{t('home.heroAuthor')}</Text>
         <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
-      </LinearGradient>
+        <Text style={styles.heroCredit}>{t('home.heroCredit')}</Text>
+      </View>
 
-      {/* ── Avant-propos en 5 sections ── */}
-      <View style={styles.introSection}>
-
-        {/* Section 1 — Le seul animal */}
-        <View style={styles.section}>
-          <Text style={styles.sectionNum}>I.</Text>
-          <Text style={styles.sectionTitle}>{t('home.s1Title')}</Text>
-          <Text style={[styles.introBody, styles.bold]}>{t('home.s1Body1Bold')}</Text>
-          <Text style={styles.introBody}>{t('home.s1Body2')}</Text>
-          <Text style={styles.introBody}>
-            {t('home.s1Body3Pre')}
-            <Text style={styles.italic}>{t('home.s1Body3Italic')}</Text>
-          </Text>
+      {/* ── Pilot episode card (the marketing centerpiece) ── */}
+      <Pressable
+        onPress={() => router.push('/chapter/1' as never)}
+        style={({ pressed }) => [styles.pilotCard, pressed && { opacity: 0.92 }]}
+      >
+        <View style={styles.pilotHeader}>
+          <Text style={styles.pilotEyebrow}>{t('home.pilotEyebrow')}</Text>
+          <Text style={styles.pilotDuration}>{t('home.pilotDuration')}</Text>
         </View>
-
-        {/* Section 2 — Vos lunettes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionNum}>II.</Text>
-          <Text style={styles.sectionTitle}>{t('home.s2Title')}</Text>
-          <Text style={styles.introBody}>{t('home.s2Body1')}</Text>
-          <Text style={styles.introBody}>
-            {t('home.s2Body2Pre')}
-            <Text style={styles.bold}>{t('home.s2Body2Bold')}</Text>
-            {t('home.s2Body2Post')}
-          </Text>
-          <Text style={styles.introBody}>
-            {t('home.s2Body3Pre')}
-            <Text style={styles.bold}>{t('home.s2Body3Bold')}</Text>
-            {t('home.s2Body3Post')}
-          </Text>
-          <Text style={[styles.introBody, styles.bold]}>{t('home.s2Body4')}</Text>
+        <Text style={styles.pilotChapterLabel}>{t('home.pilotChapterLabel')}</Text>
+        <Text style={styles.pilotChapterTitle}>{t('home.pilotChapterTitle')}</Text>
+        <Text style={styles.pilotTagline}>{t('home.pilotTagline')}</Text>
+        <View style={styles.pilotCtaRow}>
+          <Text style={styles.pilotCtaText}>{t('home.pilotCta')}</Text>
+          <Text style={styles.pilotCtaArrow}>→</Text>
         </View>
+      </Pressable>
 
-        {/* Section 3 — Quand vous criez */}
-        <View style={styles.section}>
-          <Text style={styles.sectionNum}>III.</Text>
-          <Text style={styles.sectionTitle}>{t('home.s3Title')}</Text>
-          <Text style={styles.introBody}>{t('home.s3Body1')}</Text>
-          <Text style={styles.introBody}>
-            {t('home.s3Body2Pre')}
-            <Text style={styles.italic}>{t('home.s3Body2Italic')}</Text>
-          </Text>
-          <Text style={styles.introBody}>
-            {t('home.s3Body3Pre')}
-            <Text style={styles.bold}>{t('home.s3Body3Bold')}</Text>
-          </Text>
-          <View style={styles.monstreList}>
-            <Text style={styles.introBody}>
-              <Text style={styles.bold}>{t('home.s3CorbeauName')}</Text>
-              {t('home.s3CorbeauDesc')}
-            </Text>
-            <Text style={styles.introBody}>
-              <Text style={styles.bold}>{t('home.s3ChameauName')}</Text>
-              {t('home.s3ChameauDesc')}
-            </Text>
-            <Text style={styles.introBody}>
-              <Text style={styles.bold}>{t('home.s3RenardName')}</Text>
-              {t('home.s3RenardDesc')}
-            </Text>
+      {/* ── Daily ritual ── */}
+      <View style={styles.ritualCard}>
+        <View style={styles.ritualHeader}>
+          <Text style={styles.ritualEyebrow}>{t('home.ritualEyebrow')} · {ritualDate}</Text>
+          <View style={styles.ritualDot} />
+        </View>
+        <Text style={styles.ritualText}>« {ritualText} »</Text>
+        {!ritualOpen ? (
+          <View style={styles.ritualCtaRow}>
+            <Pressable
+              onPress={() => setRitualOpen(true)}
+              style={({ pressed }) => [styles.ritualCtaPrimary, pressed && { opacity: 0.85 }]}
+            >
+              <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualCtaPrimary')}</Text>
+            </Pressable>
+            <View style={styles.ritualCtaSecondary}>
+              <Text style={styles.ritualCtaSecondaryText}>{t('home.ritualCtaSecondary')}</Text>
+            </View>
           </View>
-          <Text style={styles.introBody}>{t('home.s3Body4')}</Text>
-        </View>
+        ) : (
+          <View style={styles.ritualNoteWrap}>
+            <Text style={styles.ritualNoteLabel}>{t('home.ritualNoteTitle')}</Text>
+            <TextInput
+              value={ritualNote}
+              onChangeText={setRitualNote}
+              placeholder={t('home.ritualNotePlaceholder')}
+              placeholderTextColor={colors.textDim}
+              style={styles.ritualNoteInput}
+              multiline
+              numberOfLines={4}
+            />
+            <View style={styles.ritualCtaRow}>
+              <Pressable
+                onPress={() => { setRitualOpen(false); /* note kept in memory */ }}
+                style={({ pressed }) => [styles.ritualCtaPrimary, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualNoteSave')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => { setRitualOpen(false); setRitualNote(''); }}
+                style={({ pressed }) => [styles.ritualCtaSecondary, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.ritualCtaSecondaryText}>{t('home.ritualNoteCancel')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </View>
 
-        {/* Section 4 — Une forêt */}
-        <View style={styles.section}>
-          <Text style={styles.sectionNum}>IV.</Text>
-          <Text style={styles.sectionTitle}>{t('home.s4Title')}</Text>
-          <Text style={styles.introBody}>{t('home.s4Body1')}</Text>
-          <Text style={styles.introBody}>
-            {t('home.s4Body2Pre')}
-            <Text style={styles.bold}>{t('home.s4Body2Bold')}</Text>
-            {t('home.s4Body2Post')}
-          </Text>
-          <Text style={styles.introBody}>
-            {t('home.s4Body3Pre')}
-            <Text style={styles.italic}>{t('home.s4Body3Italic')}</Text>
-            {t('home.s4Body3Post')}
-          </Text>
+      {/* ── The series · 4 seasons ── */}
+      <View style={styles.seriesSection}>
+        <View style={styles.seriesHeader}>
+          <Text style={styles.seriesEyebrow}>{t('home.seriesEyebrow')}</Text>
         </View>
-
-        {/* Section 5 — L'amour est un verbe */}
-        <View style={styles.section}>
-          <Text style={styles.sectionNum}>V.</Text>
-          <Text style={styles.sectionTitle}>{t('home.s5Title')}</Text>
-          <Text style={styles.introBody}>{t('home.s5Body1')}</Text>
-          <Text style={[styles.introBody, styles.bold]}>{t('home.s5Body2Bold')}</Text>
-          <Text style={styles.introBody}>{t('home.s5Body3')}</Text>
-          <Text style={styles.introBody}>
-            {t('home.s5Body4Pre')}
-            <Text style={styles.italic}>{t('home.s5Body4Italic')}</Text>
-            {t('home.s5Body4Post')}
-          </Text>
-        </View>
-
-        {/* Transition vers les outils */}
-        <View style={styles.transitionBlock}>
-          <Text style={styles.introBody}>
-            {t('home.transition1Pre')}
-            <Text style={styles.bold}>{t('home.transition1Bold')}</Text>
-            {t('home.transition1Post')}
-          </Text>
-          <Text style={styles.introBody}>
-            {t('home.transition2Pre')}
-            <Text style={styles.bold}>{t('home.transition2Bold')}</Text>
-          </Text>
-          <Text style={styles.introSignature}>{t('home.introSignature')}</Text>
+        <View style={styles.seasonList}>
+          {SEASONS.map((season) => (
+            <Pressable
+              key={season.num}
+              onPress={() => handleSeasonPress(season)}
+              style={({ pressed }) => [
+                styles.seasonItem,
+                !season.unlocked && styles.seasonItemLocked,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <View style={[
+                styles.seasonBadge,
+                season.unlocked ? styles.seasonBadgeUnlocked : styles.seasonBadgeLocked,
+              ]}>
+                <Text style={[
+                  styles.seasonBadgeText,
+                  season.unlocked ? styles.seasonBadgeTextUnlocked : styles.seasonBadgeTextLocked,
+                ]}>{season.num}</Text>
+              </View>
+              <View style={styles.seasonBody}>
+                <Text style={styles.seasonTitle}>{t(season.titleKey)}</Text>
+                <Text style={styles.seasonSub}>{t(season.subKey)}</Text>
+              </View>
+              {season.unlocked ? (
+                <Text style={styles.seasonMeta}>{t('home.seasonEpisodes', { n: season.episodes })}</Text>
+              ) : (
+                <View style={styles.seasonLockIcon}>
+                  <Text style={styles.seasonLockIconText}>×</Text>
+                </View>
+              )}
+            </Pressable>
+          ))}
         </View>
       </View>
 
-      {/* ── Tools (entrées vers les onglets) ── */}
+      {/* ── Solène teaser (the strategic block) ── */}
+      <Pressable
+        onPress={handleSolenePress}
+        style={({ pressed }) => [styles.soleneCard, pressed && { opacity: 0.9 }]}
+      >
+        <Text style={styles.soleneEyebrow}>{t('home.soleneEyebrow')}</Text>
+        <Text style={styles.soleneText}>{t('home.soleneText')}</Text>
+        <Text style={styles.soleneCta}>{t('home.soleneCta')}  →</Text>
+      </Pressable>
+
+      {/* ── Tools (les outils du voyage) ── */}
       <View style={styles.toolsSection}>
         <Text style={styles.sectionLabel}>{t('home.toolsLabel')}</Text>
+        <Text style={styles.toolsIntro}>{t('home.toolsIntro')}</Text>
 
         {TOOLS.map((tool) => (
           <Pressable
@@ -187,339 +250,276 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* ── Chapitres du livre (collapsible) ── */}
-      <View style={styles.chaptersSection}>
-        <Pressable
-          style={styles.chaptersHeader}
-          onPress={() => setChaptersOpen((v) => !v)}
-        >
-          <View style={styles.chaptersHeaderLeft}>
-            <Text style={styles.chaptersHeaderEmoji}>📖</Text>
-            <View>
-              <Text style={styles.chaptersHeaderTitle}>{t('home.chaptersTitle')}</Text>
-              <Text style={styles.chaptersHeaderSub}>
-                {chaptersOpen ? t('home.chaptersClose') : t('home.chaptersOpen')}
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.chaptersChevron}>{chaptersOpen ? '▴' : '▾'}</Text>
-        </Pressable>
-
-        {chaptersOpen && (
-          <View style={styles.chaptersList}>
-            <Text style={styles.chaptersIntro}>{t('home.chaptersIntro')}</Text>
-            {chaptersData.map((part, partIndex) => (
-              <View key={partIndex} style={styles.partContainer}>
-                <Text style={styles.partTitle}>{part.part}</Text>
-
-                {part.chapters.map((chapter) => (
-                  <Pressable
-                    key={String(chapter.num)}
-                    style={styles.chapterItem}
-                    onPress={() => router.push(`/chapter/${chapter.num}` as never)}
-                  >
-                    <View style={styles.chapterRow}>
-                      <View style={styles.chapterBadge}>
-                        <Text style={styles.chapterBadgeText}>{chapter.num}</Text>
-                      </View>
-                      <View style={styles.chapterContent}>
-                        <Text style={styles.chapterTitle}>{chapter.title}</Text>
-                        {chapter.quote ? (
-                          <Text style={styles.chapterQuote}>{chapter.quote}</Text>
-                        ) : null}
-                        <Text style={styles.chapterDesc} numberOfLines={3}>
-                          {chapter.desc}
-                        </Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
+      {/* ── Pre-order CTA ── */}
+      <Pressable
+        onPress={openMailto}
+        style={({ pressed }) => [styles.preorderBox, pressed && { opacity: 0.85 }]}
+      >
+        <Text style={styles.preorderHint}>{t('home.preorderHint')}</Text>
+        <Text style={styles.preorderText}>{t('home.preorderText')}</Text>
+        <Text style={styles.preorderCta}>{t('home.preorderCta')}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  content: {
-    paddingBottom: spacing.xxl + spacing.xl,
-  },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { paddingBottom: spacing.xxl + spacing.xl },
 
-  // ── Hero ──
-  hero: {
-    paddingTop: 72,
-    paddingBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    position: 'relative',
+  // ── Top bar ──
+  topBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingTop: 56, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm,
+  },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandSquare: {
+    width: 30, height: 30, borderRadius: 8,
+    backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  brandSquareLetter: {
+    fontFamily: fonts.serifItalic, fontSize: 16, fontWeight: '500', color: colors.white,
+  },
+  brandLabel: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600',
   },
   accountBtn: {
-    position: 'absolute',
-    top: 56,
-    right: spacing.md,
-    width: 38, height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.border,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center',
   },
   accountBtnIcon: { fontSize: 18 },
-  heroEyebrow: {
-    fontFamily: fonts.sans,
-    fontSize: 11,
-    color: colors.accent,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-    marginBottom: spacing.sm,
+
+  // ── Hero ──
+  hero: {
+    paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md,
   },
-  heroTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 28,
+  heroQuote: {
+    fontFamily: fonts.serifItalic, fontSize: 26, lineHeight: 34,
     color: colors.text,
-    textAlign: 'center',
-    lineHeight: 36,
-    marginBottom: spacing.sm,
+  },
+  heroAuthor: {
+    fontFamily: fonts.sans, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase',
+    color: colors.textMuted, fontWeight: '600', marginTop: spacing.sm,
   },
   heroSubtitle: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 14,
-    color: colors.textSoft,
-    textAlign: 'center',
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
+    color: colors.textSoft, marginTop: spacing.md,
+  },
+  heroCredit: {
+    fontFamily: fonts.serifItalic, fontSize: 12,
+    color: colors.textMuted, marginTop: 4,
   },
 
-  // ── Avant-propos (5 sections) ──
-  introSection: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.lg,
+  // ── Pilot card (the marketing centerpiece) ──
+  pilotCard: {
+    marginHorizontal: spacing.md, marginTop: spacing.md,
+    backgroundColor: '#1f2429',
+    borderRadius: radius.lg,
+    padding: spacing.lg,
   },
-  section: {
-    marginBottom: spacing.xl,
+  pilotHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: spacing.sm,
   },
-  sectionNum: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 13,
-    color: colors.accent,
-    letterSpacing: 1,
+  pilotEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 2,
+    color: colors.accent, fontWeight: '700',
+  },
+  pilotDuration: {
+    fontFamily: fonts.sans, fontSize: 11, color: '#b8a89b',
+  },
+  pilotChapterLabel: {
+    fontFamily: fonts.serif, fontSize: 17, color: '#FBF7F1', marginTop: 4,
+  },
+  pilotChapterTitle: {
+    fontFamily: fonts.serifItalic, fontSize: 18, lineHeight: 24,
+    color: '#FBF7F1', marginTop: 2,
+  },
+  pilotTagline: {
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 20,
+    color: '#b8a89b', marginTop: spacing.md, marginBottom: spacing.md,
+  },
+  pilotCtaRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: colors.accent,
+    borderRadius: radius.full,
+    paddingVertical: 12, paddingHorizontal: spacing.md,
+  },
+  pilotCtaText: {
+    fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.white,
+  },
+  pilotCtaArrow: {
+    fontFamily: fonts.sans, fontSize: 18, color: colors.white,
+  },
+
+  // ── Ritual ──
+  ritualCard: {
+    marginHorizontal: spacing.md, marginTop: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md,
+  },
+  ritualHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  ritualEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
+    color: colors.textMuted, fontWeight: '700',
+  },
+  ritualDot: {
+    width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent,
+  },
+  ritualText: {
+    fontFamily: fonts.serifItalic, fontSize: 15, lineHeight: 23,
+    color: colors.text,
+  },
+  ritualCtaRow: {
+    flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md,
+  },
+  ritualCtaPrimary: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    borderRadius: radius.sm,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  ritualCtaPrimaryText: {
+    fontFamily: fonts.sans, fontSize: 13, color: colors.text, fontWeight: '600',
+  },
+  ritualCtaSecondary: {
+    paddingVertical: 10, paddingHorizontal: spacing.md,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+    alignItems: 'center',
+  },
+  ritualCtaSecondaryText: {
+    fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted,
+  },
+  ritualNoteWrap: { marginTop: spacing.sm },
+  ritualNoteLabel: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    letterSpacing: 1, textTransform: 'uppercase', fontWeight: '700',
     marginBottom: spacing.xs,
   },
-  sectionTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 24,
-    lineHeight: 30,
+  ritualNoteInput: {
+    fontFamily: fonts.sans, fontSize: 14, color: colors.text,
+    backgroundColor: colors.bg,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+    padding: spacing.sm, minHeight: 80, textAlignVertical: 'top',
+  },
+
+  // ── Series ──
+  seriesSection: {
+    marginHorizontal: spacing.md, marginTop: spacing.lg,
+  },
+  seriesHeader: { marginBottom: spacing.sm },
+  seriesEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
+    color: colors.textMuted, fontWeight: '700',
+  },
+  seasonList: { gap: 8 },
+  seasonItem: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: 12, paddingHorizontal: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: radius.md,
+  },
+  seasonItemLocked: { opacity: 0.55 },
+  seasonBadge: {
+    width: 30, height: 30, borderRadius: 8,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  seasonBadgeUnlocked: { backgroundColor: colors.accent },
+  seasonBadgeLocked: { borderWidth: 1, borderColor: colors.textDim, backgroundColor: 'transparent' },
+  seasonBadgeText: { fontFamily: fonts.serif, fontSize: 14, fontWeight: '600' },
+  seasonBadgeTextUnlocked: { color: colors.white },
+  seasonBadgeTextLocked: { color: colors.textMuted },
+  seasonBody: { flex: 1 },
+  seasonTitle: { fontFamily: fonts.sans, fontSize: 14, color: colors.text, fontWeight: '600' },
+  seasonSub: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  seasonMeta: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+  },
+  seasonLockIcon: {
+    width: 18, height: 18, borderRadius: 9,
+    borderWidth: 1, borderColor: colors.textDim,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  seasonLockIconText: { fontSize: 10, color: colors.textMuted, lineHeight: 12 },
+
+  // ── Solène teaser ──
+  soleneCard: {
+    marginHorizontal: spacing.md, marginTop: spacing.lg,
+    backgroundColor: colors.accentFill,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  soleneEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
+    color: colors.accent, fontWeight: '700', marginBottom: 6,
+  },
+  soleneText: {
+    fontFamily: fonts.serifItalic, fontSize: 14, lineHeight: 22,
     color: colors.text,
-    marginBottom: spacing.md,
   },
-  monstreList: {
-    paddingLeft: spacing.md,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.accent + '55',
-    marginBottom: spacing.md,
-    gap: 4,
-  },
-  transitionBlock: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  bold: {
-    fontWeight: '700',
-    color: colors.text,
-  },
-  italic: {
-    fontStyle: 'italic',
-  },
-  introBody: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    lineHeight: 24,
-    color: colors.textSoft,
-    marginBottom: spacing.md,
-  },
-  introSignature: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 15,
-    color: colors.accent,
-    marginTop: spacing.md,
+  soleneCta: {
+    fontFamily: fonts.sans, fontSize: 13, fontWeight: '700',
+    color: colors.accent, marginTop: spacing.sm,
   },
 
   // ── Tools section ──
   toolsSection: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.lg, paddingTop: spacing.xl,
   },
   sectionLabel: {
-    fontFamily: fonts.sans,
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textMuted,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: spacing.md,
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
+    color: colors.textMuted, letterSpacing: 1.2, textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  toolsIntro: {
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
+    color: colors.textSoft, marginBottom: spacing.md,
   },
   toolCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    gap: spacing.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md, marginBottom: spacing.sm, gap: spacing.md,
   },
-  toolCardPressed: {
-    opacity: 0.7,
-  },
+  toolCardPressed: { opacity: 0.7 },
   toolEmojiBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 48, height: 48, borderRadius: 24,
     borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  toolEmoji: {
-    fontSize: 22,
-  },
-  toolBody: {
-    flex: 1,
-  },
-  toolTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 17,
-    color: colors.text,
-    marginBottom: 2,
-  },
-  toolDesc: {
-    fontFamily: fonts.sans,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.textMuted,
-  },
-  toolChevron: {
-    fontSize: 28,
-    fontWeight: '300',
-    paddingHorizontal: spacing.xs,
-  },
+  toolEmoji: { fontSize: 22 },
+  toolBody: { flex: 1 },
+  toolTitle: { fontFamily: fonts.serif, fontSize: 17, color: colors.text, marginBottom: 2 },
+  toolDesc: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textMuted },
+  toolChevron: { fontSize: 28, fontWeight: '300', paddingHorizontal: spacing.xs },
 
-  // ── Chapters section ──
-  chaptersSection: {
-    marginTop: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  chaptersHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+  // ── Pre-order CTA ──
+  preorderBox: {
+    marginHorizontal: spacing.md, marginTop: spacing.lg,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    borderWidth: 1, borderStyle: 'dashed', borderColor: colors.accent,
     borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  chaptersHeaderLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    flex: 1,
   },
-  chaptersHeaderEmoji: {
-    fontSize: 24,
+  preorderHint: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginBottom: 4,
   },
-  chaptersHeaderTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 17,
-    color: colors.text,
+  preorderText: {
+    fontFamily: fonts.sans, fontSize: 14, color: colors.text, marginBottom: spacing.xs,
   },
-  chaptersHeaderSub: {
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  chaptersChevron: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.accent,
-    paddingHorizontal: spacing.sm,
-  },
-
-  // ── Chapters list (when open) ──
-  chaptersList: {
-    marginTop: spacing.md,
-  },
-  chaptersIntro: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 14,
-    lineHeight: 21,
-    color: colors.textSoft,
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  partContainer: {
-    marginTop: spacing.lg,
-  },
-  partTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 18,
-    color: colors.accent,
-    marginBottom: spacing.md,
-  },
-  chapterItem: {
-    marginBottom: spacing.lg,
-  },
-  chapterRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  chapterBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-    marginTop: 2,
-  },
-  chapterBadgeText: {
-    fontFamily: fonts.sans,
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.white,
-  },
-  chapterContent: {
-    flex: 1,
-  },
-  chapterTitle: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  chapterQuote: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 13,
-    color: colors.textSoft,
-    marginBottom: spacing.sm,
-  },
-  chapterDesc: {
-    fontFamily: fonts.sans,
-    fontSize: 13,
-    lineHeight: 20,
-    color: colors.textSoft,
+  preorderCta: {
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '700',
   },
 });

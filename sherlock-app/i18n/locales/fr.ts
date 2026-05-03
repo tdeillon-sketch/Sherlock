@@ -30,77 +30,65 @@ export const fr = {
     duo: 'Duo',
   },
 
-  // Home screen
+  // Home screen — TV-series framing: free pilot + daily ritual + 4 seasons
   home: {
-    eyebrow: 'AVANT-PROPOS DU LIVRE — À PARAÎTRE',
-    heroTitle: "On a tous besoin\nde quelqu'un d'autre",
-    heroSubtitle: 'Le voyage intérieur de deux parents imparfaits',
+    // Brand
+    brandLabel: 'LE LIVRE',
 
-    // Section 1 — Le seul animal
-    s1Title: 'Le seul animal',
-    s1Body1Bold: "L'homme est le seul animal qui ne sait pas élever ses petits.",
-    s1Body2: "Le veau marche en quinze minutes. Le poussin sait quoi picorer dès la sortie de l'œuf. Vous, vous tenez un nourrisson dans les bras, et personne ne vous a remis le mode d'emploi.",
-    s1Body3Pre: "Cette nudité-là, c'est notre point de départ. Pas une faille — une liberté vertigineuse. ",
-    s1Body3Italic: 'Tout est à construire.',
+    // Hero
+    heroQuote: 'Le parent qui doute\nest un parent qui\ncherche.',
+    heroAuthor: '— Thomas Deillon',
+    heroSubtitle: "Le voyage intérieur de parents imparfaits, comment grandir avec ses enfants",
+    heroCredit: 'par Solène et Thomas Deillon · à paraître',
 
-    // Section 2 — Vos lunettes ne sont pas les leurs
-    s2Title: 'Vos lunettes ne sont pas les leurs',
-    s2Body1: 'Vous regardez votre enfant. Vous croyez le voir.',
-    s2Body2Pre: 'En réalité, vous le voyez ',
-    s2Body2Bold: 'à travers vos lunettes',
-    s2Body2Post: " — celles que la vie vous a posées sur le nez sans vous demander votre avis. Lui en a d'autres. Et votre conjoint·e encore d'autres.",
-    s2Body3Pre: "C'est ça, l'",
-    s2Body3Bold: 'Ennéagramme',
-    s2Body3Post: " : neuf façons radicalement différentes de regarder le même monde. Neuf moteurs intérieurs. Neuf manières d'aimer, de souffrir, de se braquer.",
-    s2Body4: "Ce n'est pas un test. C'est une carte.",
+    // Pilot card
+    pilotEyebrow: 'ÉPISODE PILOTE · GRATUIT',
+    pilotDuration: '12 min',
+    pilotChapterLabel: 'Chapitre 1',
+    pilotChapterTitle: 'Le seul animal qui ne sait pas élever ses petits',
+    pilotTagline: "Pourquoi sommes-nous le seul être vivant à arriver au monde sans mode d'emploi ?",
+    pilotCta: 'Commencer la lecture',
 
-    // Section 3 — Quand vous criez, ce n'est pas vous
-    s3Title: "Quand vous criez, ce n'est pas vous",
-    s3Body1: 'Un soir, votre enfant fait une petite bêtise. Vous explosez.',
-    s3Body2Pre: 'Trois secondes plus tard, vous vous demandez : ',
-    s3Body2Italic: "« Mais qu'est-ce qui m'a pris ? »",
-    s3Body3Pre: "Ce qui vous a pris, ce n'est pas vous. ",
-    s3Body3Bold: "C'est l'un de vos monstres.",
-    s3CorbeauName: 'Le Corbeau',
-    s3CorbeauDesc: ", qui critique tout — vous d'abord, eux ensuite.",
-    s3ChameauName: 'Le Chameau',
-    s3ChameauDesc: ', qui porte trop, et qui craque quand on lui demande encore une chose.',
-    s3RenardName: 'Le Renard',
-    s3RenardDesc: ', qui se faufile pour ne jamais rien sentir vraiment.',
-    s3Body4: "Le livre vous apprend à les reconnaître. Et à les nommer pour qu'ils cessent de parler à votre place.",
+    // Daily ritual
+    ritualEyebrow: 'LE RITUEL DU JOUR',
+    ritualCtaPrimary: 'Y répondre',
+    ritualCtaSecondary: 'Plus tard',
+    ritualNoteTitle: 'Votre réponse',
+    ritualNotePlaceholder: 'Notez ce qui vous vient…',
+    ritualNoteSave: 'Enregistrer',
+    ritualNoteCancel: 'Annuler',
 
-    // Section 4 — Une forêt, pas une monoculture
-    s4Title: 'Une forêt, pas une monoculture',
-    s4Body1: "Une forêt avec dix essences différentes traverse la tempête. Une monoculture s'effondre au premier vent.",
-    s4Body2Pre: "C'est aussi vrai d'une famille. ",
-    s4Body2Bold: 'Plus elle accepte ses différences, plus elle tient.',
-    s4Body2Post: " Votre enfant Type 4 qui pleure devant un coucher de soleil n'est pas un problème à corriger — c'est une essence d'arbre que la forêt familiale a la chance d'avoir.",
-    s4Body3Pre: 'Votre conjoint·e qui ne « comprend pas » vos émotions ne vous aime pas moins. Il ou elle aime ',
-    s4Body3Italic: 'autrement',
-    s4Body3Post: ". Et c'est précisément ce qui rend la forêt vivante.",
+    // Series block
+    seriesEyebrow: 'LA SÉRIE · 4 SAISONS',
+    season1Title: 'Pourquoi',
+    season1Sub: 'Le plus beau chantier du monde',
+    season2Title: 'Ouvre les yeux',
+    season3Title: 'Ce qui tient quand tout tremble',
+    season4Title: 'Apprendre à regarder partir',
+    seasonEpisodes: '{{n}} ép.',
+    seasonLockedSub: 'Avec le livre',
+    seasonLockedAlertTitle: 'Disponible avec le livre',
+    seasonLockedAlertBody: 'Cette saison sera accessible quand le livre paraîtra. Vous pouvez vous inscrire pour être prévenu·e à la sortie.',
+    seasonLockedAlertCta: "M'avertir à la sortie",
+    seasonLockedAlertCancel: 'Plus tard',
 
-    // Section 5 — L'amour est un verbe
-    s5Title: "L'amour est un verbe",
-    s5Body1: "L'amour parental n'est pas un sentiment qui vous tombe dessus.",
-    s5Body2Bold: "C'est un verbe. Un choix. Un acte quotidien.",
-    s5Body3: "Aimer son enfant Type 1, ce n'est pas l'aimer comme on aimerait un Type 7. Aimer son conjoint·e Type 8, ce n'est pas l'aimer comme on aimerait un Type 9.",
-    s5Body4Pre: "Comprendre le profil de l'autre, c'est apprendre à conjuguer le verbe ",
-    s5Body4Italic: 'aimer',
-    s5Body4Post: ' dans sa langue à lui — pas la vôtre.',
+    // Solène teaser
+    soleneEyebrow: 'BIENTÔT · LA VOIX DE SOLÈNE',
+    soleneText: "Un même livre, deux regards. La version finale intègrera la voix de Solène — la mère, l'épouse, l'autre.",
+    soleneCta: "M'avertir à la sortie",
+    soleneAlertTitle: 'Soyez prévenu·e à la sortie',
+    soleneAlertBody: "Le livre sortira prochainement avec la voix de Solène intégrée. Pour être averti·e dès qu'il est disponible, écrivez-nous.",
+    soleneAlertCta: 'Nous écrire',
+    soleneAlertCancel: 'Plus tard',
 
-    // Transition vers les outils
-    transition1Pre: 'Ce livre — ',
-    transition1Bold: 'à paraître prochainement',
-    transition1Post: " — raconte tout ça. Les neuf profils, les trois monstres, l'amour comme verbe, la forêt familiale, le pardon comme ciment, et la main qu'on apprend à lâcher quand ils grandissent.",
-    transition2Pre: "En attendant qu'il arrive entre vos mains, on a construit cette app. ",
-    transition2Bold: 'Quatre outils pour commencer maintenant.',
+    // Tools
+    toolsLabel: 'Les outils du voyage',
+    toolsIntro: "En attendant le livre, ces quatre outils vous accompagnent dès aujourd'hui.",
 
-    introSignature: '— Thomas & Solène',
-    toolsLabel: 'Les outils',
-    chaptersTitle: '📖 Le livre, en 5 parties',
-    chaptersOpen: "Cliquez pour découvrir comment il s'articule.",
-    chaptersClose: 'Refermer la table des matières',
-    chaptersIntro: "Une carte du voyage. De la nudité de départ jusqu'à la main qu'on lâche.",
+    // Pre-order
+    preorderHint: 'Vous lisez le pilote.',
+    preorderText: 'Le livre complet sortira prochainement.',
+    preorderCta: "M'avertir à la sortie →",
   },
 
   // Tool cards (home screen)

@@ -28,76 +28,64 @@ export const en = {
     duo: 'Duo',
   },
 
+  // Home screen — TV-series framing
   home: {
-    eyebrow: 'PREFACE — BOOK COMING SOON',
-    heroTitle: "We all need\nsomeone else",
-    heroSubtitle: 'The inner journey of two imperfect parents',
+    brandLabel: 'THE BOOK',
 
-    // Section 1 — The only animal
-    s1Title: 'The only animal',
-    s1Body1Bold: "Humans are the only animal that doesn't know how to raise its young.",
-    s1Body2: "A calf walks within fifteen minutes. A chick knows what to peck the moment it leaves the egg. You hold a newborn in your arms, and no one ever handed you the manual.",
-    s1Body3Pre: "That nakedness is our starting point. Not a flaw — a vertiginous freedom. ",
-    s1Body3Italic: 'Everything is to be built.',
+    // Hero
+    heroQuote: 'A parent who doubts\nis a parent who\nis searching.',
+    heroAuthor: '— Thomas Deillon',
+    heroSubtitle: 'The inner journey of imperfect parents — how to grow alongside your children',
+    heroCredit: 'by Solène and Thomas Deillon · forthcoming',
 
-    // Section 2 — Your lenses aren't theirs
-    s2Title: "Your lenses aren't theirs",
-    s2Body1: 'You look at your child. You think you see them.',
-    s2Body2Pre: 'In reality, you see them ',
-    s2Body2Bold: 'through your own lenses',
-    s2Body2Post: " — the ones life put on your nose without ever asking. They have other lenses. And your partner has yet others.",
-    s2Body3Pre: "That's the ",
-    s2Body3Bold: 'Enneagram',
-    s2Body3Post: ': nine radically different ways of looking at the same world. Nine inner engines. Nine ways of loving, suffering, digging in.',
-    s2Body4: "It isn't a test. It's a map.",
+    // Pilot card
+    pilotEyebrow: 'PILOT EPISODE · FREE',
+    pilotDuration: '12 min',
+    pilotChapterLabel: 'Chapter 1',
+    pilotChapterTitle: "The only animal that doesn't know how to raise its young",
+    pilotTagline: "Why are we the only living being who arrives in this world without a manual?",
+    pilotCta: 'Start reading',
 
-    // Section 3 — When you yell, it isn't you
-    s3Title: "When you yell, it isn't you",
-    s3Body1: 'One evening, your child does something small. You explode.',
-    s3Body2Pre: 'Three seconds later, you wonder: ',
-    s3Body2Italic: '"What got into me?"',
-    s3Body3Pre: "What got into you isn't you. ",
-    s3Body3Bold: "It's one of your monsters.",
-    s3CorbeauName: 'The Crow',
-    s3CorbeauDesc: ', who criticizes everything — you first, them next.',
-    s3ChameauName: 'The Camel',
-    s3ChameauDesc: ', who carries too much, and snaps when asked for one more thing.',
-    s3RenardName: 'The Fox',
-    s3RenardDesc: ', who slips away so as never to truly feel anything.',
-    s3Body4: 'The book teaches you to recognize them. And to name them so they stop speaking in your place.',
+    // Daily ritual
+    ritualEyebrow: "TODAY'S RITUAL",
+    ritualCtaPrimary: 'Answer it',
+    ritualCtaSecondary: 'Later',
+    ritualNoteTitle: 'Your answer',
+    ritualNotePlaceholder: 'Write whatever comes to you…',
+    ritualNoteSave: 'Save',
+    ritualNoteCancel: 'Cancel',
 
-    // Section 4 — A forest, not a monoculture
-    s4Title: 'A forest, not a monoculture',
-    s4Body1: 'A forest with ten different species rides out the storm. A monoculture collapses at the first wind.',
-    s4Body2Pre: 'The same is true of a family. ',
-    s4Body2Bold: 'The more it accepts its differences, the better it holds.',
-    s4Body2Post: " Your Type 4 child who cries at a sunset isn't a problem to fix — they're a tree species your family forest is lucky to have.",
-    s4Body3Pre: "Your partner who \"doesn't understand\" your emotions doesn't love you less. They love ",
-    s4Body3Italic: 'differently',
-    s4Body3Post: ". And that's precisely what makes the forest alive.",
+    // Series
+    seriesEyebrow: 'THE SERIES · 4 SEASONS',
+    season1Title: 'Why',
+    season1Sub: "The most beautiful project in the world",
+    season2Title: 'Open your eyes',
+    season3Title: 'What holds when everything trembles',
+    season4Title: 'Learning to watch them go',
+    seasonEpisodes: '{{n}} ep.',
+    seasonLockedSub: 'With the book',
+    seasonLockedAlertTitle: 'Available with the book',
+    seasonLockedAlertBody: "This season will be accessible once the book is published. You can sign up to be notified when it's out.",
+    seasonLockedAlertCta: 'Notify me at launch',
+    seasonLockedAlertCancel: 'Later',
 
-    // Section 5 — Love is a verb
-    s5Title: 'Love is a verb',
-    s5Body1: "Parental love isn't a feeling that falls on you.",
-    s5Body2Bold: "It's a verb. A choice. A daily act.",
-    s5Body3: "Loving your Type 1 child isn't loving them the way you'd love a Type 7. Loving your Type 8 partner isn't loving them the way you'd love a Type 9.",
-    s5Body4Pre: "Understanding the other's profile means learning to conjugate the verb ",
-    s5Body4Italic: 'to love',
-    s5Body4Post: ' in their language — not yours.',
+    // Solène teaser
+    soleneEyebrow: "COMING SOON · SOLÈNE'S VOICE",
+    soleneText: "One book, two perspectives. The final version will integrate Solène's voice — the mother, the wife, the other.",
+    soleneCta: 'Notify me at launch',
+    soleneAlertTitle: 'Get notified at launch',
+    soleneAlertBody: "The book will be published soon with Solène's voice integrated. To be notified the moment it's available, write to us.",
+    soleneAlertCta: 'Write to us',
+    soleneAlertCancel: 'Later',
 
-    // Transition to tools
-    transition1Pre: 'This book — ',
-    transition1Bold: 'coming soon',
-    transition1Post: " — tells all of this. The nine profiles, the three monsters, love as a verb, the family forest, forgiveness as cement, and the hand we learn to let go when they grow up.",
-    transition2Pre: "While you wait for it to land in your hands, we built this app. ",
-    transition2Bold: 'Four tools to start now.',
+    // Tools
+    toolsLabel: "The traveler's tools",
+    toolsIntro: 'While you wait for the book, these four tools accompany you starting today.',
 
-    introSignature: '— Thomas & Solène',
-    toolsLabel: 'The tools',
-    chaptersTitle: '📖 The book, in 5 parts',
-    chaptersOpen: 'Tap to discover how it unfolds.',
-    chaptersClose: 'Close the table of contents',
-    chaptersIntro: 'A map of the journey. From the nakedness of the start to the hand we learn to let go.',
+    // Pre-order
+    preorderHint: "You're reading the pilot.",
+    preorderText: 'The full book will be published soon.',
+    preorderCta: 'Notify me at launch →',
   },
 
   tools: {
