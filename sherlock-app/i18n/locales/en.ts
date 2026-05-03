@@ -321,6 +321,20 @@ export const en = {
     emptyDesc: 'Choose a type on the left and one on the right to reveal the dynamic between these two personalities.',
   },
 
+  // Ritual journal
+  journal: {
+    title: 'My journal',
+    heroTitle: 'Your answers',
+    heroSub: "The daily ritual, archived. One answer per day, at your own pace.",
+    emptyTitle: 'No answer yet',
+    emptyDesc: "When you answer the ritual question on the home screen, your response will appear here.",
+    deleteConfirmTitle: 'Delete this answer?',
+    deleteConfirmBody: 'This action cannot be undone.',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    viewJournal: 'View my answers',
+  },
+
   // Sherlock Files / Case files screen
   dossiers: {
     hubTitle: 'The Sherlock Files',

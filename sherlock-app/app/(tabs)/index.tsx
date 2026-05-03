@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { useT } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
+import { saveAnswer } from '../../constants/ritualJournal';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -162,7 +163,13 @@ export default function HomeScreen() {
             />
             <View style={styles.ritualCtaRow}>
               <Pressable
-                onPress={() => { setRitualOpen(false); /* note kept in memory */ }}
+                onPress={async () => {
+                  if (ritualNote.trim()) {
+                    await saveAnswer({ question: ritualText, answer: ritualNote, locale });
+                  }
+                  setRitualOpen(false);
+                  setRitualNote('');
+                }}
                 style={({ pressed }) => [styles.ritualCtaPrimary, pressed && { opacity: 0.85 }]}
               >
                 <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualNoteSave')}</Text>
@@ -176,6 +183,13 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
+        <Pressable
+          onPress={() => router.push('/journal' as never)}
+          style={({ pressed }) => [styles.journalLink, pressed && { opacity: 0.6 }]}
+          hitSlop={8}
+        >
+          <Text style={styles.journalLinkText}>{t('journal.viewJournal')}  →</Text>
+        </Pressable>
       </View>
 
       {/* ── The series · 4 seasons ── */}
@@ -416,6 +430,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
     padding: spacing.sm, minHeight: 80, textAlignVertical: 'top',
+  },
+  journalLink: {
+    marginTop: spacing.sm,
+    paddingVertical: 6,
+    alignItems: 'flex-end',
+  },
+  journalLinkText: {
+    fontFamily: fonts.sans, fontSize: 12,
+    color: colors.accent, fontWeight: '600',
   },
 
   // ── Series ──
