@@ -3,10 +3,10 @@
 //  Shows: total users, signed-in users with emails, launch subscribers.
 // ═══════════════════════════════════════════════════════════════
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView, View, Text, Pressable, StyleSheet, ActivityIndicator,
-  Alert, Share, RefreshControl,
+  Alert, Share, RefreshControl, TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,6 +71,7 @@ export default function AdminScreen() {
   const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
 
   const loadData = useCallback(async (isRefresh: boolean = false) => {
     // Belt-and-suspenders: bail if not admin even though Home shouldn't link here
@@ -115,6 +116,11 @@ export default function AdminScreen() {
   const usersWithEmail = users.filter(u => !!u.email);
   const subsWithPush = subscribers.filter(s => s.pushGranted);
   const subsWithEmail = subscribers.filter(s => !!s.email);
+
+  // ── Action count (sum of measurable actions per user) ──
+  const actionCount = (u: AdminUserRow) =>
+    u.quizCount + u.childProfilesCount + u.completedCases + u.badges;
+  const activeUsers = users.filter(u => actionCount(u) >= 5).length;
 
   // Engagement aggregates
   const totalQuizzes = users.reduce((sum, u) => sum + u.quizCount, 0);
@@ -253,20 +259,26 @@ export default function AdminScreen() {
 
       {tab === 'overview' && (
         <View style={styles.section}>
+          {/* ── First row: 3 vignettes ── */}
           <View style={styles.statRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{totalUsers}</Text>
-              <Text style={styles.statLabel}>Comptes ouverts</Text>
-              <Text style={styles.statHint}>(proxy "installations actives")</Text>
+            <View style={[styles.statCard, styles.statCard3]}>
+              <Text style={styles.statValueSm}>{totalUsers}</Text>
+              <Text style={styles.statLabel}>Total</Text>
+              <Text style={styles.statHint}>comptes ouverts</Text>
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
+            <View style={[styles.statCard, styles.statCard3]}>
+              <Text style={styles.statValueSm}>{activeUsers}</Text>
+              <Text style={styles.statLabel}>Actifs</Text>
+              <Text style={styles.statHint}>≥ 5 actions</Text>
+            </View>
+            <View style={[styles.statCard, styles.statCard3]}>
+              <Text style={styles.statValueSm}>
                 {usersByProvider.apple}
-                <Text style={{ fontSize: 14, color: colors.textMuted }}>  ·  </Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted }}>·</Text>
                 {usersByProvider.google}
               </Text>
-              <Text style={styles.statLabel}>Apple · Google</Text>
-              <Text style={styles.statHint}>répartition par provider</Text>
+              <Text style={styles.statLabel}>Apple·Google</Text>
+              <Text style={styles.statHint}>par provider</Text>
             </View>
           </View>
           <View style={styles.statRow}>
@@ -468,12 +480,45 @@ export default function AdminScreen() {
           <Text style={styles.listLabel}>
             Comptes ({users.length}) · triés par engagement
           </Text>
+
+          {/* Search bar */}
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={16} color={colors.textMuted} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Email, nom, UID, type…"
+              placeholderTextColor={colors.textDim}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.searchInput}
+            />
+            {search.length > 0 && (
+              <Pressable onPress={() => setSearch('')} hitSlop={10}>
+                <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+              </Pressable>
+            )}
+          </View>
+
           <Text style={styles.legendText}>
             Légende — 🕐 quiz · 👥 profils enfants · 🔎 XP Sherlock · 📔 fiches Pokédex/45 · 🔥 streak · 🏅 badges
+          </Text>
+          <Text style={styles.legendNote}>
+            ⓘ Les comptes "sans email" sont d'anciens utilisateurs (avant le commit qui sauvegarde l'email). Le champ se backfille automatiquement à leur prochain login.
           </Text>
           <Text style={styles.legendHint}>Tap une carte pour voir le détail.</Text>
 
           {[...users]
+            .filter(u => {
+              if (!search.trim()) return true;
+              const q = search.trim().toLowerCase();
+              return (
+                (u.email || '').toLowerCase().includes(q) ||
+                (u.displayName || '').toLowerCase().includes(q) ||
+                u.uid.toLowerCase().includes(q) ||
+                u.provider.toLowerCase().includes(q)
+              );
+            })
             .sort((a, b) => b.engagement - a.engagement)
             .map(u => {
               const expanded = expandedUid === u.uid;
@@ -707,6 +752,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontFamily: fonts.serif, fontSize: 28, color: colors.text, fontWeight: '700',
   },
+  statValueSm: {
+    fontFamily: fonts.serif, fontSize: 22, color: colors.text, fontWeight: '700',
+  },
+  statCard3: {
+    paddingHorizontal: spacing.sm, paddingVertical: spacing.md,
+  },
   statLabel: {
     fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
     color: colors.textMuted, letterSpacing: 0.5, textTransform: 'uppercase',
@@ -874,6 +925,26 @@ const styles = StyleSheet.create({
   legendHint: {
     fontFamily: fonts.sans, fontSize: 11, color: colors.accent,
     fontStyle: 'italic', marginBottom: spacing.sm,
+  },
+  legendNote: {
+    fontFamily: fonts.sans, fontSize: 10,
+    color: colors.textMuted,
+    lineHeight: 14, marginTop: 4, marginBottom: 6,
+    fontStyle: 'italic',
+  },
+  searchWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: spacing.md, paddingVertical: 10,
+    marginBottom: spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: fonts.sans, fontSize: 14,
+    color: colors.text,
+    padding: 0,
   },
 
   // User card expanded detail
