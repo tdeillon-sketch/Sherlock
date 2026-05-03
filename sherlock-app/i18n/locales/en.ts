@@ -36,7 +36,7 @@ export const en = {
     heroQuote: 'A parent who doubts\nis a parent who\nis searching.',
     heroAuthor: '— Thomas Deillon',
     heroSubtitle: 'The inner journey of imperfect parents — how to grow alongside your children',
-    heroCredit: 'by Solène and Thomas Deillon · forthcoming',
+    heroCredit: 'Authors: Solène and Thomas Deillon · forthcoming',
 
     // Pilot card
     pilotEyebrow: 'PILOT EPISODE · FREE',
@@ -82,9 +82,9 @@ export const en = {
     toolsLabel: "The traveler's tools",
     toolsIntro: 'While you wait for the book, these four tools accompany you starting today.',
 
-    // Pre-order
-    preorderHint: "You're reading the pilot.",
-    preorderText: 'The full book will be published soon.',
+    // Launch notification (bottom CTA)
+    preorderHint: "You've just read the pilot.",
+    preorderText: 'Be the first to know when the full book is out.',
     preorderCta: 'Notify me at launch →',
   },
 

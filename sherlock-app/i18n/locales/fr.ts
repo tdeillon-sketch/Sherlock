@@ -39,7 +39,7 @@ export const fr = {
     heroQuote: 'Le parent qui doute\nest un parent qui\ncherche.',
     heroAuthor: '— Thomas Deillon',
     heroSubtitle: "Le voyage intérieur de parents imparfaits, comment grandir avec ses enfants",
-    heroCredit: 'par Solène et Thomas Deillon · à paraître',
+    heroCredit: 'Auteurs : Solène et Thomas Deillon · à paraître',
 
     // Pilot card
     pilotEyebrow: 'ÉPISODE PILOTE · GRATUIT',
@@ -85,9 +85,9 @@ export const fr = {
     toolsLabel: 'Les outils du voyage',
     toolsIntro: "En attendant le livre, ces quatre outils vous accompagnent dès aujourd'hui.",
 
-    // Pre-order
-    preorderHint: 'Vous lisez le pilote.',
-    preorderText: 'Le livre complet sortira prochainement.',
+    // Launch notification (bottom CTA)
+    preorderHint: 'Vous venez de lire le pilote.',
+    preorderText: 'Soyez prévenu·e dès la sortie du livre complet.',
     preorderCta: "M'avertir à la sortie →",
   },
 
