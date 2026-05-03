@@ -38,7 +38,7 @@ export const fr = {
     // Hero
     heroQuote: 'Le parent qui doute\nest un parent qui\ncherche.',
     heroAuthor: '— Thomas Deillon',
-    heroSubtitle: "Le voyage intérieur de parents imparfaits, comment grandir avec ses enfants",
+    heroSubtitle: "Le voyage intérieur de parents imparfaits. Comment grandir avec ses enfants",
     heroCredit: 'Auteurs : Solène et Thomas Deillon · à paraître',
 
     // Pilot card

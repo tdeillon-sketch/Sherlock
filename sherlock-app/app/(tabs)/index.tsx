@@ -54,7 +54,13 @@ export default function HomeScreen() {
 
   const handleSeasonPress = (season: typeof SEASONS[number]) => {
     if (season.unlocked && season.firstChapter !== null) {
-      router.push(`/chapter/${season.firstChapter}` as never);
+      // Season 1 = the pilot (full Chapter 1 reader). Other unlocked seasons
+      // would route to their first chapter (none for now).
+      if (season.num === 1) {
+        router.push('/pilot' as never);
+      } else {
+        router.push(`/chapter/${season.firstChapter}` as never);
+      }
       return;
     }
     Alert.alert(
@@ -101,14 +107,13 @@ export default function HomeScreen() {
       {/* ── Hero quote ── */}
       <View style={styles.hero}>
         <Text style={styles.heroQuote}>{t('home.heroQuote')}</Text>
-        <Text style={styles.heroAuthor}>{t('home.heroAuthor')}</Text>
         <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
         <Text style={styles.heroCredit}>{t('home.heroCredit')}</Text>
       </View>
 
       {/* ── Pilot episode card (the marketing centerpiece) ── */}
       <Pressable
-        onPress={() => router.push('/chapter/1' as never)}
+        onPress={() => router.push('/pilot' as never)}
         style={({ pressed }) => [styles.pilotCard, pressed && { opacity: 0.92 }]}
       >
         <View style={styles.pilotHeader}>

@@ -35,7 +35,7 @@ export const en = {
     // Hero
     heroQuote: 'A parent who doubts\nis a parent who\nis searching.',
     heroAuthor: '— Thomas Deillon',
-    heroSubtitle: 'The inner journey of imperfect parents — how to grow alongside your children',
+    heroSubtitle: 'The inner journey of imperfect parents. How to grow alongside your children.',
     heroCredit: 'Authors: Solène and Thomas Deillon · forthcoming',
 
     // Pilot card
