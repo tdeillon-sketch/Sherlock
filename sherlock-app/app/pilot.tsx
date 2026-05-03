@@ -56,6 +56,16 @@ export default function PilotScreen() {
         <View style={{ width: 26 }} />
       </View>
 
+      {/* ── Part intro (sets up Chapter 1 in the broader arc) ── */}
+      <View style={styles.partWrap}>
+        <Text style={styles.partLabel}>{chapter.partLabel}</Text>
+        <Text style={styles.partTitle}>{chapter.partTitle}</Text>
+        <View style={styles.partIntroBody}>
+          {chapter.partIntro.map(renderParagraph)}
+        </View>
+        <View style={styles.partDivider} />
+      </View>
+
       {/* ── Chapter header ── */}
       <View style={styles.header}>
         <Text style={styles.chapterLabel}>
@@ -127,10 +137,36 @@ const styles = StyleSheet.create({
     color: colors.accent, fontWeight: '700',
   },
 
+  // Part intro (above Chapter 1)
+  partWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+  },
+  partLabel: {
+    fontFamily: fonts.serifItalic, fontSize: 13,
+    color: colors.accent,
+    letterSpacing: 1,
+    marginBottom: spacing.xs,
+  },
+  partTitle: {
+    fontFamily: fonts.serif, fontSize: 30, lineHeight: 38,
+    color: colors.text,
+    marginBottom: spacing.lg,
+  },
+  partIntroBody: {
+    marginBottom: spacing.md,
+  },
+  partDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginTop: spacing.lg,
+  },
+
   // Header
   header: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
   },
   chapterLabel: {

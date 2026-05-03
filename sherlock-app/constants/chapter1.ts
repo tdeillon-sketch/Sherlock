@@ -14,6 +14,10 @@ export interface Paragraph {
 }
 
 export interface ChapterText {
+  // Part intro — opens the pilot before the chapter itself
+  partLabel: string;      // "Première partie" / "Part one"
+  partTitle: string;      // "Le plus beau chantier du monde"
+  partIntro: Paragraph[]; // The 4 paragraphs that introduce Part I
   // Fixed metadata
   number: number;
   title: string;
@@ -29,11 +33,20 @@ export interface ChapterText {
 
 // ── FR ──
 export const CHAPTER_1_FR: ChapterText = {
+  partLabel: "Première partie",
+  partTitle: "Le plus beau chantier du monde",
+  partIntro: [
+    { kind: 'pullquote', text: "Avant de construire, il faut comprendre sur quoi l'on construit." },
+    { kind: 'p', text: "La plupart des livres sur la parentalité commencent par des conseils. Faites ceci, évitez cela, voici les cinq erreurs à ne pas commettre. Ce livre commence ailleurs. Il commence par une question plus ancienne et plus inconfortable : pourquoi est-ce si difficile d'être parent ?" },
+    { kind: 'p', text: "La réponse n'est pas dans le manque de méthodes. Les méthodes existent — il y en a même trop. La réponse est dans ce que nous sommes. Des êtres inachevés, nés prématurément par rapport à tous les autres mammifères, équipés d'un cerveau extraordinaire mais livrés sans notice. Des êtres qui portent en eux les modèles de leur propre enfance — souvent sans le savoir. Des êtres qui construisent des familles avec les moyens du bord, en reproduisant ce qu'ils ont reçu ou en essayant de faire le contraire, sans toujours comprendre la différence." },
+    { kind: 'p', text: "Les trois chapitres qui suivent posent ce diagnostic. Le premier explore notre condition d'animal inachevé — ce que la biologie et la philosophie nous apprennent sur le fait d'être humain. Le deuxième regarde les modèles que nous portons en nous, ces trois stades que Nietzsche a si bien nommés : le chameau, le lion et l'enfant. Le troisième observe la famille comme une petite société — un système vivant avec ses règles, ses forces et ses fragilités." },
+    { kind: 'p', text: "Ce n'est pas la partie la plus réconfortante du livre. Mais c'est la plus nécessaire. Parce qu'on ne peut pas changer ce qu'on n'a pas d'abord regardé en face." },
+  ],
   number: 1,
   title: "Le seul animal qui ne sait pas élever ses petits",
   epigraph: "« L'homme est la mesure de toutes choses »",
   epigraphAuthor: "Protagoras",
-  durationLabel: "12 min de lecture",
+  durationLabel: "14 min de lecture",
   signature: "— Thomas",
   body: [
     { kind: 'p', text: "Je ne suis pas un spécialiste de la parentalité. Je n'ai aucun diplôme en pédagogie, aucune autorité particulière pour vous dire comment élever vos enfants. D'ailleurs, si vous cherchez un livre de recettes, posez celui-ci. Il ne vous servira pas." },
@@ -113,11 +126,20 @@ export const CHAPTER_1_FR: ChapterText = {
 
 // ── EN ──
 export const CHAPTER_1_EN: ChapterText = {
+  partLabel: "Part one",
+  partTitle: "The most beautiful project in the world",
+  partIntro: [
+    { kind: 'pullquote', text: "Before you build, you must understand what you're building on." },
+    { kind: 'p', text: "Most parenting books begin with advice. Do this, avoid that, here are the five mistakes you must never make. This book begins elsewhere. It begins with an older, more uncomfortable question: why is being a parent so difficult?" },
+    { kind: 'p', text: "The answer isn't in a lack of methods. Methods exist — there are even too many. The answer lies in what we are. Unfinished beings, born prematurely compared to all other mammals, equipped with an extraordinary brain but delivered without a manual. Beings who carry within them the models of their own childhood — often without knowing it. Beings who build families with whatever means they have, reproducing what they received or trying to do the opposite, without always understanding the difference." },
+    { kind: 'p', text: "The three chapters that follow lay out this diagnosis. The first explores our condition as the unfinished animal — what biology and philosophy teach us about being human. The second looks at the models we carry within us, those three stages Nietzsche named so well: the camel, the lion, and the child. The third observes the family as a small society — a living system with its rules, its strengths, and its fragilities." },
+    { kind: 'p', text: "This isn't the most comforting part of the book. But it's the most necessary. Because you can't change what you haven't first looked in the face." },
+  ],
   number: 1,
   title: "The only animal that doesn't know how to raise its young",
   epigraph: "\"Man is the measure of all things\"",
   epigraphAuthor: "Protagoras",
-  durationLabel: "12 min read",
+  durationLabel: "14 min read",
   signature: "— Thomas",
   body: [
     { kind: 'p', text: "I am not a parenting specialist. I have no degree in pedagogy, no special authority to tell you how to raise your children. In fact, if you're looking for a recipe book, put this one down. It won't help you." },
