@@ -30,6 +30,7 @@ export default function AdminScreen() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [subscribers, setSubscribers] = useState<AdminLaunchSubscriberRow[]>([]);
   const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
+  const [showAnonymous, setShowAnonymous] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -125,7 +126,7 @@ export default function AdminScreen() {
             style={[styles.tab, tab === k && styles.tabActive]}
           >
             <Text style={[styles.tabText, tab === k && styles.tabTextActive]}>
-              {k === 'overview' ? 'Vue d\'ensemble' : k === 'users' ? `Comptes (${totalUsers})` : `Abonnés (${subscribers.length})`}
+              {k === 'overview' ? 'Vue d\'ensemble' : k === 'users' ? `Comptes (${signedInUsers.length})` : `Abonnés (${subscribers.length})`}
             </Text>
           </Pressable>
         ))}
@@ -249,10 +250,22 @@ export default function AdminScreen() {
 
       {tab === 'users' && (
         <View style={styles.section}>
-          <Text style={styles.listLabel}>
-            Comptes utilisateurs ({users.length}) · triés par engagement
-          </Text>
-          {[...users]
+          <View style={styles.usersHeader}>
+            <Text style={styles.listLabel}>
+              {showAnonymous
+                ? `Tous les comptes (${users.length})`
+                : `Comptes connectés (${signedInUsers.length})`}
+            </Text>
+            <Pressable
+              onPress={() => setShowAnonymous(v => !v)}
+              style={({ pressed }) => [styles.toggleBtn, pressed && { opacity: 0.7 }]}
+            >
+              <Text style={styles.toggleBtnText}>
+                {showAnonymous ? '✓ Afficher les anonymes' : 'Afficher les anonymes'}
+              </Text>
+            </Pressable>
+          </View>
+          {[...(showAnonymous ? users : signedInUsers)]
             .sort((a, b) => b.engagement - a.engagement)
             .map(u => (
               <View key={u.uid} style={styles.userCard}>
@@ -418,6 +431,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
     color: colors.textMuted, letterSpacing: 1, textTransform: 'uppercase',
     marginBottom: spacing.sm,
+  },
+  usersHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  toggleBtn: {
+    paddingVertical: 6, paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  toggleBtnText: {
+    fontFamily: fonts.sans, fontSize: 11,
+    color: colors.textSoft, fontWeight: '600',
   },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
