@@ -72,6 +72,7 @@ export default function AdminScreen() {
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [chartSelectedIdx, setChartSelectedIdx] = useState<number | null>(null);
 
   const loadData = useCallback(async (isRefresh: boolean = false) => {
     // Belt-and-suspenders: bail if not admin even though Home shouldn't link here
@@ -121,6 +122,50 @@ export default function AdminScreen() {
   const actionCount = (u: AdminUserRow) =>
     u.quizCount + u.childProfilesCount + u.completedCases + u.badges;
   const activeUsers = users.filter(u => actionCount(u) >= 5).length;
+
+  // ── Today's snapshot ──
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const yesterdayStart = new Date(todayStart); yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+  const isOn = (ts: number | null, day: Date) => {
+    if (!ts) return false;
+    const d = new Date(ts); d.setHours(0, 0, 0, 0);
+    return d.getTime() === day.getTime();
+  };
+  const newToday = users.filter(u => isOn(u.createdAt, todayStart)).length;
+  const newYesterday = users.filter(u => isOn(u.createdAt, yesterdayStart)).length;
+  const activeToday = users.filter(u => isOn(u.lastSeen, todayStart)).length;
+  const subsToday = subscribers.filter(s => isOn(s.subscribedAt, todayStart)).length;
+
+  // 7-day signups sparkline (counts per day, last 7 days)
+  const sparkline7d: number[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(todayStart); d.setDate(d.getDate() - i);
+    sparkline7d.push(users.filter(u => isOn(u.createdAt, d)).length);
+  }
+  const signups7d = sparkline7d.reduce((s, n) => s + n, 0);
+  // Previous-week comparison
+  let signupsPrev7d = 0;
+  for (let i = 13; i >= 7; i--) {
+    const d = new Date(todayStart); d.setDate(d.getDate() - i);
+    signupsPrev7d += users.filter(u => isOn(u.createdAt, d)).length;
+  }
+  const sparkMax7d = Math.max(1, ...sparkline7d);
+
+  // ── Engagement funnel (5 stages from inscription to subscriber) ──
+  const usedQuizCount = users.filter(u => u.quizCount > 0).length;
+  const usedAnyTool = users.filter(u =>
+    u.quizCount > 0 || u.childProfilesCount > 0 || u.completedCases > 0 || u.sherlockXp > 0
+  ).length;
+  // We map the deviceId of subscribers to user emails to estimate overlap.
+  // Imperfect (deviceId is a random string, not the auth uid) but okay.
+  const subscribersCount = subscribers.length;
+  const funnel = [
+    { label: 'Inscrits',        value: totalUsers,    color: colors.accent },
+    { label: 'Quiz lancé',      value: usedQuizCount, color: '#c0713a' },
+    { label: '≥ 5 actions',     value: activeUsers,   color: '#7b8e6e' },
+    { label: 'Sortie souscrite', value: subscribersCount, color: '#8b6ca7' },
+  ];
+  const funnelMax = Math.max(1, totalUsers);
 
   // Engagement aggregates
   const totalQuizzes = users.reduce((sum, u) => sum + u.quizCount, 0);
@@ -309,38 +354,138 @@ export default function AdminScreen() {
 
       {tab === 'overview' && (
         <View style={styles.section}>
-          {/* ── First row: 3 vignettes ── */}
-          <View style={styles.statRow}>
-            <View style={[styles.statCard, styles.statCard3]}>
-              <Text style={styles.statValueSm}>{totalUsers}</Text>
-              <Text style={styles.statLabel}>Total</Text>
-              <Text style={styles.statHint}>comptes ouverts</Text>
-            </View>
-            <View style={[styles.statCard, styles.statCard3]}>
-              <Text style={styles.statValueSm}>{activeUsers}</Text>
-              <Text style={styles.statLabel}>Actifs</Text>
-              <Text style={styles.statHint}>≥ 5 actions</Text>
-            </View>
-            <View style={[styles.statCard, styles.statCard3]}>
-              <Text style={styles.statValueSm}>
-                {usersByProvider.apple}
-                <Text style={{ fontSize: 11, color: colors.textMuted }}>·</Text>
-                {usersByProvider.google}
+
+          {/* ── HERO: Aujourd'hui + sparkline 7j ── */}
+          <View style={styles.heroCard}>
+            <View style={styles.heroHeader}>
+              <Text style={styles.heroEyebrow}>AUJOURD'HUI</Text>
+              <Text style={styles.heroDate}>
+                {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </Text>
-              <Text style={styles.statLabel}>Apple·Google</Text>
-              <Text style={styles.statHint}>par provider</Text>
+            </View>
+            <View style={styles.heroMetrics}>
+              <View style={styles.heroMetric}>
+                <Text style={styles.heroMetricValue}>+{newToday}</Text>
+                <Text style={styles.heroMetricLabel}>nouveau{newToday > 1 ? 'x' : ''}</Text>
+                {newYesterday > 0 && (
+                  <Text style={[styles.heroDelta, {
+                    color: newToday >= newYesterday ? colors.accent : colors.textMuted,
+                  }]}>
+                    vs {newYesterday} hier
+                  </Text>
+                )}
+              </View>
+              <View style={styles.heroMetric}>
+                <Text style={styles.heroMetricValue}>{activeToday}</Text>
+                <Text style={styles.heroMetricLabel}>actif{activeToday > 1 ? 's' : ''}</Text>
+                <Text style={styles.heroDelta}>{activeToday > 0 ? 'aujourd\'hui' : 'silence'}</Text>
+              </View>
+              <View style={styles.heroMetric}>
+                <Text style={styles.heroMetricValue}>+{subsToday}</Text>
+                <Text style={styles.heroMetricLabel}>sortie</Text>
+                <Text style={styles.heroDelta}>nouvelle{subsToday > 1 ? 's' : ''} insc.</Text>
+              </View>
+            </View>
+
+            {/* 7-day sparkline */}
+            <View style={styles.sparkRow}>
+              {sparkline7d.map((n, i) => {
+                const h = (n / sparkMax7d) * 28;
+                const isToday = i === sparkline7d.length - 1;
+                return (
+                  <View key={i} style={styles.sparkBarCol}>
+                    <View style={[styles.sparkBar, {
+                      height: Math.max(2, h),
+                      backgroundColor: n > 0
+                        ? (isToday ? colors.accent : colors.accent + '99')
+                        : colors.border,
+                    }]} />
+                  </View>
+                );
+              })}
+            </View>
+            <View style={styles.sparkFooter}>
+              <Text style={styles.sparkLabel}>il y a 7j</Text>
+              <Text style={styles.sparkSummary}>
+                <Text style={{ color: colors.accent, fontWeight: '700' }}>+{signups7d}</Text>
+                {' sur 7j'}
+                {signupsPrev7d > 0 && (
+                  <Text style={{ color: colors.textMuted }}>
+                    {'  ·  vs +'}{signupsPrev7d}{' la semaine d\'avant'}
+                  </Text>
+                )}
+              </Text>
             </View>
           </View>
-          <View style={styles.statRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{subscribers.length}</Text>
-              <Text style={styles.statLabel}>Inscrits "Sortie"</Text>
-              <Text style={styles.statHint}>{subsWithPush.length} avec push</Text>
+
+          {/* ── ENGAGEMENT FUNNEL ── */}
+          <Text style={styles.sectionLabel}>Entonnoir d'engagement</Text>
+          <View style={styles.funnelBox}>
+            {funnel.map((stage, i) => {
+              const pct = funnelMax > 0 ? Math.round((stage.value / funnelMax) * 100) : 0;
+              const widthPct = (stage.value / funnelMax) * 100;
+              const dropFromPrev = i > 0 && funnel[i-1].value > 0
+                ? Math.round((1 - (stage.value / funnel[i-1].value)) * 100)
+                : 0;
+              return (
+                <View key={stage.label} style={styles.funnelRow}>
+                  <Text style={styles.funnelLabel}>{stage.label}</Text>
+                  <View style={styles.funnelBarTrack}>
+                    <View style={[styles.funnelBarFill, {
+                      width: `${Math.max(2, widthPct)}%` as any,
+                      backgroundColor: stage.color,
+                    }]} />
+                    <Text style={styles.funnelBarText}>
+                      <Text style={{ fontWeight: '700' }}>{stage.value}</Text>
+                      <Text style={{ color: colors.textMuted }}>  ·  {pct}%</Text>
+                    </Text>
+                  </View>
+                  {i > 0 && dropFromPrev > 0 && (
+                    <Text style={styles.funnelDrop}>−{dropFromPrev}%</Text>
+                  )}
+                  {i === 0 && <View style={{ width: 36 }} />}
+                </View>
+              );
+            })}
+          </View>
+
+          {/* ── APPLE / GOOGLE STACKED BAR ── */}
+          <Text style={styles.sectionLabel}>Provider de connexion</Text>
+          <View style={styles.providerBox}>
+            <View style={styles.providerBar}>
+              {usersByProvider.apple > 0 && (
+                <View style={[styles.providerSegment, {
+                  flex: usersByProvider.apple,
+                  backgroundColor: colors.text,
+                }]} />
+              )}
+              {usersByProvider.google > 0 && (
+                <View style={[styles.providerSegment, {
+                  flex: usersByProvider.google,
+                  backgroundColor: '#4285f4',
+                }]} />
+              )}
+              {totalUsers === 0 && (
+                <View style={[styles.providerSegment, {
+                  flex: 1, backgroundColor: colors.border,
+                }]} />
+              )}
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{subsWithEmail.length}</Text>
-              <Text style={styles.statLabel}>Emails sortie collectés</Text>
-              <Text style={styles.statHint}>{subsWithPush.length} push aussi</Text>
+            <View style={styles.providerLegend}>
+              <View style={styles.providerLegendItem}>
+                <View style={[styles.providerDot, { backgroundColor: colors.text }]} />
+                <Text style={styles.providerLegendText}>
+                   Apple <Text style={{ fontWeight: '700' }}>{usersByProvider.apple}</Text>
+                  {totalUsers > 0 && ` (${Math.round(usersByProvider.apple / totalUsers * 100)}%)`}
+                </Text>
+              </View>
+              <View style={styles.providerLegendItem}>
+                <View style={[styles.providerDot, { backgroundColor: '#4285f4' }]} />
+                <Text style={styles.providerLegendText}>
+                  Google <Text style={{ fontWeight: '700' }}>{usersByProvider.google}</Text>
+                  {totalUsers > 0 && ` (${Math.round(usersByProvider.google / totalUsers * 100)}%)`}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -403,18 +548,58 @@ export default function AdminScreen() {
           {/* Cumulative signups over 30 days */}
           <Text style={styles.sectionLabel}>Inscriptions sur 30 jours</Text>
           <Text style={styles.sectionHint}>
-            Barres = nouveaux par jour · ligne = cumul.
+            Tap une barre pour voir le détail.
           </Text>
           <View style={styles.chartBox}>
-            <View style={styles.chartBars}>
-              {signupHistory.map((d, i) => {
-                const h = (d.count / maxDailySignup) * 60;
-                return (
-                  <View key={d.day} style={styles.chartBarCol}>
-                    <View style={[styles.chartBar, { height: Math.max(2, h), backgroundColor: d.count > 0 ? colors.accent : colors.border }]} />
-                  </View>
-                );
-              })}
+            {/* Selected-day tooltip (above the bars) */}
+            <View style={styles.chartTooltipWrap}>
+              {chartSelectedIdx !== null && signupHistory[chartSelectedIdx] && (
+                <View style={styles.chartTooltip}>
+                  <Text style={styles.chartTooltipDate}>
+                    {new Date(signupHistory[chartSelectedIdx].day).toLocaleDateString('fr-FR', {
+                      weekday: 'short', day: 'numeric', month: 'short',
+                    })}
+                  </Text>
+                  <Text style={styles.chartTooltipValue}>
+                    <Text style={{ fontWeight: '700', color: colors.accent }}>
+                      {signupHistory[chartSelectedIdx].count}
+                    </Text>
+                    {' nouveau'}{signupHistory[chartSelectedIdx].count !== 1 ? 'x' : ''}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Y-axis scale + bars */}
+            <View style={styles.chartBody}>
+              <View style={styles.chartYAxis}>
+                <Text style={styles.chartYLabel}>{maxDailySignup}</Text>
+                <Text style={styles.chartYLabel}>{Math.round(maxDailySignup / 2)}</Text>
+                <Text style={styles.chartYLabel}>0</Text>
+              </View>
+              <View style={styles.chartBars}>
+                {signupHistory.map((d, i) => {
+                  const h = (d.count / maxDailySignup) * 60;
+                  const isSelected = chartSelectedIdx === i;
+                  return (
+                    <Pressable
+                      key={d.day}
+                      onPress={() => setChartSelectedIdx(isSelected ? null : i)}
+                      style={styles.chartBarCol}
+                    >
+                      <View style={[
+                        styles.chartBar,
+                        {
+                          height: Math.max(2, h),
+                          backgroundColor: isSelected
+                            ? '#e8a06a'
+                            : d.count > 0 ? colors.accent : colors.border,
+                        },
+                      ]} />
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
             <View style={styles.chartFooter}>
               <Text style={styles.chartLabel}>il y a 30j</Text>
@@ -910,6 +1095,129 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 
+  // ── Hero "Aujourd'hui" card ──
+  heroCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.accent + '55',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  heroHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline',
+    marginBottom: spacing.sm,
+  },
+  heroEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.5, fontWeight: '700',
+    color: colors.accent,
+  },
+  heroDate: {
+    fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
+  },
+  heroMetrics: {
+    flexDirection: 'row', justifyContent: 'space-around',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  heroMetric: { alignItems: 'center', flex: 1 },
+  heroMetricValue: {
+    fontFamily: fonts.serif, fontSize: 28, fontWeight: '700',
+    color: colors.text,
+  },
+  heroMetricLabel: {
+    fontFamily: fonts.sans, fontSize: 11,
+    color: colors.textMuted, fontWeight: '600',
+    marginTop: 2, textTransform: 'lowercase',
+  },
+  heroDelta: {
+    fontFamily: fonts.sans, fontSize: 10,
+    color: colors.textMuted, marginTop: 4,
+  },
+  sparkRow: {
+    flexDirection: 'row', alignItems: 'flex-end',
+    height: 30, gap: 4,
+    marginBottom: 4,
+  },
+  sparkBarCol: {
+    flex: 1, justifyContent: 'flex-end',
+  },
+  sparkBar: {
+    borderRadius: 2,
+  },
+  sparkFooter: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginTop: 4,
+  },
+  sparkLabel: {
+    fontFamily: fonts.sans, fontSize: 10, color: colors.textMuted,
+  },
+  sparkSummary: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textSoft,
+  },
+
+  // ── Funnel ──
+  funnelBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  funnelRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+  },
+  funnelLabel: {
+    width: 100,
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textSoft, fontWeight: '600',
+  },
+  funnelBarTrack: {
+    flex: 1, height: 26, borderRadius: 4,
+    backgroundColor: colors.bg,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  funnelBarFill: {
+    position: 'absolute', left: 0, top: 0, bottom: 0,
+    borderRadius: 4,
+  },
+  funnelBarText: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.text,
+    paddingHorizontal: spacing.sm,
+    zIndex: 1,
+  },
+  funnelDrop: {
+    width: 36, textAlign: 'right',
+    fontFamily: fonts.sans, fontSize: 10, color: colors.error, fontWeight: '600',
+  },
+
+  // ── Provider stacked bar ──
+  providerBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md,
+  },
+  providerBar: {
+    flexDirection: 'row',
+    height: 14, borderRadius: 7,
+    overflow: 'hidden',
+    marginBottom: spacing.sm,
+  },
+  providerSegment: { height: '100%' },
+  providerLegend: {
+    flexDirection: 'row', justifyContent: 'space-around',
+  },
+  providerLegendItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+  },
+  providerDot: {
+    width: 10, height: 10, borderRadius: 5,
+  },
+  providerLegendText: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textSoft,
+  },
+
   // Chart (signups over 30d)
   chartBox: {
     backgroundColor: colors.surface,
@@ -917,13 +1225,41 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
     padding: spacing.md,
   },
+  chartTooltipWrap: { height: 32, marginBottom: 4 },
+  chartTooltip: {
+    alignSelf: 'center',
+    backgroundColor: colors.bg,
+    borderWidth: 1, borderColor: colors.accent,
+    borderRadius: radius.sm,
+    paddingVertical: 4, paddingHorizontal: spacing.sm,
+    flexDirection: 'row', gap: 8, alignItems: 'center',
+  },
+  chartTooltipDate: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, fontWeight: '600',
+  },
+  chartTooltipValue: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.text,
+  },
+  chartBody: {
+    flexDirection: 'row', alignItems: 'flex-end',
+    height: 60, gap: 6,
+  },
+  chartYAxis: {
+    height: 60, justifyContent: 'space-between', alignItems: 'flex-end',
+    paddingRight: 4,
+  },
+  chartYLabel: {
+    fontFamily: fonts.sans, fontSize: 9, color: colors.textMuted,
+  },
   chartBars: {
+    flex: 1,
     flexDirection: 'row', alignItems: 'flex-end',
     height: 60, gap: 2,
     marginBottom: 4,
   },
   chartBarCol: {
     flex: 1, alignItems: 'center', justifyContent: 'flex-end',
+    height: 60,
   },
   chartBar: {
     width: '100%',
@@ -931,6 +1267,7 @@ const styles = StyleSheet.create({
   },
   chartFooter: {
     flexDirection: 'row', justifyContent: 'space-between',
+    marginTop: 8,
     marginBottom: spacing.sm,
   },
   chartLabel: {
