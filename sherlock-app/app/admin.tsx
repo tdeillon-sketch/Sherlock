@@ -3,10 +3,10 @@
 //  Shows: total users, signed-in users with emails, launch subscribers.
 // ═══════════════════════════════════════════════════════════════
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ScrollView, View, Text, Pressable, StyleSheet, ActivityIndicator,
-  Alert, Share,
+  Alert, Share, RefreshControl,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +42,27 @@ function formatDuration(days: number | null): string {
   return `il y a ${years} an${years > 1 ? 's' : ''}`;
 }
 
+/**
+ * Display label for a user, taking the provider into account.
+ * Apple "Hide my email" → relay address @privaterelay.appleid.com → label as "Apple privé"
+ * No email at all but signed in → "Apple sans email" / "Google sans email"
+ * Truly anonymous → "anonyme"
+ */
+function userDisplayLabel(u: AdminUserRow): string {
+  if (u.email) {
+    if (u.email.endsWith('@privaterelay.appleid.com')) {
+      return `${u.email}  ·  Apple privé`;
+    }
+    return u.email;
+  }
+  if (u.displayName) return u.displayName;
+  const short = u.uid.slice(0, 6);
+  if (u.provider === 'apple') return `Apple sans email · ${short}`;
+  if (u.provider === 'google') return `Google sans email · ${short}`;
+  if (u.provider === 'anonymous') return `anonyme · ${short}`;
+  return `${u.provider} · ${short}`;
+}
+
 export default function AdminScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,29 +71,40 @@ export default function AdminScreen() {
   const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
   const [showAnonymous, setShowAnonymous] = useState(false);
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async (isRefresh: boolean = false) => {
+    // Belt-and-suspenders: bail if not admin even though Home shouldn't link here
+    if (!isAdmin(auth.currentUser)) {
+      setError("Accès non autorisé.");
+      setLoading(false);
+      return;
+    }
+    if (!isRefresh) setLoading(true);
+    try {
+      const [u, s] = await Promise.all([
+        listAllUsers(),
+        listAllLaunchSubscribers(),
+      ]);
+      setUsers(u);
+      setSubscribers(s);
+      setError(null);
+    } catch (e: any) {
+      setError(e?.message || 'Erreur de chargement');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      // Belt-and-suspenders: bail if not admin even though Home shouldn't link here
-      if (!isAdmin(auth.currentUser)) {
-        setError("Accès non autorisé.");
-        setLoading(false);
-        return;
-      }
-      try {
-        const [u, s] = await Promise.all([
-          listAllUsers(),
-          listAllLaunchSubscribers(),
-        ]);
-        setUsers(u);
-        setSubscribers(s);
-      } catch (e: any) {
-        setError(e?.message || 'Erreur de chargement');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    loadData(false);
+  }, [loadData]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadData(true);
+  }, [loadData]);
 
   const totalUsers = users.length;
   const signedInUsers = users.filter(u => u.provider !== 'anonymous');
@@ -168,13 +200,37 @@ export default function AdminScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accent}
+          colors={[colors.accent]}
+          title="Mise à jour…"
+          titleColor={colors.textMuted}
+        />
+      }
+    >
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={10}>
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </Pressable>
         <Text style={styles.topTitle}>Admin</Text>
-        <View style={{ width: 26 }} />
+        <Pressable
+          onPress={onRefresh}
+          disabled={refreshing}
+          style={styles.refreshBtn}
+          hitSlop={10}
+        >
+          {refreshing ? (
+            <ActivityIndicator size="small" color={colors.accent} />
+          ) : (
+            <Ionicons name="refresh" size={22} color={colors.accent} />
+          )}
+        </Pressable>
       </View>
 
       {/* Tabs */}
@@ -446,8 +502,8 @@ export default function AdminScreen() {
                         colors.textDim,
                     }]} />
                     <View style={styles.rowBody}>
-                      <Text style={styles.rowTitle}>
-                        {u.email ?? u.displayName ?? `(anonyme · ${u.uid.slice(0, 6)})`}
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {userDisplayLabel(u)}
                       </Text>
                       <Text style={styles.rowSub}>
                         {u.provider} · inscrit {formatDuration(ageDays)} · vu {formatDuration(lastDays)}
@@ -618,6 +674,9 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 4 },
   topTitle: { fontFamily: fonts.serif, fontSize: 16, color: colors.text },
+  refreshBtn: {
+    width: 30, height: 30, alignItems: 'center', justifyContent: 'center',
+  },
 
   tabs: {
     flexDirection: 'row',
