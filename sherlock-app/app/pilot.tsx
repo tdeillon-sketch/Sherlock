@@ -3,29 +3,21 @@
 //  The marketing centerpiece: actually reading the book.
 // ═══════════════════════════════════════════════════════════════
 
-import { ScrollView, View, Text, Pressable, StyleSheet, Linking } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { CHAPTER_1_FR, CHAPTER_1_EN, type Paragraph } from '../constants/chapter1';
 import { useT } from '../i18n';
-
-const NOTIFY_EMAIL = 'thomas.deillon@eshmedias.ch';
+import LaunchSubscribeModal from '../components/LaunchSubscribeModal';
 
 export default function PilotScreen() {
   const { t, locale } = useT();
   const chapter = locale === 'en' ? CHAPTER_1_EN : CHAPTER_1_FR;
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
 
-  const openMailto = () => {
-    const subject = locale === 'en'
-      ? "Book launch — notify me"
-      : "Sortie du livre — m'avertir";
-    const body = locale === 'en'
-      ? "Hello,\n\nI'd like to be notified when the book \"We all need someone else\" is released.\n\nThank you!"
-      : "Bonjour,\n\nJ'aimerais être prévenu·e à la sortie du livre « On a tous besoin de quelqu'un d'autre ».\n\nMerci !";
-    const url = `mailto:${NOTIFY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    Linking.openURL(url).catch(() => {});
-  };
+  const openSubscribe = () => setSubscribeOpen(true);
 
   const renderParagraph = (p: Paragraph, idx: number) => {
     switch (p.kind) {
@@ -103,7 +95,7 @@ export default function PilotScreen() {
             : "La suite du livre raconte le chameau, le lion, l'enfant — les trois métamorphoses de Nietzsche, les modèles familiaux, l'Ennéagramme, et comment se rendre progressivement inutile."}
         </Text>
         <Pressable
-          onPress={openMailto}
+          onPress={openSubscribe}
           style={({ pressed }) => [styles.endCta, pressed && { opacity: 0.85 }]}
         >
           <Text style={styles.endCtaText}>
@@ -111,6 +103,11 @@ export default function PilotScreen() {
           </Text>
         </Pressable>
       </View>
+
+      <LaunchSubscribeModal
+        visible={subscribeOpen}
+        onClose={() => setSubscribeOpen(false)}
+      />
     </ScrollView>
   );
 }

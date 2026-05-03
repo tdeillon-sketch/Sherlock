@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Alert, Linking, TextInput } from 'react-native';
+import { ScrollView, View, Text, Pressable, StyleSheet, Alert, TextInput } from 'react-native';
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { useT } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
+import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -31,27 +31,16 @@ const SEASONS = [
   { num: 4, titleKey: 'home.season4Title', subKey: 'home.seasonLockedSub', episodes: 1, unlocked: false, firstChapter: null },
 ];
 
-// ── Mailto for "notify at launch" CTAs ──
-const NOTIFY_EMAIL = 'thomas.deillon@eshmedias.ch';
-const NOTIFY_SUBJECT_FR = 'Sortie du livre — m\'avertir';
-const NOTIFY_SUBJECT_EN = 'Book launch — notify me';
-const NOTIFY_BODY_FR = "Bonjour,\n\nJ'aimerais être prévenu·e à la sortie du livre « On a tous besoin de quelqu'un d'autre ».\n\nMerci !";
-const NOTIFY_BODY_EN = "Hello,\n\nI'd like to be notified when the book \"We all need someone else\" is released.\n\nThank you!";
-
 export default function HomeScreen() {
   const { t, locale } = useT();
   const [ritualOpen, setRitualOpen] = useState(false);
   const [ritualNote, setRitualNote] = useState('');
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
   const dailyQuestion = getDailyQuestion();
   const ritualDate = formatRitualDate(new Date(), locale);
   const ritualText = locale === 'en' ? dailyQuestion.en : dailyQuestion.fr;
 
-  const openMailto = () => {
-    const subject = locale === 'en' ? NOTIFY_SUBJECT_EN : NOTIFY_SUBJECT_FR;
-    const body = locale === 'en' ? NOTIFY_BODY_EN : NOTIFY_BODY_FR;
-    const url = `mailto:${NOTIFY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    Linking.openURL(url).catch(() => {});
-  };
+  const openSubscribe = () => setSubscribeOpen(true);
 
   const handleSeasonPress = (season: typeof SEASONS[number]) => {
     if (season.unlocked && season.firstChapter !== null) {
@@ -69,20 +58,13 @@ export default function HomeScreen() {
       t('home.seasonLockedAlertBody'),
       [
         { text: t('home.seasonLockedAlertCancel'), style: 'cancel' },
-        { text: t('home.seasonLockedAlertCta'), onPress: openMailto },
+        { text: t('home.seasonLockedAlertCta'), onPress: openSubscribe },
       ],
     );
   };
 
   const handleSolenePress = () => {
-    Alert.alert(
-      t('home.soleneAlertTitle'),
-      t('home.soleneAlertBody'),
-      [
-        { text: t('home.soleneAlertCancel'), style: 'cancel' },
-        { text: t('home.soleneAlertCta'), onPress: openMailto },
-      ],
-    );
+    openSubscribe();
   };
 
   return (
@@ -269,15 +251,20 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* ── Pre-order CTA ── */}
+      {/* ── Pre-order / launch-notify CTA ── */}
       <Pressable
-        onPress={openMailto}
+        onPress={openSubscribe}
         style={({ pressed }) => [styles.preorderBox, pressed && { opacity: 0.85 }]}
       >
         <Text style={styles.preorderHint}>{t('home.preorderHint')}</Text>
         <Text style={styles.preorderText}>{t('home.preorderText')}</Text>
         <Text style={styles.preorderCta}>{t('home.preorderCta')}</Text>
       </Pressable>
+
+      <LaunchSubscribeModal
+        visible={subscribeOpen}
+        onClose={() => setSubscribeOpen(false)}
+      />
     </ScrollView>
   );
 }

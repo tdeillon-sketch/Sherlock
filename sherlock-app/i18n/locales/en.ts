@@ -321,6 +321,27 @@ export const en = {
     emptyDesc: 'Choose a type on the left and one on the right to reveal the dynamic between these two personalities.',
   },
 
+  // Launch subscribe modal
+  launch: {
+    eyebrow: '🔔 GET NOTIFIED',
+    title: 'Notify me at book launch',
+    body: 'Enable notifications to be alerted the moment the book launches. You can also leave your email for a backup confirmation.',
+    emailLabel: 'Email (optional)',
+    emailPlaceholder: 'your@email.com',
+    helper: 'Your data is only used to notify you of the book launch. No spam.',
+    cta: 'Notify me at launch',
+    cancel: 'Later',
+    invalidEmailTitle: 'Invalid email',
+    invalidEmailBody: "This email doesn't look valid. Check it or leave the field empty.",
+    errorTitle: 'Could not subscribe',
+    errorBody: 'Something went wrong. Check your connection and try again.',
+    successTitle: "You're in!",
+    successWithPush: "You'll get a notification the moment the book launches. Thanks for your interest — we can't wait to share it with you.",
+    successEmailOnly: "Notifications are off, but we'll email you the moment the book is out.",
+    successNoChannel: 'Subscription saved. You can enable notifications later to be alerted at launch.',
+    successCta: 'Perfect',
+  },
+
   // Ritual journal
   journal: {
     title: 'My journal',
