@@ -11,19 +11,6 @@ export function radarPos(i: number, radius: number): { x: number; y: number } {
   return { x: CX + radius * Math.cos(a), y: CY + radius * Math.sin(a) };
 }
 
-export function computeRadarPoints(scores: Record<number, number>): string[] {
-  const maxScore = Math.max(1, ...Object.values(scores));
-  const pts: string[] = [];
-  for (let i = 0; i < 9; i++) {
-    const s = scores[i + 1] || 0;
-    const norm = s / maxScore;
-    const r = Math.max(R * 0.05, R * norm);
-    const p = radarPos(i, r);
-    pts.push(`${p.x},${p.y}`);
-  }
-  return pts;
-}
-
 export function computeArrow(scores: Record<number, number>): { x: number; y: number } {
   let wx = 0, wy = 0, total = 0;
   for (let i = 0; i < 9; i++) {

@@ -65,6 +65,10 @@ export interface WingPage {
 export type Page = LikertPage | BudgetPage | FinalPage | WingPage;
 
 // ── Résultat ──────────────────────────────────────────────────────
+// Insight is emitted as a locale-agnostic KIND (not a pre-built sentence) so
+// the UI (QuizResult) can render it in the active language via i18n keys.
+export type InsightKind = 'composite' | 'wingMarked' | 'closeSecond' | 'clear' | 'veryMarked';
+
 export interface AdaptiveResult {
   topType: EnneaType;
   topPercent: number;
@@ -75,7 +79,7 @@ export interface AdaptiveResult {
   wingType: EnneaType | null;
   confidence: number;           // 0..100
   confidenceLabel: 'Très confiant' | 'Confiant' | 'Plutôt confiant' | 'À préciser';
-  insight: string;
+  insightKind: InsightKind;
   allScores: { type: EnneaType; score: number; percent: number }[];
 }
 
@@ -291,8 +295,11 @@ function buildNextPage(
   // Page 1 : Likert 2
   if (pageIdx === 1) return buildLikertPage2(ageBand, scores, used);
 
-  // Adaptive budget pages
-  const c = computeConfidenceData(scores, pages.flatMap(p => Object.keys(p.responses)).length);
+  // Adaptive budget pages.
+  // Count NON-ZERO answers (not total slots) so the early-stop confidence uses
+  // the same metric as the displayed result confidence in computeResult.
+  const answered = pages.flatMap(p => Object.values(p.responses)).filter(v => v !== 0).length;
+  const c = computeConfidenceData(scores, answered);
   const atMax = pageIdx >= MAX_PAGES - 1; // -1 because we'll still add wing
   const goToWing = () => (c.top ? buildWingPage(ageBand, c.top) : null);
 
@@ -360,22 +367,17 @@ function computeResult(scores: Record<EnneaType, number>, pages: Page[], ageBand
   const top = t1.type;
   const wingInfo = computeWing(pages, ageBand);
 
-  let insight: string;
+  // Locale-agnostic insight kind — the UI turns this into a localized sentence.
+  let insightKind: InsightKind;
   if (c.pct < 30) {
-    insight = `Profil composite — plusieurs types cohabitent (${t1.type}, ${t2.type}, ${t3.type}).`;
+    insightKind = 'composite';
   } else if (c.pct < 55) {
-    const typeInfo = TYPES[top];
-    if (typeInfo.wing.includes(t2.type)) {
-      insight = `Le Type ${top} ressort avec une aile ${t2.type} marquée.`;
-    } else {
-      insight = `Le Type ${top} est en tête mais le Type ${t2.type} n'est pas loin.`;
-    }
+    insightKind = TYPES[top].wing.includes(t2.type) ? 'wingMarked' : 'closeSecond';
   } else if (c.pct < 75) {
-    insight = `Le Type ${top} ressort clairement (${TYPES[top].nick}).`;
+    insightKind = 'clear';
   } else {
-    insight = `Profil très marqué : Type ${top} (${TYPES[top].nick}).`;
+    insightKind = 'veryMarked';
   }
-  if (wingInfo.wing) insight += ` Aile détectée : ${top}w${wingInfo.wing}.`;
 
   return {
     topType: t1.type, topPercent: Math.round((Math.max(0, t1.score) / totalPos) * 100),
@@ -384,7 +386,7 @@ function computeResult(scores: Record<EnneaType, number>, pages: Page[], ageBand
     wingType: wingInfo.wing,
     confidence: c.pct,
     confidenceLabel: confidenceLabel(c.pct),
-    insight,
+    insightKind,
     allScores,
   };
 }

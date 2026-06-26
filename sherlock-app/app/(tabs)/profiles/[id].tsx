@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../../constants/theme';
 import { TYPES } from '../../../constants/data';
 import { TYPE_WINGS, getWing } from '../../../constants/wings';
+import { WINGS_EN } from '../../../i18n/wings_en';
 import { TYPES as TYPES_V3 } from '../../../constants/quiz_v3';
 import type { EnneaType } from '../../../constants/quiz_v3';
 import { useT, getTypeText } from '../../../i18n';
@@ -27,7 +28,19 @@ export default function ProfileDetailScreen() {
   }
 
   const wingOptions = TYPE_WINGS[type.num]; // [wing1, wing2]
-  const wingVariant = selectedWing !== null ? getWing(type.num, selectedWing) : null;
+  const wingVariantFr = selectedWing !== null ? getWing(type.num, selectedWing) : null;
+  // Locale-aware wing variant: prefer the EN translation (i18n/wings_en.ts),
+  // falling back field-by-field to the FR source.
+  const wingEn = (locale === 'en' && selectedWing !== null)
+    ? (WINGS_EN[`${type.num}w${selectedWing}`] ?? null)
+    : null;
+  const wingVariant = wingVariantFr ? {
+    nickname: wingEn?.nickname ?? wingVariantFr.nickname,
+    short:    wingEn?.short    ?? wingVariantFr.short,
+    metaphor: wingEn?.metaphor ?? wingVariantFr.metaphor,
+    ages:     wingEn?.ages     ?? wingVariantFr.ages,
+    keys:     wingEn?.keys     ?? wingVariantFr.keys,
+  } : null;
 
   // ── Localized content (wing variant overrides base; EN content from TYPES_EN) ──
   const isEn = locale === 'en';
@@ -94,6 +107,9 @@ export default function ProfileDetailScreen() {
           {wingOptions.map((w) => {
             const active = selectedWing === w;
             const wingData = getWing(type.num, w);
+            const wingNick = (locale === 'en'
+              ? (WINGS_EN[`${type.num}w${w}`]?.nickname ?? wingData?.nickname)
+              : wingData?.nickname) ?? '';
             return (
               <Pressable
                 key={w}
@@ -119,7 +135,7 @@ export default function ProfileDetailScreen() {
                     ]}
                     numberOfLines={1}
                   >
-                    {wingData.nickname}
+                    {wingNick}
                   </Text>
                 )}
               </Pressable>

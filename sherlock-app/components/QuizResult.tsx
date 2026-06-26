@@ -4,11 +4,27 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import { TYPES, QuizMode } from '../constants/data';
 import { TYPES as TYPES_V3 } from '../constants/quiz_v3';
 import type { EnneaType } from '../constants/quiz_v3';
-import { QuizResult as QuizResultType } from '../hooks/useQuiz';
+import type { InsightKind } from '../hooks/useAdaptiveQuiz';
 import { useT, getTypeText } from '../i18n';
 
+// Result shape consumed by this card. Relocated here from the legacy
+// hooks/useQuiz.ts (removed); the live quiz builds this object in
+// app/(tabs)/quiz.tsx from the adaptive engine's AdaptiveResult.
+export interface QuizResultData {
+  topType: number;
+  topPercent: number;
+  secondType: number;
+  secondPercent: number;
+  thirdType: number;
+  thirdPercent: number;
+  wingType: number | null;
+  isAmbiguous: boolean;
+  ambiguousPair: [number, number] | null;
+  insightKind: InsightKind;
+}
+
 interface QuizResultProps {
-  result: QuizResultType;
+  result: QuizResultData;
   mode: QuizMode;
   onViewProfile: () => void;
   onSaveProfile: () => void;
@@ -40,10 +56,20 @@ export default function QuizResult({
   const thirdName = localizedTypeName(result.thirdType, locale);
   const wingName = result.wingType ? localizedTypeName(result.wingType, locale) : '';
 
+  // Localized "Our reading" insight, built from the engine's insightKind so it
+  // renders in the active language (was previously a hardcoded French string).
+  const v3Top = TYPES_V3[result.topType as EnneaType];
+  const topNick = v3Top ? getTypeText(v3Top, 'nick', locale) : topName;
+  const insightBody = t(`result.insight_${result.insightKind}`, {
+    a: result.topType, b: result.secondType, c: result.thirdType,
+    top: result.topType, second: result.secondType, nick: topNick,
+  });
+  const insightText = result.wingType
+    ? `${insightBody} ${t('result.insightWing', { top: result.topType, wing: result.wingType })}`
+    : insightBody;
+
   const subjectLabel =
-    mode === 'enfant' ? t('result.subjectChild') :
-    mode === 'ado'    ? t('result.subjectAdo')   :
-                        t('result.subjectAdult');
+    mode === 'enfant' ? t('result.subjectChild') : t('result.subjectAdult');
 
   return (
     <View style={styles.container}>
@@ -66,7 +92,7 @@ export default function QuizResult({
       {/* ── "Our reading" ── */}
       <View style={styles.insightCard}>
         <Text style={styles.insightLabel}>{t('result.insightLabel')}</Text>
-        <Text style={styles.insightText}>{result.insight}</Text>
+        <Text style={styles.insightText}>{insightText}</Text>
       </View>
 
       {/* ── Top 3 types with bars ── */}

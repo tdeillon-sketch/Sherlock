@@ -14,8 +14,9 @@ import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
 import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
-import type { QuizSubject } from '../../constants/quiz_v3';
-import { useT } from '../../i18n';
+import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
+import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
+import { useT, getTypeText } from '../../i18n';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
@@ -40,7 +41,7 @@ export default function QuizScreen() {
   useEffect(() => { trackScreen('quiz').catch(() => {}); }, []);
 
   const {
-    phase, subject, ageBand, currentPage, scores,
+    phase, subject, ageBand, childAge, currentPage, scores,
     stepIndex, estimatedTotal, result, childProfiles, canAdvance, pageIndex,
     selectSubject, selectAge,
     updateResponse, advancePage, goToPrevPage,
@@ -166,8 +167,8 @@ export default function QuizScreen() {
   const subjectLabel =
     subject === 'self'
       ? t('subject.headerSelf')
-      : ageBand
-        ? t('subject.headerChildAge', { age: ageBand })
+      : childAge != null
+        ? t('subject.headerChildAge', { age: childAge })
         : t('subject.headerChild');
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
@@ -264,7 +265,7 @@ export default function QuizScreen() {
       wingType: result.wingType,
       isAmbiguous: result.confidence < 60,
       ambiguousPair: null as [number, number] | null,
-      insight: result.insight,
+      insightKind: result.insightKind,
     };
     // mode pour QuizResult : 'enfant' si subject=enfant, 'adulte' si self
     const legacyMode = subject === 'self' ? 'adulte' : 'enfant';
@@ -281,10 +282,7 @@ export default function QuizScreen() {
         />
 
         {/* Score de confiance (sans bouton "Affiner" — retiré en v3) */}
-        <ConfidenceBar
-          confidence={result.confidence}
-          label={result.confidenceLabel}
-        />
+        <ConfidenceBar confidence={result.confidence} />
       </>
     );
   }
@@ -424,7 +422,8 @@ function SaveProfileScreen({
 // ─────────────────────────────────────────────
 
 function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack: () => void }) {
-  const { t } = useT();
+  const { t, locale } = useT();
+  const dateLocale = locale === 'en' ? 'en-US' : 'fr-FR';
   return (
     <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
       <View style={styles.quizTopBar}>
@@ -448,19 +447,20 @@ function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack:
             </View>
 
             {p.history.map((entry, idx) => {
-              const typeName = TYPES[entry.topType - 1]?.name ?? '';
+              const v3 = TYPES_V3[entry.topType as EnneaType];
+              const typeName = v3 ? getTypeText(v3, 'name', locale) : (TYPES[entry.topType - 1]?.name ?? '');
               return (
                 <View key={idx} style={styles.historyEntry}>
                   <View style={[styles.historyDot, { backgroundColor: TYPE_COLORS[entry.topType] }]} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.historyEntryDate}>
-                      {new Date(entry.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      {new Date(entry.date).toLocaleDateString(dateLocale, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </Text>
                     <Text style={styles.historyEntryType}>
-                      Type {entry.topType}{entry.wingType ? `w${entry.wingType}` : ''} · {typeName}
+                      {t('result.type')} {entry.topType}{entry.wingType ? `w${entry.wingType}` : ''} · {typeName}
                     </Text>
                     <Text style={styles.historyEntryPercent}>
-                      {entry.topPercent}% (vs {entry.secondPercent}% pour le {entry.secondType})
+                      {t('history.vsSecond', { p: entry.topPercent, q: entry.secondPercent, t: entry.secondType })}
                     </Text>
                     {entry.note && (
                       <Text style={styles.historyEntryNote}>« {entry.note} »</Text>
@@ -473,8 +473,8 @@ function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack:
             {p.history.length >= 2 && (
               <Text style={styles.historyEvolution}>
                 {p.history[0].topType === p.history[p.history.length - 1].topType
-                  ? `✓ Profil stable sur ${p.history.length} test(s)`
-                  : `⚡ Évolution observée : Type ${p.history[0].topType} → Type ${p.history[p.history.length - 1].topType}`}
+                  ? t('history.stable', { n: p.history.length })
+                  : t('history.evolution', { from: p.history[0].topType, to: p.history[p.history.length - 1].topType })}
               </Text>
             )}
           </View>

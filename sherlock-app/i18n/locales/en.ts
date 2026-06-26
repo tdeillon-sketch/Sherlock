@@ -152,12 +152,17 @@ export const en = {
     profileLabel: 'YOUR PROFILE',
     subjectChild: "Your child's profile",
     subjectAdult: 'Your profile',
-    subjectAdo: 'Your profile',
     type: 'Type',
     typeProb: 'Likely Type {{n}}',
     confidenceVal: '{{pct}}%',
     confidence: 'match',
     insightLabel: '💡 Our reading',
+    insight_composite: 'Composite profile — several types coexist (Types {{a}}, {{b}}, {{c}}).',
+    insight_wingMarked: 'Type {{top}} stands out with a strong {{second}} wing.',
+    insight_closeSecond: "Type {{top}} leads, but Type {{second}} isn't far behind.",
+    insight_clear: 'Type {{top}} comes through clearly ({{nick}}).',
+    insight_veryMarked: 'Very pronounced profile: Type {{top}} ({{nick}}).',
+    insightWing: 'Wing detected: {{top}}w{{wing}}.',
     topThree: 'Top 3 most marked types',
     typeOverview: '{{name}} — overview',
     fearLabel: 'Core fear:',
@@ -199,6 +204,7 @@ export const en = {
     last: 'last: Type {{t}}',
     stable: '✓ Stable profile across {{n}} test(s)',
     evolution: '⚡ Change observed: Type {{from}} → Type {{to}}',
+    vsSecond: '{{p}}% (vs {{q}}% for Type {{t}})',
   },
 
   // Sign-in / Auth screen
@@ -275,12 +281,6 @@ export const en = {
     age58: 'Ages 5 to 8',
     age812: 'Ages 8 to 12',
     age1316: 'Ages 13 to 16',
-  },
-
-  // Banner for sections still in French (Duo, Case files)
-  enComingSoon: {
-    label: '🇬🇧 ENGLISH CONTENT COMING SOON',
-    text: 'This section is currently available in French only. English translation is in progress and will land in a future update. For now, you can read the French version below.',
   },
 
   // Chapter detail page

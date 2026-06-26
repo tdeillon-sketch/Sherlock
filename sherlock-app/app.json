@@ -3,7 +3,7 @@
     "name": "5herlock",
     "slug": "sherlock-app",
     "scheme": "sherlock-app",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -52,7 +52,8 @@
         {
           "color": "#f05a00"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "extra": {
       "router": {},

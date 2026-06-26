@@ -160,12 +160,17 @@ export const fr = {
     profileLabel: 'VOTRE PROFIL',
     subjectChild: 'Profil de votre enfant',
     subjectAdult: 'Votre profil',
-    subjectAdo: 'Ton profil',
     type: 'Type',
     typeProb: 'Probablement Type {{n}}',
     confidenceVal: '{{pct}}%',
     confidence: 'de correspondance',
     insightLabel: '💡 Notre lecture',
+    insight_composite: 'Profil composite — plusieurs types cohabitent ({{a}}, {{b}}, {{c}}).',
+    insight_wingMarked: 'Le Type {{top}} ressort avec une aile {{second}} marquée.',
+    insight_closeSecond: "Le Type {{top}} est en tête mais le Type {{second}} n'est pas loin.",
+    insight_clear: 'Le Type {{top}} ressort clairement ({{nick}}).',
+    insight_veryMarked: 'Profil très marqué : Type {{top}} ({{nick}}).',
+    insightWing: 'Aile détectée : {{top}}w{{wing}}.',
     topThree: 'Les 3 types les plus marqués',
     typeOverview: '{{name}} — aperçu',
     fearLabel: 'Peur racine :',
@@ -209,6 +214,7 @@ export const fr = {
     last: 'dernier : Type {{t}}',
     stable: '✓ Profil stable sur {{n}} test(s)',
     evolution: '⚡ Évolution observée : Type {{from}} → Type {{to}}',
+    vsSecond: '{{p}}% (vs {{q}}% pour le {{t}})',
   },
 
   // Sign-in / Auth screen
@@ -286,12 +292,6 @@ export const fr = {
     age58: 'De 5 à 8 ans',
     age812: 'De 8 à 12 ans',
     age1316: 'De 13 à 16 ans',
-  },
-
-  // Banner for sections only available in French (Duo, Case files)
-  enComingSoon: {
-    label: 'EN CONTENU EN ANGLAIS À VENIR',
-    text: 'Cette section est encore disponible uniquement en français. La traduction anglaise est en cours.',
   },
 
   // Chapter detail page
