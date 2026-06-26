@@ -78,7 +78,6 @@ export interface AdaptiveResult {
   thirdPercent: number;
   wingType: EnneaType | null;
   confidence: number;           // 0..100
-  confidenceLabel: 'Très confiant' | 'Confiant' | 'Plutôt confiant' | 'À préciser';
   insightKind: InsightKind;
   allScores: { type: EnneaType; score: number; percent: number }[];
 }
@@ -147,13 +146,6 @@ function computeConfidenceData(scores: Record<EnneaType, number>, answered: numb
     pct: Math.min(95, Math.round(raw * 100)),
     top: t1.type, top2: t2.type, sorted, gap, dominance,
   };
-}
-
-function confidenceLabel(c: number): AdaptiveResult['confidenceLabel'] {
-  if (c >= 80) return 'Très confiant';
-  if (c >= 60) return 'Confiant';
-  if (c >= 40) return 'Plutôt confiant';
-  return 'À préciser';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -385,7 +377,6 @@ function computeResult(scores: Record<EnneaType, number>, pages: Page[], ageBand
     thirdType: t3.type, thirdPercent: Math.round((Math.max(0, t3.score) / totalPos) * 100),
     wingType: wingInfo.wing,
     confidence: c.pct,
-    confidenceLabel: confidenceLabel(c.pct),
     insightKind,
     allScores,
   };
