@@ -69,15 +69,6 @@ export const en = {
     seasonLockedAlertCta: 'Notify me at launch',
     seasonLockedAlertCancel: 'Later',
 
-    // Solène teaser
-    soleneEyebrow: "COMING SOON · SOLÈNE'S VOICE",
-    soleneText: "One book, two perspectives. The final version will integrate Solène's voice — the mother, the wife, the other.",
-    soleneCta: 'Notify me at launch',
-    soleneAlertTitle: 'Get notified at launch',
-    soleneAlertBody: "The book will be published soon with Solène's voice integrated. To be notified the moment it's available, write to us.",
-    soleneAlertCta: 'Write to us',
-    soleneAlertCancel: 'Later',
-
     // Tools
     toolsLabel: "The traveler's tools",
     toolsIntro: 'While you wait for the book, these four tools accompany you starting today.',

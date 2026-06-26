@@ -16,7 +16,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.thomasdeillon.sherlock",
-      "buildNumber": "9",
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -36,8 +35,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.thomasdeillon.sherlock",
-      "versionCode": 3
+      "package": "com.thomasdeillon.sherlock"
     },
     "web": {
       "favicon": "./assets/favicon.png"

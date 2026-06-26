@@ -113,8 +113,14 @@ function recomputeScoresFromPages(pages: Page[], ageBand: AgeBand): Record<Ennea
       const stmt = getStatements(ageBand).find(s => s.id === sid);
       if (!stmt) continue;
       scores[stmt.t] += v * mult;
-      if (scores[stmt.t] < 0) scores[stmt.t] = 0;
     }
+  }
+  // Clamp to >= 0 once at the end (not inside the loop) so the total is
+  // order-independent: a negative answer on an early page no longer silently
+  // erases a later positive one for the same type.
+  for (let t = 1; t <= 9; t++) {
+    const k = t as EnneaType;
+    if (scores[k] < 0) scores[k] = 0;
   }
   return scores;
 }

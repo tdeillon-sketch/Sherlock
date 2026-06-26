@@ -114,8 +114,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Ecrans cachés de la tab bar */}
-      <Tabs.Screen name="chapters" options={{ href: null }} />
     </Tabs>
   );
 }

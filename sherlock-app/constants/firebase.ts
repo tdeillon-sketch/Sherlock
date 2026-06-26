@@ -261,11 +261,13 @@ export async function trackScreen(screen: Screen): Promise<void> {
 
 export interface DossierProgressData {
   completedCases: string[];
+  wrongCases: string[];
   unlockedFiches: string[];
   totalXP: number;
   dailyLastDate: string | null;
   dailyCompleted: boolean;
   streak: number;
+  bestCombo: number;
 }
 
 export async function saveDossierProgress(uid: string, progress: DossierProgressData): Promise<void> {

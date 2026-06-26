@@ -72,15 +72,6 @@ export const fr = {
     seasonLockedAlertCta: "M'avertir à la sortie",
     seasonLockedAlertCancel: 'Plus tard',
 
-    // Solène teaser
-    soleneEyebrow: 'BIENTÔT · LA VOIX DE SOLÈNE',
-    soleneText: "Un même livre, deux regards. La version finale intègrera la voix de Solène — la mère, l'épouse, l'autre.",
-    soleneCta: "M'avertir à la sortie",
-    soleneAlertTitle: 'Soyez prévenu·e à la sortie',
-    soleneAlertBody: "Le livre sortira prochainement avec la voix de Solène intégrée. Pour être averti·e dès qu'il est disponible, écrivez-nous.",
-    soleneAlertCta: 'Nous écrire',
-    soleneAlertCancel: 'Plus tard',
-
     // Tools
     toolsLabel: 'Les outils du voyage',
     toolsIntro: "En attendant le livre, ces quatre outils vous accompagnent dès aujourd'hui.",
