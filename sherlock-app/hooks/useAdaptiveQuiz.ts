@@ -255,6 +255,20 @@ function buildWingPage(ageBand: AgeBand, topType: EnneaType): WingPage {
   return { kind: 'wing', stmtIds: ids, responses, topType, wings: [wings[0], wings[1]] };
 }
 
+/**
+ * A budget/final page is only completable if its budget can actually be spent:
+ * the user must reach Σ|v| === budget, and each statement caps at a per-page max
+ * (mirrors BudgetStepperPage: 5 for budget, 6 for final). If the statement pool
+ * ran dry and the page can't reach its budget, it would dead-end the quiz
+ * (the "Next" button stays disabled forever). Likert/wing pages are always OK
+ * (0 = "no opinion" is a valid answer).
+ */
+function isAnswerable(page: Page): boolean {
+  if (page.kind === 'likert' || page.kind === 'wing') return true;
+  const perStmtMax = page.kind === 'final' ? 6 : 5;
+  return page.stmtIds.length > 0 && page.stmtIds.length * perStmtMax >= page.budget;
+}
+
 /** Decide and build the next page. Returns null if quiz is done. */
 function buildNextPage(
   pages: Page[],
@@ -263,6 +277,7 @@ function buildNextPage(
 ): Page | null {
   const mainPages = pages.filter(p => p.kind !== 'wing');
   const hasWing = pages.some(p => p.kind === 'wing');
+  const hasFinal = pages.some(p => p.kind === 'final');
   const pageIdx = mainPages.length;
 
   // Collect used ids
@@ -279,25 +294,33 @@ function buildNextPage(
   // Adaptive budget pages
   const c = computeConfidenceData(scores, pages.flatMap(p => Object.keys(p.responses)).length);
   const atMax = pageIdx >= MAX_PAGES - 1; // -1 because we'll still add wing
+  const goToWing = () => (c.top ? buildWingPage(ageBand, c.top) : null);
 
-  // Early stop: high confidence AND min pages
+  // Early stop: high confidence AND min pages → go to wing
   if (pageIdx >= MIN_PAGES && c.pct >= EARLY_STOP_PCT) {
-    // Instead of stopping, go to wing page
-    return c.top ? buildWingPage(ageBand, c.top) : null;
+    return goToWing();
   }
 
-  // If top1/top2 close and we've done enough budget pages → final departage
-  if (pageIdx >= 3 && c.gap < TIEBREAK_GAP && c.top) {
-    return buildFinalPage(ageBand, scores, used);
-  }
-
-  // If we've hit max main pages, go to wing
+  // Respect the page cap BEFORE anything else can append more pages.
+  // (Previously the tie-break below ran first and could loop indefinitely,
+  //  generating "final" pages until the statement pool ran dry and the quiz
+  //  dead-ended.)
   if (atMax) {
-    return c.top ? buildWingPage(ageBand, c.top) : null;
+    return goToWing();
   }
 
-  // Otherwise standard budget page
-  return buildBudgetPage(ageBand, scores, used);
+  // If top1/top2 are close, do ONE final departage page (like the wing, it's a
+  // single terminal-ish step). The `!hasFinal` guard prevents the old infinite
+  // loop of repeated departage pages.
+  if (pageIdx >= 3 && c.gap < TIEBREAK_GAP && c.top && !hasFinal) {
+    const finalPage = buildFinalPage(ageBand, scores, used);
+    // If the pool is too depleted to build a completable final page, skip it.
+    return isAnswerable(finalPage) ? finalPage : goToWing();
+  }
+
+  // Otherwise standard budget page (with the same defensive guard).
+  const budgetPage = buildBudgetPage(ageBand, scores, used);
+  return isAnswerable(budgetPage) ? budgetPage : goToWing();
 }
 
 // ═══════════════════════════════════════════════════════════════
