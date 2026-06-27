@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
-  Animated, useWindowDimensions,
+  Animated, useWindowDimensions, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
@@ -1035,6 +1035,34 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
 }
 
 // ─────────────────────────────────────────────
+//  Rank-up celebration modal
+// ─────────────────────────────────────────────
+
+function RankUpModal({ rank, onClose }: {
+  rank: { id: number; title: string; emoji: string } | null;
+  onClose: () => void;
+}) {
+  const { t, locale } = useT();
+  useEffect(() => { if (rank) hapticSuccess(); }, [rank]);
+  if (!rank) return null;
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.rankUpBackdrop}>
+        <View style={styles.rankUpCard}>
+          <CelebrationBurst />
+          <Text style={styles.rankUpEmoji}>{rank.emoji}</Text>
+          <Text style={styles.rankUpLabel}>{t('dossiers.rankUpTitle')}</Text>
+          <Text style={styles.rankUpName}>{getRankTitle(rank.title, rank.id, locale)}</Text>
+          <Pressable onPress={onClose} style={({ pressed }) => [styles.rankUpBtn, pressed && { opacity: 0.85 }]}>
+            <Text style={styles.rankUpBtnText}>{t('dossiers.rankUpCta')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ─────────────────────────────────────────────
 //  EXPORT PRINCIPAL
 // ─────────────────────────────────────────────
 
@@ -1046,6 +1074,7 @@ export default function CelebritiesScreen() {
     openCollection, openFiche, goBack, goHub,
     startEntrainement, startDaily, isDailyAvailable,
     revealNextIndice, submitAnswer, submitFauxAmis, confirmAndReveal, nextCase, quitSession,
+    rankUp, clearRankUp,
   } = useDossier();
 
   if (loading) {
@@ -1095,6 +1124,7 @@ export default function CelebritiesScreen() {
           onBack={goBack}
           onQuit={quitSession}
         />
+        <RankUpModal rank={rankUp} onClose={clearRankUp} />
       </View>
     );
   }
@@ -1142,6 +1172,32 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   loadingContainer: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
   loadingText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
+
+  // ── Rank-up modal ──
+  rankUpBackdrop: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center', padding: spacing.lg,
+  },
+  rankUpCard: {
+    width: '100%', maxWidth: 340, alignItems: 'center',
+    backgroundColor: colors.surface, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.accent,
+    paddingVertical: spacing.xl, paddingHorizontal: spacing.lg, gap: spacing.sm,
+  },
+  rankUpEmoji: { fontSize: 56, marginBottom: spacing.xs },
+  rankUpLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', letterSpacing: 1.5,
+    textTransform: 'uppercase', color: colors.accent,
+  },
+  rankUpName: {
+    fontFamily: fonts.serif, fontSize: 24, color: colors.text, textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  rankUpBtn: {
+    backgroundColor: colors.accent, borderRadius: radius.full,
+    paddingVertical: 12, paddingHorizontal: spacing.xl, alignItems: 'center',
+  },
+  rankUpBtnText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.white },
 
   // ── Hub ──
   hubScroll: { flex: 1 },

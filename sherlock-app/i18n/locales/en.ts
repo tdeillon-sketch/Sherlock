@@ -394,6 +394,8 @@ export const en = {
     rankXp: 'Sherlock XP',
     rankUntil: 'until',
     rankMax: '🏆 Top rank reached!',
+    rankUpTitle: 'New rank reached!',
+    rankUpCta: 'Continue',
     streakDay: '{{n}} day in a row',
     streakDays: '{{n}} days in a row',
     streakActive: "Complete today's mission so you don't break your streak",

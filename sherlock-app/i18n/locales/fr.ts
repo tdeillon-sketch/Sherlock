@@ -405,6 +405,8 @@ export const fr = {
     rankXp: 'XP Sherlock',
     rankUntil: 'avant',
     rankMax: '🏆 Rang maximum atteint !',
+    rankUpTitle: 'Nouveau rang atteint !',
+    rankUpCta: 'Continuer',
     streakDay: '{{n}} jour d\'affilée',
     streakDays: '{{n}} jours d\'affilée',
     streakActive: 'Faites la mission du jour pour ne pas perdre votre série',
