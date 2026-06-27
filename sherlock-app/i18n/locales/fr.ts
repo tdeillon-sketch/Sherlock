@@ -189,6 +189,7 @@ export const fr = {
     childCaveat: "Chez l'enfant, le profil n'est pas figé : il se précise en grandissant. Une piste pour mieux le comprendre, pas une étiquette.",
     shareCta: '📤 Partager mon résultat',
     shareTitle: 'Mon profil Ennéagramme',
+    saveHint: "💾 Enregistrez ce profil pour retrouver votre enfant dans « Ma famille » et « Duo ».",
     insight_composite: 'Profil composite — plusieurs types cohabitent ({{a}}, {{b}}, {{c}}).',
     insight_wingMarked: 'Le Type {{top}} ressort avec une aile {{second}} marquée.',
     insight_closeSecond: "Le Type {{top}} est en tête mais le Type {{second}} n'est pas loin.",
@@ -239,6 +240,9 @@ export const fr = {
     stable: '✓ Profil stable sur {{n}} test(s)',
     evolution: "⚡ Résultat différent : Type {{from}} puis Type {{to}} — c'est normal, le profil d'un enfant se précise avec le temps.",
     vsSecond: '{{p}}% (vs {{q}}% pour le {{t}})',
+    deleteTitle: 'Supprimer ce profil ?',
+    deleteBody: "L'historique de {{name}} sera définitivement effacé.",
+    deleteAction: 'Supprimer',
   },
 
   // Sign-in / Auth screen

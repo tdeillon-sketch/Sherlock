@@ -48,7 +48,7 @@ export default function QuizScreen() {
     updateResponse, advancePage, goToPrevPage,
     reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
-    saveChildResult,
+    saveChildResult, deleteChildProfile,
   } = useAdaptiveQuiz();
 
   // Save quiz result to Firebase au passage en 'result'
@@ -156,7 +156,7 @@ export default function QuizScreen() {
   //  PHASE: history
   // ─────────────────────────────────────────────
   if (phase === 'history') {
-    return <HistoryScreen profiles={childProfiles} onBack={reset} />;
+    return <HistoryScreen profiles={childProfiles} onBack={reset} onDelete={deleteChildProfile} />;
   }
 
   // ─────────────────────────────────────────────
@@ -467,7 +467,7 @@ function SaveProfileScreen({
 //  History screen
 // ─────────────────────────────────────────────
 
-function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack: () => void }) {
+function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[]; onBack: () => void; onDelete: (id: string) => void }) {
   const { t, locale } = useT();
   const dateLocale = locale === 'en' ? 'en-US' : 'fr-FR';
   return (
@@ -487,9 +487,25 @@ function HistoryScreen({ profiles, onBack }: { profiles: ChildProfile[]; onBack:
           <View key={p.id} style={styles.historyCard}>
             <View style={styles.historyCardHeader}>
               <Text style={styles.historyCardName}>{p.name}</Text>
-              {p.age !== undefined && (
-                <Text style={styles.historyCardAge}>{t('subject.yearsOld', { n: p.age })}</Text>
-              )}
+              <View style={styles.historyCardHeaderRight}>
+                {p.age !== undefined && (
+                  <Text style={styles.historyCardAge}>{t('subject.yearsOld', { n: p.age })}</Text>
+                )}
+                <Pressable
+                  hitSlop={10}
+                  onPress={() => Alert.alert(
+                    t('history.deleteTitle'),
+                    t('history.deleteBody', { name: p.name }),
+                    [
+                      { text: t('common.cancel'), style: 'cancel' },
+                      { text: t('history.deleteAction'), style: 'destructive', onPress: () => onDelete(p.id) },
+                    ],
+                  )}
+                  style={({ pressed }) => [styles.historyDeleteBtn, pressed && { opacity: 0.6 }]}
+                >
+                  <Text style={styles.historyDeleteIcon}>🗑</Text>
+                </Pressable>
+              </View>
             </View>
 
             {p.history.map((entry, idx) => {
@@ -705,7 +721,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.border,
   },
   historyCardName: { fontFamily: fonts.serif, fontSize: 20, color: colors.text },
+  historyCardHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   historyCardAge: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted },
+  historyDeleteBtn: { padding: 4 },
+  historyDeleteIcon: { fontSize: 16 },
   historyEntry: {
     flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.sm,
     borderBottomWidth: 0.5, borderBottomColor: colors.border,
