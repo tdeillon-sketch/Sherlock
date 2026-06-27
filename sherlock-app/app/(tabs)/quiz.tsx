@@ -204,6 +204,7 @@ export default function QuizScreen() {
   const radarSection = (
     <Animated.View style={[styles.radarSection, isWide && styles.radarSectionWide, { opacity: radarAnim }]}>
       <RadarChart scores={scores as unknown as Record<number, number>} size={radarSize} />
+      <Text style={styles.radarCaption}>{t('quiz.radarCaption')}</Text>
       {phase === 'result' && (
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
@@ -584,6 +585,10 @@ const styles = StyleSheet.create({
   // Radar
   radarSection: { alignItems: 'center', paddingTop: spacing.md, paddingBottom: spacing.xs },
   radarSectionWide: { paddingVertical: spacing.xxl },
+  radarCaption: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textDim,
+    textAlign: 'center', marginTop: spacing.xs,
+  },
   legendRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs },
   legendText: { fontFamily: fonts.sans, fontSize: 12, color: colors.textDim },

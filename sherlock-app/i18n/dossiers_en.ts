@@ -930,7 +930,7 @@ export const FUN_FACTS_EN: Record<string, string> = {
 
   // Type 8
   churchill:      "Churchill received his ministers in his bath. This total absence of awkwardness, this rejection of protocol when it blocks action: very Type 8.",
-  mlk:            "Martin Luther King kept walking after being stabbed in 1958 — the blade had grazed his aorta. Not retreating in the face of physical violence: essence of Type 8.",
+  mlk:            "Stabbed in 1958 with the blade against his aorta, Martin Luther King had to lie perfectly still for weeks (a single sneeze could have killed him) — then returned to the fight, never backing down. Refusing to be intimidated: essence of Type 8.",
   steve_jobs:     "Steve Jobs would make engineers cry in meetings, then tell them days later they had produced 'the best work of their lives.' Bluntness and recognition: classic Type 8 pairing.",
   serena:         "Serena Williams won the 2017 Australian Open while 8 weeks pregnant. Refusing to let her body dictate her limits — that's pure Type 8.",
   darth_vader:    "Darth Vader chokes an officer who contradicts him without even touching him. Type 8 under stress — when power becomes the only language — reaches this caricature.",

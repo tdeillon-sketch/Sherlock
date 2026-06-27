@@ -35,10 +35,11 @@ interface QuizResultProps {
   onReset: () => void;
 }
 
-const TYPE_COLORS: Record<number, string> = {
-  1: '#6b8f71', 2: '#c0713a', 3: '#d4a437', 4: '#7b68b5',
-  5: '#4a90d9', 6: '#5b9e8f', 7: '#e07b54', 8: '#c0443a', 9: '#8fa68f',
-};
+/** Single source of truth for type colors (data.ts) — so the same type never
+ *  shows two different colors on one screen (hero badge vs top-3 rows). */
+function typeColor(typeNum: number): string {
+  return TYPES[typeNum - 1]?.color ?? '#c0713a';
+}
 
 /** Locale-aware type name, falling back to data.ts FR name */
 function localizedTypeName(typeNum: number, locale: 'fr' | 'en'): string {
@@ -113,6 +114,11 @@ export default function QuizResult({
         <Text style={styles.heroBrand}>5herlock</Text>
       </View>
 
+      {/* Responsible framing: a child's type is a hypothesis, not a label. */}
+      {mode === 'enfant' && (
+        <Text style={styles.childCaveat}>{t('result.childCaveat')}</Text>
+      )}
+
       {/* ── "Our reading" ── */}
       <View style={styles.insightCard}>
         <Text style={styles.insightLabel}>{t('result.insightLabel')}</Text>
@@ -128,7 +134,7 @@ export default function QuizResult({
           type={result.topType}
           name={topName}
           percent={result.topPercent}
-          color={TYPE_COLORS[result.topType]}
+          color={typeColor(result.topType)}
           wingTag={t('result.wingTagShort')}
         />
         <TypeRow
@@ -136,7 +142,7 @@ export default function QuizResult({
           type={result.secondType}
           name={secondName}
           percent={result.secondPercent}
-          color={TYPE_COLORS[result.secondType]}
+          color={typeColor(result.secondType)}
           isWing={result.wingType === result.secondType}
           wingTag={t('result.wingTagShort')}
         />
@@ -145,7 +151,7 @@ export default function QuizResult({
           type={result.thirdType}
           name={thirdName}
           percent={result.thirdPercent}
-          color={TYPE_COLORS[result.thirdType]}
+          color={typeColor(result.thirdType)}
           wingTag={t('result.wingTagShort')}
         />
       </View>
@@ -283,6 +289,11 @@ const styles = StyleSheet.create({
   heroBrand: {
     fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
     marginTop: spacing.md, letterSpacing: 1,
+  },
+  childCaveat: {
+    fontFamily: fonts.sans, fontSize: 12, lineHeight: 18,
+    color: colors.textMuted, fontStyle: 'italic', textAlign: 'center',
+    paddingHorizontal: spacing.sm,
   },
 
   // Insight

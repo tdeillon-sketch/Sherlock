@@ -1137,7 +1137,7 @@ export const FUN_FACTS: Record<string, string> = {
 
   // ── Type 8 — Le Chef ──
   churchill:      "Churchill recevait ses ministres dans son bain. Cette absence totale de gêne, ce refus du protocole quand il bloque l'action : très Type 8.",
-  mlk:            "Martin Luther King a continué à marcher après avoir été poignardé en 1958 — la lame ayant frôlé l'aorte. Ne pas reculer face à la violence physique : essence du Type 8.",
+  mlk:            "Poignardé en 1958, la lame contre l'aorte, Martin Luther King a dû rester des semaines parfaitement immobile (un simple éternuement aurait pu le tuer) — puis il a repris son combat sans jamais reculer. Refuser de se laisser intimider : essence du Type 8.",
   steve_jobs:     "Steve Jobs faisait pleurer ses ingénieurs dans les réunions, puis leur disait quelques jours plus tard qu'ils avaient produit « le meilleur travail de leur vie ». Brutalité et reconnaissance : duo classique du Type 8.",
   serena:         "Serena Williams a gagné l'Open d'Australie 2017 enceinte de 8 semaines. Refuser que son corps lui dicte ses limites — c'est le Type 8 à l'état pur.",
   darth_vader:    "Dark Vador étrangle un officier qui le contredit, sans même le toucher. Le Type 8 sous stress — quand le pouvoir devient le seul langage — atteint cette caricature.",
