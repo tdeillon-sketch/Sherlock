@@ -388,7 +388,7 @@ export const FICHES_EN: Record<string, FicheEn> = {
   },
   darth_vader: {
     name: 'Darth Vader',
-    quote: "I am your father.",
+    quote: "You don't know the power of the Dark Side.",
     quoteSource: "Star Wars: The Empire Strikes Back",
     coreFear: "Vulnerability, loving and losing",
     coreDesire: "To control, never to be hurt again",
@@ -624,7 +624,7 @@ export const CASES_EN: Record<string, CaseEn> = {
   l7: {
     quote: "When something is important enough, you do it even if the odds are not in your favor.",
     author: 'Elon Musk',
-    explanation: "Musk reveals Type 3 in this quote: a goal's importance is measured by its potential impact on his reputation and legacy. Type 3 takes risks not out of courage but ambition.",
+    explanation: "This line sounds like sheer will (Type 8) or duty (Type 1) — that's the trap. The Type 3 tell is the stake: importance is measured by impact on image, reputation, legacy. The 3 takes risks out of ambition, not courage.",
   },
   l8: {
     indices: [
@@ -705,7 +705,7 @@ export const CASES_EN: Record<string, CaseEn> = {
     explanation: "Sherlock Holmes is the fictional Type 5 par excellence. His emotional detachment, intellect as sole armor, distant observation of the human world, and encyclopedic collection of useless lore define the Investigator.",
   },
   f2: {
-    quote: "I am your father.",
+    quote: "You don't know the power of the Dark Side.",
     author: 'Darth Vader — Star Wars',
     explanation: "This quote is the Type 8 reveal beneath the mask. Vader's whole tragedy comes from a Type 8 who let fear corrupt him: the fear of vulnerability (losing Padmé) turned him into a tyrant.",
   },

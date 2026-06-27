@@ -17,9 +17,9 @@ export const RANKS = [
 export const TYPE_NAMES: Record<number, string> = {
   1: 'Perfectionniste',
   2: 'Altruiste',
-  3: 'Gagneur',
+  3: 'Battant',
   4: 'Romantique',
-  5: 'Investigateur',
+  5: 'Observateur',
   6: 'Loyaliste',
   7: 'Épicurien',
   8: 'Chef',
@@ -272,7 +272,7 @@ export const FICHES: Fiche[] = [
     whyThisType: "Virginia Woolf est le Type 4 littéraire par excellence. Son flux de conscience, sa mélancolie constitutive, sa quête d'identité féminine et sa sensibilité extrême aux ambiances et aux émotions en font une Type 4 emblématique.",
   },
 
-  // TYPE 5 — L'Investigateur
+  // TYPE 5 — L'Observateur
   {
     id: 'einstein', name: 'Albert Einstein', type: 5, category: 'visionnaires',
     quote: "L'imagination est plus importante que la connaissance.",
@@ -433,7 +433,7 @@ export const FICHES: Fiche[] = [
   },
   {
     id: 'darth_vader', name: 'Dark Vador', type: 8, category: 'fictifs',
-    quote: "Je suis ton père.",
+    quote: "Vous ne mesurez pas la puissance du Côté Obscur.",
     quoteSource: "Star Wars : L'Empire contre-attaque",
     coreFear: "La vulnérabilité, aimer et perdre",
     coreDesire: "Contrôler, ne jamais être blessé à nouveau",
@@ -515,7 +515,7 @@ export const DOSSIERS: Dossier[] = [
           "Il a reformulé notre compréhension du temps et de l'espace avec E=mc².",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Einstein est l'archétype du Type 5. Son détachement du monde physique au profit de l'abstraction intellectuelle, son économie d'énergie sociale et sa façon de tout observer sans participer sont des marqueurs du Investigateur.",
+        explanation: "Einstein est l'archétype du Type 5. Son détachement du monde physique au profit de l'abstraction intellectuelle, son économie d'énergie sociale et sa façon de tout observer sans participer sont des marqueurs du Observateur.",
       },
       {
         id: 'v2', format: 'citation', ficheId: 'tesla', quote: "Si vous voulez trouver les secrets de l'univers, pensez en termes d'énergie, de fréquence et de vibration.", author: 'Nikola Tesla', answer: 5,
@@ -727,7 +727,7 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'l7', format: 'citation', ficheId: 'elon', quote: "When something is important enough, you do it even if the odds are not in your favor.", author: 'Elon Musk', answer: 3,
         wrongOptions: [8, 1],
-        explanation: "Musk révèle le Type 3 dans cette citation : l'importance d'un objectif se mesure à son impact potentiel sur sa réputation et son héritage. Le Type 3 prend des risques non par courage mais par ambition.",
+        explanation: "Cette phrase sonne comme de la pure volonté (Type 8) ou du devoir (Type 1) — c'est le piège. Le tell du Type 3, c'est l'enjeu : l'importance se mesure à l'impact sur l'image, la réputation, l'héritage. Le 3 prend des risques par ambition, pas par courage.",
       },
       {
         id: 'l8', format: 'enquete', ficheId: 'lincoln', answer: 9,
@@ -845,10 +845,10 @@ export const DOSSIERS: Dossier[] = [
           "Détective au 221B Baker Street, il résout les affaires que Scotland Yard ne comprend pas.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Sherlock Holmes est le Type 5 fictif par excellence. Son détachement émotionnel, son intellect comme seule armure, son observation distante du monde humain et sa collection encyclopédique de savoirs inutiles sont la définition de l'Investigateur.",
+        explanation: "Sherlock Holmes est le Type 5 fictif par excellence. Son détachement émotionnel, son intellect comme seule armure, son observation distante du monde humain et sa collection encyclopédique de savoirs inutiles sont la définition de l'Observateur.",
       },
       {
-        id: 'f2', format: 'citation', ficheId: 'darth_vader', quote: "Je suis ton père.", author: 'Dark Vador — Star Wars', answer: 8,
+        id: 'f2', format: 'citation', ficheId: 'darth_vader', quote: "Vous ne mesurez pas la puissance du Côté Obscur.", author: 'Dark Vador — Star Wars', answer: 8,
         wrongOptions: [1, 6],
         explanation: "Cette citation est la révélation du Type 8 sous le masque. Toute la tragédie de Vador vient d'un Type 8 qui a laissé la peur le corrompre : la peur de la vulnérabilité (perdre Padmé) l'a transformé en tyran.",
       },
@@ -886,7 +886,7 @@ export const DOSSIERS: Dossier[] = [
         scene: "Il vivait seul depuis des années. Son appartement était rempli de livres sur des sujets sans rapport apparent. Quand on lui demandait comment il allait, il répondait avec des faits. Quand quelqu'un pleurait devant lui, il quittait discrètement la pièce — non par cruauté, mais parce qu'il ne savait pas quoi faire des émotions.",
         keyDetail: "Partir quand quelqu'un pleure — pas de cruauté, juste une incompétence émotionnelle sincère.",
         answer: 5,
-        explanation: "Le retrait face aux émotions est un trait Type 5 fondamental. L'Investigateur ne fuit pas par malveillance — les émotions sont simplement un domaine où il ne dispose pas des ressources pour répondre.",
+        explanation: "Le retrait face aux émotions est un trait Type 5 fondamental. L'Observateur ne fuit pas par malveillance — les émotions sont simplement un domaine où il ne dispose pas des ressources pour répondre.",
         xp: 300,
       },
       {
@@ -943,7 +943,7 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 's3', format: 'citation', ficheId: 'taylor_swift', quote: "Long story short, I survived.", author: 'Taylor Swift', answer: 3,
         wrongOptions: [4, 6],
-        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Gagneur, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
+        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Battant, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
       },
       {
         id: 's4', format: 'citation', ficheId: 'federer', quote: "Je joue pour gagner. C'est tout.", author: 'Roger Federer', answer: 3,
@@ -1063,7 +1063,7 @@ export const DOSSIERS: Dossier[] = [
           "Astrophysicien britannique atteint de SLA, auteur d'Une brève histoire du temps.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Stephen Hawking incarnait la résilience du Type 5 : face à la disparition de son corps, il a doublé son investissement dans l'intellect. Pour l'Investigateur, la pensée est le territoire le plus sûr — et parfois le dernier qui reste.",
+        explanation: "Stephen Hawking incarnait la résilience du Type 5 : face à la disparition de son corps, il a doublé son investissement dans l'intellect. Pour l'Observateur, la pensée est le territoire le plus sûr — et parfois le dernier qui reste.",
       },
       {
         id: 'm8', format: 'enquete', ficheId: 'gates', answer: 5,
@@ -1074,7 +1074,7 @@ export const DOSSIERS: Dossier[] = [
           "Cofondateur de Microsoft et de la fondation philanthropique la plus active au monde.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Bill Gates est un Type 5 intégré : besoin de retrait pour penser (ses fameuses Think Weeks), accumulation systématique de connaissances et approche analytique appliquée même à la générosité. L'Investigateur applique la rigueur intellectuelle à tous les domaines.",
+        explanation: "Bill Gates est un Type 5 intégré : besoin de retrait pour penser (ses fameuses Think Weeks), accumulation systématique de connaissances et approche analytique appliquée même à la générosité. L'Observateur applique la rigueur intellectuelle à tous les domaines.",
       },
     ],
   },
@@ -1114,7 +1114,7 @@ export const FUN_FACTS: Record<string, string> = {
   adele:          "Adèle a annulé sa tournée mondiale parce qu'elle « ne se sentait pas vraiment elle-même ». Mettre la fidélité à soi avant la machine commerciale est typique du Type 4.",
   virginia:       "Virginia Woolf écrivait debout, à un pupitre, comme sa sœur peintre travaillait à un chevalet. Faire de chaque détail du quotidien une expression de soi : signature du Type 4.",
 
-  // ── Type 5 — L'Investigateur ──
+  // ── Type 5 — L'Observateur ──
   einstein:       "Einstein possédait plusieurs costumes identiques pour ne pas avoir à décider quoi porter. Préserver l'énergie mentale pour ce qui compte vraiment : très Type 5.",
   hawking:        "Stephen Hawking a écrit « Une brève histoire du temps » en se forçant à n'utiliser qu'une seule équation (E=mc²). Cette quête d'élégance dans la transmission du savoir est purement Type 5.",
   tesla:          "Nikola Tesla pouvait visualiser ses inventions entièrement dans sa tête, les faire « tourner » mentalement pendant des semaines avant de construire un seul prototype. Vision intérieure pure, marque du Type 5.",

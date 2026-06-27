@@ -21,7 +21,7 @@ const TYPE_COLORS = [
   '#5b8a9a', '#6b7b8e', '#d4853c', '#9b4a4a', '#7a9a7b',
 ];
 const TYPE_NAMES_FR = [
-  'Perfectionniste', 'Assistant', 'Gagneur', 'Artiste',
+  'Perfectionniste', 'Altruiste', 'Battant', 'Romantique',
   'Observateur', 'Loyaliste', 'Épicurien', 'Chef', 'Médiateur',
 ];
 const TYPE_NAMES_EN = [

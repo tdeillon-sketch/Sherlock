@@ -35,7 +35,7 @@ export const TYPES = [
     },
     {
         num: 2,
-        name: "Le Genereux",
+        name: "L'Altruiste",
         color: "#c0713a",
         short: "Une generosite naturelle, un besoin d'etre aime.",
         fear: "Ne pas être aimé, être inutile",
@@ -68,7 +68,7 @@ export const TYPES = [
     },
     {
         num: 3,
-        name: "Le Gagneur",
+        name: "Le Battant",
         color: "#d4a03c",
         short: "Une energie tournee vers la reussite, un besoin de reconnaissance.",
         fear: "Ne pas avoir de valeur sans résultats",
@@ -76,7 +76,7 @@ export const TYPES = [
         metaphor: "Un type 3, c'est celui qui brille. Naturellement. Comme une etoile, il attire le regard. L'enfant de type 3 a cette capacite innee a performer, a reussir. Mais il y a un prix cache : le type 3 risque de confondre ce qu'il fait avec ce qu'il est. Il vit dans la peur secrete de ne pas etre assez si les resultats disparaissent.",
         integration: {
             toward: 6,
-            desc: "En securite, le Gagneur integre vers le type 6 : il commence a faire confiance, devient plus loyal, plus dispose a travailler sans besoin de briller seul. Il decouvre qu'il peut etre vrai, pas juste efficace."
+            desc: "En securite, le Battant integre vers le type 6 : il commence a faire confiance, devient plus loyal, plus dispose a travailler sans besoin de briller seul. Il decouvre qu'il peut etre vrai, pas juste efficace."
         },
         disintegration: {
             toward: 9,
@@ -101,7 +101,7 @@ export const TYPES = [
     },
     {
         num: 4,
-        name: "L'Artiste",
+        name: "Le Romantique",
         color: "#8b6ca7",
         short: "Une sensibilite profonde, un besoin d'etre compris.",
         fear: "Être banal, ne pas être compris",
@@ -420,9 +420,9 @@ export const QA_DB = [
     },
     {
         q: "Mon enfant est obsede par la reussite. Comment reagir ?",
-        a: "Votre enfant est peut-etre de type 3, le Gagneur. Il a une capacite innee a performer et a reussir, mais risque de confondre ce qu'il fait avec ce qu'il est. La cle est de separer votre amour de ses resultats. Celebrez qu'il existe, pas ce qu'il fait. Creez des espaces de non-performance ou il n'y a rien a prouver. L'enfant doit apprendre que vous aimez sa presence, non sa productivite.",
+        a: "Votre enfant est peut-etre de type 3, le Battant. Il a une capacite innee a performer et a reussir, mais risque de confondre ce qu'il fait avec ce qu'il est. La cle est de separer votre amour de ses resultats. Celebrez qu'il existe, pas ce qu'il fait. Creez des espaces de non-performance ou il n'y a rien a prouver. L'enfant doit apprendre que vous aimez sa presence, non sa productivite.",
         tags: ["type 3", "gagneur", "reussite", "performance", "echec", "image"],
-        source: "Annexe — Type 3, Le Gagneur"
+        source: "Annexe — Type 3, Le Battant"
     },
     {
         q: "Mon enfant est tres sensible et se sent different. Comment l'aider ?",
