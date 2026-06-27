@@ -93,6 +93,24 @@ export const fr = {
     duoDesc: 'Découvrez la dynamique entre deux profils, dans tous les contextes.',
   },
 
+  // Ma famille (home)
+  family: {
+    title: 'Ma famille',
+    me: 'Moi',
+  },
+
+  // Onboarding (premier lancement)
+  onboarding: {
+    skip: 'Passer',
+    start: 'Commencer',
+    s1Title: 'Bienvenue dans 5herlock',
+    s1Body: "Le compagnon du livre « On a tous besoin de quelqu'un d'autre » — pour mieux vous comprendre, et comprendre vos enfants.",
+    s2Title: "L'Ennéagramme en 30 secondes",
+    s2Body: "9 façons d'être au monde, 9 manières d'aimer et de réagir. Découvrir le type de votre enfant, c'est apprendre sa langue.",
+    s3Title: 'Commencez par le quiz',
+    s3Body: 'Quelques minutes suffisent pour révéler un profil — le vôtre ou celui de votre enfant. Tout est gratuit.',
+  },
+
   // Quiz: subject selection
   subject: {
     title: 'Quel test souhaitez-vous faire ?',
@@ -165,6 +183,10 @@ export const fr = {
     confidenceVal: '{{pct}}%',
     confidence: 'de correspondance',
     insightLabel: '💡 Notre lecture',
+    keysLabel: "💡 Comment l'accompagner",
+    keysMore: 'Les 3 clés en détail dans le profil complet ↓',
+    shareCta: '📤 Partager mon résultat',
+    shareTitle: 'Mon profil Ennéagramme',
     insight_composite: 'Profil composite — plusieurs types cohabitent ({{a}}, {{b}}, {{c}}).',
     insight_wingMarked: 'Le Type {{top}} ressort avec une aile {{second}} marquée.',
     insight_closeSecond: "Le Type {{top}} est en tête mais le Type {{second}} n'est pas loin.",
@@ -306,6 +328,7 @@ export const fr = {
   duo: {
     title: 'Duo',
     subtitle: 'Dynamiques entre profils Ennéagramme',
+    shortcuts: 'Comparer rapidement',
     profileA: 'Profil A',
     profileB: 'Profil B',
     roleAdulte: 'Adulte',

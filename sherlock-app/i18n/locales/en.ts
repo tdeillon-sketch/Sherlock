@@ -89,6 +89,24 @@ export const en = {
     duoDesc: 'Discover the dynamic between any two profiles, in every context.',
   },
 
+  // My family (home)
+  family: {
+    title: 'My family',
+    me: 'Me',
+  },
+
+  // Onboarding (first launch)
+  onboarding: {
+    skip: 'Skip',
+    start: 'Get started',
+    s1Title: 'Welcome to 5herlock',
+    s1Body: 'The companion to the book "We all need someone else" — to understand yourself better, and your children.',
+    s2Title: 'The Enneagram in 30 seconds',
+    s2Body: "9 ways of being in the world, 9 ways of loving and reacting. Discovering your child's type means learning their language.",
+    s3Title: 'Start with the quiz',
+    s3Body: "A few minutes is enough to reveal a profile — yours or your child's. Everything is free.",
+  },
+
   subject: {
     title: 'Which test would you like to take?',
     subtitle: 'The quiz adapts to your answers, identifying the most likely profile.',
@@ -157,6 +175,10 @@ export const en = {
     confidenceVal: '{{pct}}%',
     confidence: 'match',
     insightLabel: '💡 Our reading',
+    keysLabel: '💡 How to support them',
+    keysMore: 'All 3 keys in detail in the full profile ↓',
+    shareCta: '📤 Share my result',
+    shareTitle: 'My Enneagram profile',
     insight_composite: 'Composite profile — several types coexist (Types {{a}}, {{b}}, {{c}}).',
     insight_wingMarked: 'Type {{top}} stands out with a strong {{second}} wing.',
     insight_closeSecond: "Type {{top}} leads, but Type {{second}} isn't far behind.",
@@ -295,6 +317,7 @@ export const en = {
   duo: {
     title: 'Duo',
     subtitle: 'Dynamics between Enneagram profiles',
+    shortcuts: 'Quick compare',
     profileA: 'Profile A',
     profileB: 'Profile B',
     roleAdulte: 'Adult',

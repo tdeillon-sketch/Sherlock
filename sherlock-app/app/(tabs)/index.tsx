@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet, Alert, TextInput } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { useT } from '../../i18n';
+import { useT, getTypeText } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
 import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
-import { auth, isAdmin, onAuthChange, trackScreen } from '../../constants/firebase';
+import { TYPES } from '../../constants/data';
+import { TYPES as TYPES_V3, type EnneaType } from '../../constants/quiz_v3';
+import { auth, isAdmin, onAuthChange, trackScreen, loadFamily, type Family } from '../../constants/firebase';
 
 // ── Tool cards (entrées vers les autres onglets) ──
 type Tool = {
@@ -38,6 +40,7 @@ export default function HomeScreen() {
   const [ritualNote, setRitualNote] = useState('');
   const [subscribeOpen, setSubscribeOpen] = useState(false);
   const [admin, setAdmin] = useState(isAdmin(auth.currentUser));
+  const [family, setFamily] = useState<Family | null>(null);
   const dailyQuestion = getDailyQuestion();
   const ritualDate = formatRitualDate(new Date(), locale);
   const ritualText = locale === 'en' ? dailyQuestion.en : dailyQuestion.fr;
@@ -51,6 +54,19 @@ export default function HomeScreen() {
   useEffect(() => {
     trackScreen('home').catch(() => {});
   }, []);
+
+  // Refresh "Ma famille" whenever the home regains focus (a quiz/profile may
+  // have been saved in another tab).
+  useFocusEffect(
+    useCallback(() => {
+      const uid = auth.currentUser?.uid;
+      if (uid) loadFamily(uid).then(setFamily).catch(() => {});
+    }, []),
+  );
+
+  const familyMembers = family
+    ? [...(family.self ? [family.self] : []), ...family.children].filter((m) => m.type != null)
+    : [];
 
   const openSubscribe = () => setSubscribeOpen(true);
 
@@ -190,6 +206,40 @@ export default function HomeScreen() {
           <Text style={styles.journalLinkText}>{t('journal.viewJournal')}  →</Text>
         </Pressable>
       </View>
+
+      {/* ── Ma famille (profils sauvegardés) ── */}
+      {familyMembers.length > 0 && (
+        <View style={styles.familySection}>
+          <Text style={styles.sectionLabel}>{t('family.title')}</Text>
+          <View style={styles.familyList}>
+            {familyMembers.map((m) => {
+              const typeNum = m.type as number;
+              const color = TYPES[typeNum - 1]?.color ?? colors.accent;
+              const v3 = TYPES_V3[typeNum as EnneaType];
+              const typeName = v3 ? getTypeText(v3, 'name', locale) : (TYPES[typeNum - 1]?.name ?? '');
+              const label = m.kind === 'self' ? t('family.me') : m.name;
+              return (
+                <Pressable
+                  key={m.id}
+                  onPress={() => router.push(`/profiles/${typeNum}` as never)}
+                  style={({ pressed }) => [styles.familyRow, pressed && { opacity: 0.7 }]}
+                >
+                  <View style={[styles.familyBadge, { backgroundColor: color }]}>
+                    <Text style={styles.familyBadgeNum}>{typeNum}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.familyName}>{label}</Text>
+                    <Text style={styles.familyType}>
+                      {t('result.type')} {typeNum}{m.wingType ? `w${m.wingType}` : ''} · {typeName}
+                    </Text>
+                  </View>
+                  <Text style={styles.familyChevron}>›</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       {/* ── The series · 4 seasons ── */}
       <View style={styles.seriesSection}>
@@ -481,6 +531,24 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   seasonLockIconText: { fontSize: 10, color: colors.textMuted, lineHeight: 12 },
+
+  // ── Ma famille ──
+  familySection: { marginHorizontal: spacing.md, marginTop: spacing.lg },
+  familyList: { gap: 8, marginTop: spacing.sm },
+  familyRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: 10, paddingHorizontal: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+  },
+  familyBadge: {
+    width: 34, height: 34, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  familyBadgeNum: { fontFamily: fonts.serif, fontSize: 16, fontWeight: '700', color: colors.white },
+  familyName: { fontFamily: fonts.sans, fontSize: 14, color: colors.text, fontWeight: '600' },
+  familyType: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  familyChevron: { fontSize: 24, color: colors.textDim, paddingHorizontal: spacing.xs },
 
   // ── Tools section ──
   toolsSection: {

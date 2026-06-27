@@ -1,10 +1,13 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { TYPES, QuizMode } from '../constants/data';
 import { TYPES as TYPES_V3 } from '../constants/quiz_v3';
 import type { EnneaType } from '../constants/quiz_v3';
 import type { InsightKind } from '../hooks/useAdaptiveQuiz';
+import { TYPES_EN } from '../i18n/types_en';
 import { useT, getTypeText } from '../i18n';
 
 // Result shape consumed by this card. Relocated here from the legacy
@@ -71,10 +74,30 @@ export default function QuizResult({
   const subjectLabel =
     mode === 'enfant' ? t('result.subjectChild') : t('result.subjectAdult');
 
+  // "How to support them" — preview of the 3 parenting keys for this type
+  // (child mode only; the keys are framed as supporting a child of this type).
+  const enType = TYPES_EN[result.topType];
+  const accompanyKeys = ((locale === 'en' && enType?.keys?.length)
+    ? enType.keys
+    : (TYPES[result.topType - 1]?.keys ?? [])).slice(0, 3);
+
+  // Share: capture the (branded) hero card to a PNG and open the native sheet.
+  const shareRef = useRef<View>(null);
+  const onShare = async () => {
+    try {
+      const uri = await captureRef(shareRef, { format: 'png', quality: 1 });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t('result.shareTitle') });
+      }
+    } catch {
+      // capture/share unavailable (e.g. web) — ignore silently
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* ── Hero with top type ── */}
-      <View style={styles.hero}>
+      {/* ── Hero with top type (also the shareable card) ── */}
+      <View ref={shareRef} collapsable={false} style={styles.hero}>
         <View style={[styles.heroBadge, { backgroundColor: top.color }]}>
           <Text style={styles.heroBadgeNum}>{result.topType}</Text>
         </View>
@@ -87,6 +110,7 @@ export default function QuizResult({
           <Text style={styles.heroPercent}>{result.topPercent}%</Text>
           <Text style={styles.heroPercentLabel}>{t('result.confidence')}</Text>
         </View>
+        <Text style={styles.heroBrand}>5herlock</Text>
       </View>
 
       {/* ── "Our reading" ── */}
@@ -139,6 +163,22 @@ export default function QuizResult({
         </View>
       )}
 
+      {/* ── How to support them (3 keys preview, child mode) ── */}
+      {mode === 'enfant' && accompanyKeys.length > 0 && (
+        <View style={styles.keysCard}>
+          <Text style={styles.keysLabel}>{t('result.keysLabel')}</Text>
+          {accompanyKeys.map((k, i) => (
+            <View key={i} style={styles.keyRow}>
+              <View style={styles.keyNumBox}>
+                <Text style={styles.keyNum}>{i + 1}</Text>
+              </View>
+              <Text style={styles.keyTitle}>{k.title}</Text>
+            </View>
+          ))}
+          <Text style={styles.keysMore}>{t('result.keysMore')}</Text>
+        </View>
+      )}
+
       {/* ── Actions ── */}
       <View style={styles.actions}>
         <Pressable
@@ -147,6 +187,15 @@ export default function QuizResult({
         >
           <Text style={styles.btnPrimaryText}>{t('result.actionsViewProfile')}</Text>
         </Pressable>
+
+        {Platform.OS !== 'web' && (
+          <Pressable
+            onPress={onShare}
+            style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
+          >
+            <Text style={styles.btnSecondaryText}>{t('result.shareCta')}</Text>
+          </Pressable>
+        )}
 
         {mode === 'enfant' && (
           <>
@@ -231,6 +280,10 @@ const styles = StyleSheet.create({
   heroPercentBox: { alignItems: 'center', marginTop: spacing.xs },
   heroPercent: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '700' as any, color: colors.accent },
   heroPercentLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted },
+  heroBrand: {
+    fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
+    marginTop: spacing.md, letterSpacing: 1,
+  },
 
   // Insight
   insightCard: {
@@ -301,6 +354,28 @@ const styles = StyleSheet.create({
   },
   wingDesc: {
     fontFamily: fonts.sans, fontSize: 13, lineHeight: 20, color: colors.textSoft,
+  },
+
+  // How-to-support keys
+  keysCard: {
+    backgroundColor: colors.surface, borderRadius: radius.md,
+    padding: spacing.md, borderWidth: 1, borderColor: colors.border, gap: spacing.sm,
+  },
+  keysLabel: {
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
+    color: colors.accent, letterSpacing: 0.5, marginBottom: spacing.xs,
+  },
+  keyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  keyNumBox: {
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: colors.accentFill, borderWidth: 1, borderColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  keyNum: { fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accent },
+  keyTitle: { flex: 1, fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: colors.text },
+  keysMore: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
+    fontStyle: 'italic', marginTop: spacing.xs,
   },
 
   // Actions

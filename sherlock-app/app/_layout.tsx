@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthScreen from '../components/AuthScreen';
+import Onboarding from '../components/Onboarding';
 import { LocaleProvider } from '../i18n';
 import {
   onAuthChange, getUserData, updateLastSeen, isThirdPartySignedIn,
@@ -67,6 +69,18 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, checkingAuth]);
 
+  // First-launch onboarding flag (null = not yet read from storage).
+  const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
+  useEffect(() => {
+    AsyncStorage.getItem('onboarding:done')
+      .then((v) => setOnboardingDone(v === '1'))
+      .catch(() => setOnboardingDone(true));
+  }, []);
+  const completeOnboarding = () => {
+    AsyncStorage.setItem('onboarding:done', '1').catch(() => {});
+    setOnboardingDone(true);
+  };
+
   if (!fontsLoaded || checkingAuth || !splashHidden) {
     return null;
   }
@@ -80,7 +94,19 @@ export default function RootLayout() {
     );
   }
 
-  // ── Authenticated: render the app ──
+  // ── First launch: onboarding once (wait until the flag is read) ──
+  if (onboardingDone === null) {
+    return null;
+  }
+  if (!onboardingDone) {
+    return (
+      <LocaleProvider>
+        <Onboarding onDone={completeOnboarding} />
+      </LocaleProvider>
+    );
+  }
+
+  // ── Authenticated + onboarded: render the app ──
   return (
     <LocaleProvider>
       <Stack screenOptions={{ headerShown: false }} />

@@ -322,6 +322,51 @@ export async function saveChildProfiles(uid: string, profiles: ChildProfile[]): 
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  FAMILY — aggregate the user's own profile (latest self quiz) +
+//  saved child profiles. Powers the "Ma famille" home card and the
+//  Duo quick-fill shortcuts.
+// ═══════════════════════════════════════════════════════════════
+
+export interface FamilyMember {
+  kind: 'self' | 'child';
+  id: string;            // 'self' or the child profile id
+  name: string;          // child name; '' for self (UI supplies the label)
+  type: number | null;   // latest top type
+  wingType: number | null;
+  age?: number;
+  testCount: number;
+  lastDate: string | null;
+}
+
+export interface Family {
+  self: FamilyMember | null;
+  children: FamilyMember[];
+}
+
+/** Load the user's own type (latest 'adulte' quiz) + their saved child profiles. */
+export async function loadFamily(uid: string): Promise<Family> {
+  const data = await getUserData(uid);
+  const selfResults = (data?.quizResults ?? []).filter(r => r.mode === 'adulte');
+  const lastSelf = selfResults.length ? selfResults[selfResults.length - 1] : null;
+  const self: FamilyMember | null = lastSelf ? {
+    kind: 'self', id: 'self', name: '',
+    type: lastSelf.topType, wingType: lastSelf.wingType ?? null,
+    testCount: selfResults.length, lastDate: lastSelf.completedAt ?? null,
+  } : null;
+  const profiles: ChildProfile[] = Array.isArray((data as any)?.childProfiles) ? (data as any).childProfiles : [];
+  const children: FamilyMember[] = profiles.map(p => {
+    const hist = Array.isArray(p.history) ? p.history : [];
+    const last = hist.length ? hist[hist.length - 1] : null;
+    return {
+      kind: 'child' as const, id: p.id, name: p.name,
+      type: last?.topType ?? null, wingType: last?.wingType ?? null,
+      age: p.age, testCount: hist.length, lastDate: last?.date ?? null,
+    };
+  });
+  return { self, children };
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  ADMIN — list all users + launch subscribers
 //  Requires Firestore rules that allow the admin email to read the
 //  full /users and /launch_subscribers collections.
