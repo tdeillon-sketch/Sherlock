@@ -4,8 +4,8 @@
 //  (11 positions discrètes). Valeur par défaut : 0 (sans avis).
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent, GestureResponderEvent } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, PanResponder } from 'react-native';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
 import { findStmt } from '../constants/quiz_v3';
@@ -25,7 +25,14 @@ const MIN = -5;
 const MAX = 5;
 const STEPS = MAX - MIN; // 10
 
-/** Une ligne = un slider pour un statement */
+/** Une ligne = un slider pour un statement.
+ *  Drag handled by a PanResponder so the thumb can be grabbed and slid:
+ *   - claims only HORIZONTAL gestures → the surrounding ScrollView still scrolls
+ *     vertically, and won't steal the drag once it starts;
+ *   - tracks the finger in absolute pageX against the measured track, so the
+ *     value follows smoothly even if the finger drifts off the bar;
+ *   - reads value/onChange/geometry via refs so the once-created responder
+ *     always uses fresh data (no stale closure). */
 function SliderRow({
   label,
   value,
@@ -35,27 +42,44 @@ function SliderRow({
   value: number;
   onChange: (v: number) => void;
 }) {
-  const [trackWidth, setTrackWidth] = useState(0);
   const trackRef = useRef<View>(null);
+  // Track geometry in window coords. X is stable across vertical scroll.
+  const geom = useRef({ left: 0, width: 0 });
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    setTrackWidth(e.nativeEvent.layout.width);
+  const measure = () => {
+    trackRef.current?.measureInWindow((x, _y, w) => {
+      if (w > 0) geom.current = { left: x, width: w };
+    });
   };
 
-  const setFromX = (x: number) => {
-    if (trackWidth <= 0) return;
-    // Clamp x to [0, trackWidth]
-    const clamped = Math.max(0, Math.min(trackWidth, x));
-    // Map to [MIN, MAX]
-    const ratio = clamped / trackWidth;
-    const raw = MIN + ratio * STEPS;
-    const snapped = Math.round(raw);
-    const bounded = Math.max(MIN, Math.min(MAX, snapped));
-    if (bounded !== value) {
+  const setFromPageX = (pageX: number) => {
+    const { left, width } = geom.current;
+    if (width <= 0) return;
+    const ratio = Math.max(0, Math.min(1, (pageX - left) / width));
+    const bounded = Math.max(MIN, Math.min(MAX, Math.round(MIN + ratio * STEPS)));
+    if (bounded !== valueRef.current) {
       hapticSelection();
-      onChange(bounded);
+      onChangeRef.current(bounded);
     }
   };
+
+  const pan = useRef(
+    PanResponder.create({
+      // A tap grants immediately (tap-to-position still works)…
+      onStartShouldSetPanResponder: () => true,
+      // …but a drag is only claimed when it's mostly horizontal, so vertical
+      // scrolling of the page is preserved.
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 2,
+      // Once we own the gesture, don't let the ScrollView reclaim it.
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: (e) => { measure(); setFromPageX(e.nativeEvent.pageX); },
+      onPanResponderMove: (e) => setFromPageX(e.nativeEvent.pageX),
+    }),
+  ).current;
 
   // Thumb position as percentage
   const thumbPct = ((value - MIN) / STEPS) * 100;
@@ -69,19 +93,13 @@ function SliderRow({
 
         <View
           ref={trackRef}
-          onLayout={onLayout}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={(e: GestureResponderEvent) => {
-            setFromX(e.nativeEvent.locationX);
-          }}
-          onResponderMove={(e: GestureResponderEvent) => {
-            setFromX(e.nativeEvent.locationX);
-          }}
+          onLayout={measure}
+          hitSlop={{ top: 12, bottom: 12 }}
           style={styles.track}
+          {...pan.panHandlers}
         >
           {/* Tick marks */}
-          <View style={styles.ticks}>
+          <View style={styles.ticks} pointerEvents="none">
             {Array.from({ length: STEPS + 1 }).map((_, i) => (
               <View
                 key={i}
@@ -95,6 +113,7 @@ function SliderRow({
 
           {/* Thumb */}
           <View
+            pointerEvents="none"
             style={[
               styles.thumb,
               { left: `${thumbPct}%` },
