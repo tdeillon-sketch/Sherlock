@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Alert, TextInput } from 'react-native';
+import { ScrollView, View, Text, Pressable, StyleSheet, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { useT, getTypeText } from '../../i18n';
@@ -9,30 +9,6 @@ import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
 import { TYPES } from '../../constants/data';
 import { TYPES as TYPES_V3, type EnneaType } from '../../constants/quiz_v3';
 import { auth, isAdmin, onAuthChange, trackScreen, loadFamily, type Family } from '../../constants/firebase';
-
-// ── Tool cards (entrées vers les autres onglets) ──
-type Tool = {
-  emoji: string;
-  titleKey: string;
-  descKey: string;
-  route: string;
-  accent: string;
-};
-
-const TOOLS: Tool[] = [
-  { emoji: '🕐', titleKey: 'tools.quizTitle',        descKey: 'tools.quizDesc',        route: '/quiz',        accent: '#c0713a' },
-  { emoji: '👥', titleKey: 'tools.profilesTitle',    descKey: 'tools.profilesDesc',    route: '/profiles',    accent: '#5b8a9a' },
-  { emoji: '🔎', titleKey: 'tools.celebritiesTitle', descKey: 'tools.celebritiesDesc', route: '/celebrities', accent: '#d4a03c' },
-  { emoji: '◎', titleKey: 'tools.duoTitle',         descKey: 'tools.duoDesc',         route: '/duo',         accent: '#8b6ca7' },
-];
-
-// ── Seasons (4 parts of the book) ──
-const SEASONS = [
-  { num: 1, titleKey: 'home.season1Title', subKey: 'home.season1Sub', episodes: 3, unlocked: true,  firstChapter: 1 },
-  { num: 2, titleKey: 'home.season2Title', subKey: 'home.seasonLockedSub', episodes: 3, unlocked: false, firstChapter: null },
-  { num: 3, titleKey: 'home.season3Title', subKey: 'home.seasonLockedSub', episodes: 3, unlocked: false, firstChapter: null },
-  { num: 4, titleKey: 'home.season4Title', subKey: 'home.seasonLockedSub', episodes: 1, unlocked: false, firstChapter: null },
-];
 
 export default function HomeScreen() {
   const { t, locale } = useT();
@@ -69,27 +45,6 @@ export default function HomeScreen() {
     : [];
 
   const openSubscribe = () => setSubscribeOpen(true);
-
-  const handleSeasonPress = (season: typeof SEASONS[number]) => {
-    if (season.unlocked && season.firstChapter !== null) {
-      // Season 1 = the pilot (full Chapter 1 reader). Other unlocked seasons
-      // would route to their first chapter (none for now).
-      if (season.num === 1) {
-        router.push('/pilot' as never);
-      } else {
-        router.push(`/chapter/${season.firstChapter}` as never);
-      }
-      return;
-    }
-    Alert.alert(
-      t('home.seasonLockedAlertTitle'),
-      t('home.seasonLockedAlertBody'),
-      [
-        { text: t('home.seasonLockedAlertCancel'), style: 'cancel' },
-        { text: t('home.seasonLockedAlertCta'), onPress: openSubscribe },
-      ],
-    );
-  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -147,6 +102,18 @@ export default function HomeScreen() {
           <Text style={styles.pilotCtaArrow}>→</Text>
         </View>
       </Pressable>
+
+      {/* ── Book teaser + notify (folds the old seasons list + preorder CTA) ── */}
+      <View style={styles.bookTeaser}>
+        <Text style={styles.bookTeaserText}>{t('home.bookTeaser')}</Text>
+        <Pressable
+          onPress={openSubscribe}
+          style={({ pressed }) => [styles.bookTeaserCta, pressed && { opacity: 0.7 }]}
+          hitSlop={6}
+        >
+          <Text style={styles.bookTeaserCtaText}>{t('home.seasonLockedAlertCta')}  →</Text>
+        </Pressable>
+      </View>
 
       {/* ── Daily ritual ── */}
       <View style={styles.ritualCard}>
@@ -240,83 +207,6 @@ export default function HomeScreen() {
           </View>
         </View>
       )}
-
-      {/* ── The series · 4 seasons ── */}
-      <View style={styles.seriesSection}>
-        <View style={styles.seriesHeader}>
-          <Text style={styles.seriesEyebrow}>{t('home.seriesEyebrow')}</Text>
-        </View>
-        <View style={styles.seasonList}>
-          {SEASONS.map((season) => (
-            <Pressable
-              key={season.num}
-              onPress={() => handleSeasonPress(season)}
-              style={({ pressed }) => [
-                styles.seasonItem,
-                !season.unlocked && styles.seasonItemLocked,
-                pressed && { opacity: 0.85 },
-              ]}
-            >
-              <View style={[
-                styles.seasonBadge,
-                season.unlocked ? styles.seasonBadgeUnlocked : styles.seasonBadgeLocked,
-              ]}>
-                <Text style={[
-                  styles.seasonBadgeText,
-                  season.unlocked ? styles.seasonBadgeTextUnlocked : styles.seasonBadgeTextLocked,
-                ]}>{season.num}</Text>
-              </View>
-              <View style={styles.seasonBody}>
-                <Text style={styles.seasonTitle}>{t(season.titleKey)}</Text>
-                <Text style={styles.seasonSub}>{t(season.subKey)}</Text>
-              </View>
-              {season.unlocked ? (
-                <Text style={styles.seasonMeta}>{t('home.seasonEpisodes', { n: season.episodes })}</Text>
-              ) : (
-                <View style={styles.seasonLockIcon}>
-                  <Text style={styles.seasonLockIconText}>×</Text>
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      {/* ── Tools (les outils du voyage) ── */}
-      <View style={styles.toolsSection}>
-        <Text style={styles.sectionLabel}>{t('home.toolsLabel')}</Text>
-        <Text style={styles.toolsIntro}>{t('home.toolsIntro')}</Text>
-
-        {TOOLS.map((tool) => (
-          <Pressable
-            key={tool.route}
-            style={({ pressed }) => [
-              styles.toolCard,
-              pressed && styles.toolCardPressed,
-            ]}
-            onPress={() => router.push(tool.route as never)}
-          >
-            <View style={[styles.toolEmojiBox, { backgroundColor: tool.accent + '22', borderColor: tool.accent + '55' }]}>
-              <Text style={styles.toolEmoji}>{tool.emoji}</Text>
-            </View>
-            <View style={styles.toolBody}>
-              <Text style={styles.toolTitle}>{t(tool.titleKey)}</Text>
-              <Text style={styles.toolDesc}>{t(tool.descKey)}</Text>
-            </View>
-            <Text style={[styles.toolChevron, { color: tool.accent }]}>›</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* ── Pre-order / launch-notify CTA ── */}
-      <Pressable
-        onPress={openSubscribe}
-        style={({ pressed }) => [styles.preorderBox, pressed && { opacity: 0.85 }]}
-      >
-        <Text style={styles.preorderHint}>{t('home.preorderHint')}</Text>
-        <Text style={styles.preorderText}>{t('home.preorderText')}</Text>
-        <Text style={styles.preorderCta}>{t('home.preorderCta')}</Text>
-      </Pressable>
 
       <LaunchSubscribeModal
         visible={subscribeOpen}
@@ -425,6 +315,21 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 18, color: colors.white,
   },
 
+  // ── Book teaser (folds the seasons + preorder) ──
+  bookTeaser: {
+    marginHorizontal: spacing.md, marginTop: spacing.sm,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  bookTeaserText: {
+    flex: 1, fontFamily: fonts.sans, fontSize: 12, lineHeight: 17, color: colors.textMuted,
+  },
+  bookTeaserCta: { flexShrink: 0 },
+  bookTeaserCtaText: {
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accent,
+  },
+
   // ── Ritual ──
   ritualCard: {
     marginHorizontal: spacing.md, marginTop: spacing.md,
@@ -492,46 +397,6 @@ const styles = StyleSheet.create({
     color: colors.accent, fontWeight: '600',
   },
 
-  // ── Series ──
-  seriesSection: {
-    marginHorizontal: spacing.md, marginTop: spacing.lg,
-  },
-  seriesHeader: { marginBottom: spacing.sm },
-  seriesEyebrow: {
-    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
-    color: colors.textMuted, fontWeight: '700',
-  },
-  seasonList: { gap: 8 },
-  seasonItem: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    paddingVertical: 12, paddingHorizontal: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.border,
-    borderRadius: radius.md,
-  },
-  seasonItemLocked: { opacity: 0.55 },
-  seasonBadge: {
-    width: 30, height: 30, borderRadius: 8,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  seasonBadgeUnlocked: { backgroundColor: colors.accent },
-  seasonBadgeLocked: { borderWidth: 1, borderColor: colors.textDim, backgroundColor: 'transparent' },
-  seasonBadgeText: { fontFamily: fonts.serif, fontSize: 14, fontWeight: '600' },
-  seasonBadgeTextUnlocked: { color: colors.white },
-  seasonBadgeTextLocked: { color: colors.textMuted },
-  seasonBody: { flex: 1 },
-  seasonTitle: { fontFamily: fonts.sans, fontSize: 14, color: colors.text, fontWeight: '600' },
-  seasonSub: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
-  seasonMeta: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
-  },
-  seasonLockIcon: {
-    width: 18, height: 18, borderRadius: 9,
-    borderWidth: 1, borderColor: colors.textDim,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  seasonLockIconText: { fontSize: 10, color: colors.textMuted, lineHeight: 12 },
-
   // ── Ma famille ──
   familySection: { marginHorizontal: spacing.md, marginTop: spacing.lg },
   familyList: { gap: 8, marginTop: spacing.sm },
@@ -550,53 +415,10 @@ const styles = StyleSheet.create({
   familyType: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
   familyChevron: { fontSize: 24, color: colors.textDim, paddingHorizontal: spacing.xs },
 
-  // ── Tools section ──
-  toolsSection: {
-    paddingHorizontal: spacing.lg, paddingTop: spacing.xl,
-  },
+  // ── Section label (shared) ──
   sectionLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
     color: colors.textMuted, letterSpacing: 1.2, textTransform: 'uppercase',
     marginBottom: 6,
-  },
-  toolsIntro: {
-    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
-    color: colors.textSoft, marginBottom: spacing.md,
-  },
-  toolCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
-    padding: spacing.md, marginBottom: spacing.sm, gap: spacing.md,
-  },
-  toolCardPressed: { opacity: 0.7 },
-  toolEmojiBox: {
-    width: 48, height: 48, borderRadius: 24,
-    borderWidth: 1.5,
-    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  toolEmoji: { fontSize: 22 },
-  toolBody: { flex: 1 },
-  toolTitle: { fontFamily: fonts.serif, fontSize: 17, color: colors.text, marginBottom: 2 },
-  toolDesc: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textMuted },
-  toolChevron: { fontSize: 28, fontWeight: '300', paddingHorizontal: spacing.xs },
-
-  // ── Pre-order CTA ──
-  preorderBox: {
-    marginHorizontal: spacing.md, marginTop: spacing.lg,
-    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
-    borderWidth: 1, borderStyle: 'dashed', borderColor: colors.accent,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  preorderHint: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginBottom: 4,
-  },
-  preorderText: {
-    fontFamily: fonts.sans, fontSize: 14, color: colors.text, marginBottom: spacing.xs,
-  },
-  preorderCta: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '700',
   },
 });
