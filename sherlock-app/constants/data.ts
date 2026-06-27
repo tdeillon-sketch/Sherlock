@@ -26,7 +26,7 @@ export const TYPES = [
             { title: "Offrez-lui des espaces d'imperfection", desc: "Creez des moments ou les erreurs sont invitees. Jouez a des jeux ou vous faites expres de perdre. Montrez que vous etes imparfait et que c'est o.k. Ces memoires d'imperfection partagee sont des graces pour un type 1." },
             { title: "Valorisez la tentative plus que la perfection", desc: "Quand il doute — « Mais et si j'echoue ? » — dites : « Je suis fier de toi pour avoir essaye, independamment du resultat. » Celebrez le courage plus que la victoire." }
         ],
-        belief: "Pour être digne d'amour, je dois être parfait, juste, irréprochable. L'erreur est une faute morale.",
+        belief: "Pour être quelqu'un de bien, je dois être parfait, juste, irréprochable. L'erreur est une faute morale.",
         compulsion: { name: "Colère (ressentiment)", desc: "Une colère froide, contenue, faite d'irritation chronique de voir que rien — ni lui, ni les autres, ni le monde — n'est à la hauteur de l'idéal." },
         virtue: { name: "Sérénité", desc: "La sagesse d'accepter ce qui est, de faire de son mieux avec ce qu'il contrôle, et de lâcher prise sur le reste avec une paix profonde." },
         identity: "Je suis celui qui fait bien les choses.",
@@ -139,7 +139,7 @@ export const TYPES = [
         short: "Une curiosite insatiable, un besoin de comprendre.",
         fear: "Être incompétent, être envahi",
         need: "Comprendre et préserver son énergie",
-        metaphor: "L'Observateur regarde le monde de loin, ecoute plus qu'il ne parle, construit des systemes mentaux labyrinthiques pour comprendre comment les choses fonctionnent. Il ne veut pas participer. Il veut voir. Il veut savoir. Et il veut qu'on le laisse tranquille pour le faire. Ce besoin d'espace est sa signature — et souvent son enigme pour ceux qui l'aiment.",
+        metaphor: "L'Observateur regarde le monde de loin, ecoute plus qu'il ne parle, construit des systemes mentaux labyrinthiques pour comprendre comment les choses fonctionnent. Il ne veut pas participer. Il veut voir. Il veut savoir. Et il veut qu'on le laisse tranquille pour le faire. Ce besoin d'espace est sa signature — et souvent son enigme pour ceux qui l'aiment. Au fond, il preserve son energie pour se sentir competent et ne jamais se retrouver depasse.",
         integration: {
             toward: 8,
             desc: "En integration vers le type 8, il sort de sa tour. Tout son savoir, il le transforme en action. Il devient assertif, confiant, capable de faire connaitre son expertise au monde."
@@ -258,7 +258,7 @@ export const TYPES = [
             { title: "Reconnaissez le bien qu'il fait", desc: "Le Chef protege les autres. Nommez-le : « Tu as defendu ce garcon que personne ne regardait. C'est beau. » Le Chef a besoin de savoir que sa force peut etre une beaute, pas seulement une menace." }
         ],
         belief: "Le monde est une jungle où les forts dominent les faibles. Pour survivre et protéger les miens, je dois être fort, prendre le contrôle et ne jamais montrer ma vulnérabilité.",
-        compulsion: { name: "Luxure (de vie, d'intensité)", desc: "Une soif d'intensité, un besoin de « trop » : repousser les limites, prendre plus d'espace, intensifier les confrontations. Une manière de sentir sa propre vitalité." },
+        compulsion: { name: "Luxure (de vie, d'intensité)", desc: "Une soif d'intensité et de contrôle : repousser les limites, prendre plus d'espace, ne jamais se laisser dominer ni paraître vulnérable. L'intensité comme façon de rester maître de la situation et de sentir sa propre vitalité." },
         virtue: { name: "Innocence (Force protectrice)", desc: "Non pas la naïveté, mais le courage de déposer son armure, d'ouvrir son cœur et de redécouvrir sa propre tendresse. La vraie force protège plutôt qu'elle ne domine." },
         identity: "Je suis la force.",
         missionLibre: "Le 8 libéré n'a plus besoin de dominer. Il devient un leader protecteur et magnanime : sa puissance crée un espace sûr où les autres peuvent grandir, et il défend la justice plutôt que d'imposer sa volonté.",

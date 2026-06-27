@@ -742,7 +742,7 @@ export const DUO_DATA: Record<string, DuoPair> = {
 
   "6-9": {
     pointsForts: "Paix et sécurité. Le 9 apporte le calme dont le 6 a besoin. Le 6 apporte la loyauté que le 9 apprécie.",
-    vigilances: "Deux profils qui évitent le conflit — les problèmes ne se règlent jamais.",
+    vigilances: "Deux profils qui évitent le conflit, mais pour des raisons opposées : le 9 s'efface pour préserver la paix, le 6 rumine et cherche à être rassuré plutôt que de confronter. Du coup, les problèmes ne se règlent jamais vraiment.",
     aApporte: "Loyauté, sens des responsabilités, anticipation.",
     bApporte: "Paix, acceptation, désamorçage des tensions.",
     conseil: "Créez des rituels de dialogue sur les désaccords. Vos deux tendances naturelles vous portent à éviter — mais les non-dits corrodent.",
@@ -1066,7 +1066,7 @@ export const DUO_DATA: Record<string, DuoPair> = {
 
   "9-6": {
     pointsForts: "Paix et loyauté. Le 9 apporte le calme dont le 6 a besoin.",
-    vigilances: "Deux profils qui évitent le conflit — les problèmes ne se règlent jamais.",
+    vigilances: "Deux profils qui évitent le conflit, mais pour des raisons opposées : le 9 s'efface pour préserver la paix, le 6 rumine et cherche à être rassuré plutôt que de confronter. Du coup, les problèmes ne se règlent jamais vraiment.",
     aApporte: "Calme, acceptation, désamorçage des peurs.",
     bApporte: "Loyauté, préparation, soutien constant.",
     conseil: "Créez des espaces pour parler des vrais problèmes. Vos deux natures évitent la confrontation.",
