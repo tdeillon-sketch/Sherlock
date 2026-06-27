@@ -205,11 +205,12 @@ export default function QuizResult({
 
         {mode === 'enfant' && (
           <>
+            <Text style={styles.saveHint}>{t('result.saveHint')}</Text>
             <Pressable
               onPress={onSaveProfile}
-              style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
+              style={({ pressed }) => [styles.btnPrimary, pressed && { opacity: 0.85 }]}
             >
-              <Text style={styles.btnSecondaryText}>{t('result.actionsSave')}</Text>
+              <Text style={styles.btnPrimaryText}>{t('result.actionsSave')}</Text>
             </Pressable>
             <Pressable
               onPress={onNewChild}
@@ -391,6 +392,10 @@ const styles = StyleSheet.create({
 
   // Actions
   actions: { gap: spacing.sm, marginTop: spacing.sm },
+  saveHint: {
+    fontFamily: fonts.sans, fontSize: 12, lineHeight: 17,
+    color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs,
+  },
   btnPrimary: {
     backgroundColor: colors.accent, paddingVertical: 14, borderRadius: radius.md,
     alignItems: 'center',

@@ -181,6 +181,7 @@ export const en = {
     childCaveat: "At this age a profile isn't fixed — it sharpens as your child grows. A lead to understand them better, not a label.",
     shareCta: '📤 Share my result',
     shareTitle: 'My Enneagram profile',
+    saveHint: "💾 Save this profile to find your child in My Family and Duo.",
     insight_composite: 'Composite profile — several types coexist (Types {{a}}, {{b}}, {{c}}).',
     insight_wingMarked: 'Type {{top}} stands out with a strong {{second}} wing.',
     insight_closeSecond: "Type {{top}} leads, but Type {{second}} isn't far behind.",
@@ -229,6 +230,9 @@ export const en = {
     stable: '✓ Stable profile across {{n}} test(s)',
     evolution: "⚡ Different result: Type {{from}} then Type {{to}} — that's normal, a child's profile sharpens over time.",
     vsSecond: '{{p}}% (vs {{q}}% for Type {{t}})',
+    deleteTitle: 'Delete this profile?',
+    deleteBody: "{{name}}'s history will be permanently deleted.",
+    deleteAction: 'Delete',
   },
 
   // Sign-in / Auth screen

@@ -554,6 +554,14 @@ export function useAdaptiveQuiz() {
     await saveChildProfiles(uid, updated).catch(() => {});
   }, [subject, ageBand, result, scores, childProfiles]);
 
+  // Delete a saved child profile (from the history screen).
+  const deleteChildProfile = useCallback(async (id: string) => {
+    const uid = auth.currentUser?.uid;
+    const updated = childProfiles.filter(p => p.id !== id);
+    setChildProfiles(updated);
+    if (uid) await saveChildProfiles(uid, updated).catch(() => {});
+  }, [childProfiles]);
+
   // stepIndex for the progress bar: count of answered pages (roughly)
   const stepIndex = pageIndex + 1;
 
@@ -589,5 +597,6 @@ export function useAdaptiveQuiz() {
     goToHistory,
     backToResult,
     saveChildResult,
+    deleteChildProfile,
   };
 }
