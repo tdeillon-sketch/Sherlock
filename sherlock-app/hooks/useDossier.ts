@@ -159,6 +159,8 @@ export function useDossier() {
   const [sessionXP, setSessionXP] = useState(0);
   const [sessionMaxCombo, setSessionMaxCombo] = useState(0);
   const [sessionPlayedIds, setSessionPlayedIds] = useState<string[]>([]);
+  // Rank-up celebration: set to the new rank when XP crosses a threshold.
+  const [rankUp, setRankUp] = useState<RankInfo['current'] | null>(null);
 
   // ── Load progress from Firebase ──
   useEffect(() => {
@@ -345,6 +347,10 @@ export function useDossier() {
           ? [...prev.unlockedFiches, ficheId]
           : prev.unlockedFiches;
       const newXP = prev.totalXP + xpForThis;
+      // Detect a rank promotion to trigger a celebration moment.
+      if (xpForThis > 0 && getRankInfo(newXP).current.id > getRankInfo(prev.totalXP).current.id) {
+        setRankUp(getRankInfo(newXP).current);
+      }
 
       // NOTE: daily streak + dailyCompleted are NOT updated here anymore.
       // They are bumped once at the END of the 3-case daily session inside
@@ -449,6 +455,9 @@ export function useDossier() {
     revealNextIndice, submitAnswer, submitFauxAmis, confirmAndReveal, nextCase, quitSession,
     // Helpers
     getRankInfo,
+    // Rank-up celebration
+    rankUp,
+    clearRankUp: () => setRankUp(null),
     // Anim
     clearXpAnim: () => setXpGainAnim(null),
   };
