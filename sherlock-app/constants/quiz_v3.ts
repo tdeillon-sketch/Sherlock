@@ -234,7 +234,7 @@ const STATEMENTS_ADULTE: Statement[] = [
   { id:'s7c_ad', t:7, e:'🎪', txt:'J\'ai souvent plusieurs plans en parallèle — je jongle', txtEn:'I usually have several plans running at once — I juggle', dim:'behavior' },
   { id:'s7d_ad', t:7, e:'☀️', txt:'Je transforme les obstacles en opportunités, les problèmes en possibilités', txtEn:'I turn obstacles into opportunities, problems into possibilities', dim:'belief' },
   { id:'s7e_ad', t:7, e:'🔗', txt:'L\'ennui et la routine me sont insupportables', txtEn:'Boredom and routine are unbearable to me', dim:'fear' },
-  { id:'s7f_ad', t:7, e:'🥂', txt:'Je suis optimiste — je vois le verre à moitié plein par défaut', txtEn:'I\'m an optimist — I see the glass half full by default', dim:'belief' },
+  { id:'s7f_ad', t:7, e:'🥂', txt:'Quand une émotion désagréable monte, je file vite vers quelque chose de plus stimulant', txtEn:'When an unpleasant feeling rises, I quickly chase something more stimulating', dim:'compul' },
   // T8
   { id:'s8a_ad', t:8, e:'⚡', txt:'Je prends spontanément les rênes quand personne ne décide', txtEn:'I spontaneously take charge when no one else decides', dim:'behavior' },
   { id:'s8b_ad', t:8, e:'💬', txt:'Je dis les choses franchement, sans filtre', txtEn:'I say things straight — no filter', dim:'behavior' },
@@ -263,7 +263,7 @@ const STATEMENTS_5_8: Statement[] = [
   { id:'s1c_58', t:1, e:'🔒', txt:'Il/elle se discipline spontanément : range sans qu\'on le dise, respecte les règles', txtEn:'They discipline themselves: tidying without being asked, following rules', dim:'compul' },
   { id:'s1d_58', t:1, e:'😤', txt:'Il/elle s\'énerve visiblement face à une tricherie, même mineure', txtEn:'They visibly get upset when faced with cheating, even something minor', dim:'body' },
   { id:'s1e_58', t:1, e:'⚖️', txt:'Il/elle a déjà ses propres règles morales ("on fait pas ça", "c\'est pas bien")', txtEn:'They already have their own moral rules ("we don\'t do that", "that\'s wrong")', dim:'belief' },
-  { id:'s1f_58', t:1, e:'✅', txt:'Il/elle prend très à cœur une réprimande, peut pleurer longtemps', txtEn:'They take a scolding very seriously, can cry for a long time', dim:'behavior' },
+  { id:'s1f_58', t:1, e:'✅', txt:'Il/elle est plus dur·e avec lui/elle-même qu\'avec les autres ; se fâche contre soi en cas d\'erreur', txtEn:'They are harder on themselves than on others; they get angry at themselves over a mistake', dim:'shadow' },
   // T2
   { id:'s2a_58', t:2, e:'💞', txt:'Il/elle console spontanément un camarade qui pleure', txtEn:'They spontaneously console a classmate who is crying', dim:'attunement' },
   { id:'s2b_58', t:2, e:'🤲', txt:'Il/elle offre ses jouets, partage son goûter, aime faire plaisir', txtEn:'They share their toys, their snack, love to please', dim:'behavior' },
@@ -289,7 +289,7 @@ const STATEMENTS_5_8: Statement[] = [
   { id:'s5a_58', t:5, e:'🔋', txt:'Il/elle aime jouer seul·e longtemps, a besoin de temps calme pour ne pas s\'épuiser', txtEn:'They love playing alone for long stretches, need quiet time so as not to feel drained', dim:'behavior' },
   { id:'s5b_58', t:5, e:'🔬', txt:'Il/elle observe longuement avant de participer à un nouveau jeu', txtEn:'They watch carefully before joining a new game', dim:'behavior' },
   { id:'s5c_58', t:5, e:'🏰', txt:'Il/elle protège ses jouets, son espace : "c\'est à moi, n\'y touche pas"', txtEn:'They protect their toys, their space: "it\'s mine, don\'t touch"', dim:'compul' },
-  { id:'s5d_58', t:5, e:'🧠', txt:'Il/elle n\'aime pas les gros câlins prolongés, préfère la distance physique', txtEn:'They don\'t like long cuddles, prefer some physical distance', dim:'shadow' },
+  { id:'s5d_58', t:5, e:'🔋', txt:'Après une journée chargée, il/elle a besoin de s\'isoler pour « refaire le plein » d\'énergie', txtEn:'After a busy day, they need to withdraw alone to "recharge"', dim:'behavior' },
   { id:'s5e_58', t:5, e:'📚', txt:'Il/elle pose des questions précises sur "comment ça marche"', txtEn:'They ask precise questions about "how things work"', dim:'behavior' },
   { id:'s5f_58', t:5, e:'📡', txt:'Les groupes bruyants, les fêtes, l\'école l\'épuisent vite', txtEn:'Loud groups, parties, school all wear them out fast', dim:'stress' },
   // T6
@@ -309,7 +309,7 @@ const STATEMENTS_5_8: Statement[] = [
   // T8
   { id:'s8a_58', t:8, e:'⚡', txt:'Il/elle prend la tête dans les jeux de groupe, organise les autres', txtEn:'They take the lead in group games, organize the others', dim:'behavior' },
   { id:'s8b_58', t:8, e:'💬', txt:'Il/elle dit "non" haut et fort, ne se laisse pas intimider', txtEn:'They say "no" loud and clear, won\'t be intimidated', dim:'behavior' },
-  { id:'s8c_58', t:8, e:'👁️', txt:'Il/elle défie l\'autorité adulte quand il/elle juge que c\'est injuste', txtEn:'They challenge adult authority when they think it\'s unfair', dim:'attunement' },
+  { id:'s8c_58', t:8, e:'👑', txt:'Il/elle veut commander le jeu et que les autres suivent ses règles', txtEn:'They want to run the game and have the others follow their rules', dim:'behavior' },
   { id:'s8d_58', t:8, e:'🦁', txt:'Il/elle défend ses copains plus faibles, s\'interpose dans les bagarres', txtEn:'They defend weaker friends, step into fights', dim:'motive' },
   { id:'s8e_58', t:8, e:'⛓️', txt:'Il/elle déteste être commandé·e, réagit fort aux ordres directs', txtEn:'They hate being given orders, react strongly to direct commands', dim:'fear' },
   { id:'s8f_58', t:8, e:'👑', txt:'Il/elle a une présence physique forte, une énergie marquée', txtEn:'They have a strong physical presence, marked energy', dim:'integ' },
@@ -375,7 +375,7 @@ const STATEMENTS_9_12: Statement[] = [
   // T8
   { id:'s8a_912', t:8, e:'⚡', txt:'Il/elle prend le lead dans son groupe, tranche dans les désaccords', txtEn:'They take the lead in their group, settle disagreements', dim:'behavior' },
   { id:'s8b_912', t:8, e:'💬', txt:'Il/elle dit ce qu\'il/elle pense franchement, sans filtre', txtEn:'They say what they think frankly, without filter', dim:'behavior' },
-  { id:'s8c_912', t:8, e:'👁️', txt:'Il/elle teste l\'autorité des adultes, remet en question les règles', txtEn:'They test adults\' authority, question rules', dim:'attunement' },
+  { id:'s8c_912', t:8, e:'👑', txt:'Il/elle prend naturellement le contrôle d\'un groupe et impose sa volonté', txtEn:'They naturally take control of a group and impose their will', dim:'behavior' },
   { id:'s8d_912', t:8, e:'🦁', txt:'Il/elle défend farouchement son territoire, ses amis, sa fratrie', txtEn:'They fiercely defend their territory, friends, siblings', dim:'motive' },
   { id:'s8e_912', t:8, e:'⛓️', txt:'Il/elle résiste frontalement aux ordres directs', txtEn:'They resist direct orders head-on', dim:'fear' },
   { id:'s8f_912', t:8, e:'👑', txt:'Il/elle a une énergie qui impressionne ses camarades', txtEn:'They have an energy that impresses their peers', dim:'integ' },
@@ -441,7 +441,7 @@ const STATEMENTS_13_17: Statement[] = [
   // T8
   { id:'s8a_1317', t:8, e:'⚡', txt:'Il/elle est un·e leader naturel·le dans son groupe, influence les décisions', txtEn:'They\'re a natural leader in their group, influence decisions', dim:'behavior' },
   { id:'s8b_1317', t:8, e:'💬', txt:'Il/elle assume ses désaccords, dit les choses cash', txtEn:'They own their disagreements, say things bluntly', dim:'behavior' },
-  { id:'s8c_1317', t:8, e:'👁️', txt:'Il/elle défie les figures d\'autorité qu\'il/elle juge illégitimes', txtEn:'They challenge authority figures they consider illegitimate', dim:'attunement' },
+  { id:'s8c_1317', t:8, e:'👑', txt:'Il/elle ne se laisse jamais dominer ; il/elle veut rester maître de sa vie', txtEn:'They never let themselves be dominated; they want to stay in control of their life', dim:'fear' },
   { id:'s8d_1317', t:8, e:'🦁', txt:'Il/elle défend férocement ses proches, ne laisse rien passer', txtEn:'They fiercely defend their close ones, let nothing slide', dim:'motive' },
   { id:'s8e_1317', t:8, e:'⛓️', txt:'Il/elle supporte très mal d\'être dirigé·e, encadré·e', txtEn:'They really don\'t handle being directed, framed', dim:'fear' },
   { id:'s8f_1317', t:8, e:'👑', txt:'Il/elle a une présence charismatique, une force physique assumée', txtEn:'They have charisma, an assumed physical strength', dim:'integ' },

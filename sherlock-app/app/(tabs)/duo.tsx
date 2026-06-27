@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { trackScreen } from '../../constants/firebase';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { trackScreen, auth, loadFamily, type Family } from '../../constants/firebase';
 import {
   View,
   Text,
@@ -20,7 +21,7 @@ const TYPE_COLORS = [
   '#5b8a9a', '#6b7b8e', '#d4853c', '#9b4a4a', '#7a9a7b',
 ];
 const TYPE_NAMES_FR = [
-  'Perfectionniste', 'Assistant', 'Gagneur', 'Artiste',
+  'Perfectionniste', 'Altruiste', 'Battant', 'Romantique',
   'Observateur', 'Loyaliste', 'Épicurien', 'Chef', 'Médiateur',
 ];
 const TYPE_NAMES_EN = [
@@ -275,6 +276,19 @@ export default function DuoScreen() {
   const [typeA, setTypeA] = useState<number | null>(null);
   const [typeB, setTypeB] = useState<number | null>(null);
 
+  // "Moi ↔ enfant" quick-fill shortcuts from saved profiles (free comparison
+  // via the grids below is unchanged).
+  const [family, setFamily] = useState<Family | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      const uid = auth.currentUser?.uid;
+      if (uid) loadFamily(uid).then(setFamily).catch(() => {});
+    }, []),
+  );
+  const quickPairs = (family?.self?.type != null)
+    ? family.children.filter((c) => c.type != null)
+    : [];
+
   const context = deriveContext(roleA, roleB);
   const pairFr = typeA && typeB ? getDuoPair(typeA, typeB) : null;
   const pairKey = typeA && typeB ? `${typeA}-${typeB}` : '';
@@ -371,6 +385,29 @@ export default function DuoScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Quick-fill shortcuts (Me ↔ child) from saved profiles ── */}
+        {quickPairs.length > 0 && (
+          <View style={styles.shortcutsRow}>
+            <Text style={styles.shortcutsLabel}>{t('duo.shortcuts')}</Text>
+            <View style={styles.shortcutsChips}>
+              {quickPairs.map((c) => (
+                <Pressable
+                  key={c.id}
+                  onPress={() => {
+                    setRoleA('adulte');
+                    setTypeA(family!.self!.type!);
+                    setRoleB('enfant');
+                    setTypeB(c.type!);
+                  }}
+                  style={({ pressed }) => [styles.shortcutChip, pressed && { opacity: 0.7 }]}
+                >
+                  <Text style={styles.shortcutChipText}>{t('family.me')} ↔ {c.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* ── Selectors ── */}
         <View style={styles.selectorsRow}>
 
@@ -548,6 +585,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xxl + spacing.xl,
     gap: spacing.md,
+  },
+
+  // ── Quick-fill shortcuts ──
+  shortcutsRow: {},
+  shortcutsLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
+    color: colors.textMuted, letterSpacing: 0.8, textTransform: 'uppercase',
+    marginBottom: spacing.sm,
+  },
+  shortcutsChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  shortcutChip: {
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderRadius: radius.full,
+    backgroundColor: colors.accentFill,
+    borderWidth: 1, borderColor: colors.accent,
+  },
+  shortcutChipText: {
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '600',
   },
 
   // ── Selectors ──

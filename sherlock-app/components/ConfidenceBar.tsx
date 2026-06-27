@@ -14,8 +14,6 @@ import { useT } from '../i18n';
 interface Props {
   /** 0..100 */
   confidence: number;
-  /** Legacy prop, ignored — label is now derived via i18n from confidence */
-  label?: string;
 }
 
 export default function ConfidenceBar({ confidence }: Props) {

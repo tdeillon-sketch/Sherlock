@@ -65,6 +65,10 @@ export interface WingPage {
 export type Page = LikertPage | BudgetPage | FinalPage | WingPage;
 
 // ── Résultat ──────────────────────────────────────────────────────
+// Insight is emitted as a locale-agnostic KIND (not a pre-built sentence) so
+// the UI (QuizResult) can render it in the active language via i18n keys.
+export type InsightKind = 'composite' | 'wingMarked' | 'closeSecond' | 'clear' | 'veryMarked';
+
 export interface AdaptiveResult {
   topType: EnneaType;
   topPercent: number;
@@ -74,8 +78,7 @@ export interface AdaptiveResult {
   thirdPercent: number;
   wingType: EnneaType | null;
   confidence: number;           // 0..100
-  confidenceLabel: 'Très confiant' | 'Confiant' | 'Plutôt confiant' | 'À préciser';
-  insight: string;
+  insightKind: InsightKind;
   allScores: { type: EnneaType; score: number; percent: number }[];
 }
 
@@ -110,8 +113,14 @@ function recomputeScoresFromPages(pages: Page[], ageBand: AgeBand): Record<Ennea
       const stmt = getStatements(ageBand).find(s => s.id === sid);
       if (!stmt) continue;
       scores[stmt.t] += v * mult;
-      if (scores[stmt.t] < 0) scores[stmt.t] = 0;
     }
+  }
+  // Clamp to >= 0 once at the end (not inside the loop) so the total is
+  // order-independent: a negative answer on an early page no longer silently
+  // erases a later positive one for the same type.
+  for (let t = 1; t <= 9; t++) {
+    const k = t as EnneaType;
+    if (scores[k] < 0) scores[k] = 0;
   }
   return scores;
 }
@@ -143,13 +152,6 @@ function computeConfidenceData(scores: Record<EnneaType, number>, answered: numb
     pct: Math.min(95, Math.round(raw * 100)),
     top: t1.type, top2: t2.type, sorted, gap, dominance,
   };
-}
-
-function confidenceLabel(c: number): AdaptiveResult['confidenceLabel'] {
-  if (c >= 80) return 'Très confiant';
-  if (c >= 60) return 'Confiant';
-  if (c >= 40) return 'Plutôt confiant';
-  return 'À préciser';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -255,6 +257,20 @@ function buildWingPage(ageBand: AgeBand, topType: EnneaType): WingPage {
   return { kind: 'wing', stmtIds: ids, responses, topType, wings: [wings[0], wings[1]] };
 }
 
+/**
+ * A budget/final page is only completable if its budget can actually be spent:
+ * the user must reach Σ|v| === budget, and each statement caps at a per-page max
+ * (mirrors BudgetStepperPage: 5 for budget, 6 for final). If the statement pool
+ * ran dry and the page can't reach its budget, it would dead-end the quiz
+ * (the "Next" button stays disabled forever). Likert/wing pages are always OK
+ * (0 = "no opinion" is a valid answer).
+ */
+function isAnswerable(page: Page): boolean {
+  if (page.kind === 'likert' || page.kind === 'wing') return true;
+  const perStmtMax = page.kind === 'final' ? 6 : 5;
+  return page.stmtIds.length > 0 && page.stmtIds.length * perStmtMax >= page.budget;
+}
+
 /** Decide and build the next page. Returns null if quiz is done. */
 function buildNextPage(
   pages: Page[],
@@ -263,6 +279,7 @@ function buildNextPage(
 ): Page | null {
   const mainPages = pages.filter(p => p.kind !== 'wing');
   const hasWing = pages.some(p => p.kind === 'wing');
+  const hasFinal = pages.some(p => p.kind === 'final');
   const pageIdx = mainPages.length;
 
   // Collect used ids
@@ -276,28 +293,39 @@ function buildNextPage(
   // Page 1 : Likert 2
   if (pageIdx === 1) return buildLikertPage2(ageBand, scores, used);
 
-  // Adaptive budget pages
-  const c = computeConfidenceData(scores, pages.flatMap(p => Object.keys(p.responses)).length);
+  // Adaptive budget pages.
+  // Count NON-ZERO answers (not total slots) so the early-stop confidence uses
+  // the same metric as the displayed result confidence in computeResult.
+  const answered = pages.flatMap(p => Object.values(p.responses)).filter(v => v !== 0).length;
+  const c = computeConfidenceData(scores, answered);
   const atMax = pageIdx >= MAX_PAGES - 1; // -1 because we'll still add wing
+  const goToWing = () => (c.top ? buildWingPage(ageBand, c.top) : null);
 
-  // Early stop: high confidence AND min pages
+  // Early stop: high confidence AND min pages → go to wing
   if (pageIdx >= MIN_PAGES && c.pct >= EARLY_STOP_PCT) {
-    // Instead of stopping, go to wing page
-    return c.top ? buildWingPage(ageBand, c.top) : null;
+    return goToWing();
   }
 
-  // If top1/top2 close and we've done enough budget pages → final departage
-  if (pageIdx >= 3 && c.gap < TIEBREAK_GAP && c.top) {
-    return buildFinalPage(ageBand, scores, used);
-  }
-
-  // If we've hit max main pages, go to wing
+  // Respect the page cap BEFORE anything else can append more pages.
+  // (Previously the tie-break below ran first and could loop indefinitely,
+  //  generating "final" pages until the statement pool ran dry and the quiz
+  //  dead-ended.)
   if (atMax) {
-    return c.top ? buildWingPage(ageBand, c.top) : null;
+    return goToWing();
   }
 
-  // Otherwise standard budget page
-  return buildBudgetPage(ageBand, scores, used);
+  // If top1/top2 are close, do ONE final departage page (like the wing, it's a
+  // single terminal-ish step). The `!hasFinal` guard prevents the old infinite
+  // loop of repeated departage pages.
+  if (pageIdx >= 3 && c.gap < TIEBREAK_GAP && c.top && !hasFinal) {
+    const finalPage = buildFinalPage(ageBand, scores, used);
+    // If the pool is too depleted to build a completable final page, skip it.
+    return isAnswerable(finalPage) ? finalPage : goToWing();
+  }
+
+  // Otherwise standard budget page (with the same defensive guard).
+  const budgetPage = buildBudgetPage(ageBand, scores, used);
+  return isAnswerable(budgetPage) ? budgetPage : goToWing();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -337,22 +365,17 @@ function computeResult(scores: Record<EnneaType, number>, pages: Page[], ageBand
   const top = t1.type;
   const wingInfo = computeWing(pages, ageBand);
 
-  let insight: string;
+  // Locale-agnostic insight kind — the UI turns this into a localized sentence.
+  let insightKind: InsightKind;
   if (c.pct < 30) {
-    insight = `Profil composite — plusieurs types cohabitent (${t1.type}, ${t2.type}, ${t3.type}).`;
+    insightKind = 'composite';
   } else if (c.pct < 55) {
-    const typeInfo = TYPES[top];
-    if (typeInfo.wing.includes(t2.type)) {
-      insight = `Le Type ${top} ressort avec une aile ${t2.type} marquée.`;
-    } else {
-      insight = `Le Type ${top} est en tête mais le Type ${t2.type} n'est pas loin.`;
-    }
+    insightKind = TYPES[top].wing.includes(t2.type) ? 'wingMarked' : 'closeSecond';
   } else if (c.pct < 75) {
-    insight = `Le Type ${top} ressort clairement (${TYPES[top].nick}).`;
+    insightKind = 'clear';
   } else {
-    insight = `Profil très marqué : Type ${top} (${TYPES[top].nick}).`;
+    insightKind = 'veryMarked';
   }
-  if (wingInfo.wing) insight += ` Aile détectée : ${top}w${wingInfo.wing}.`;
 
   return {
     topType: t1.type, topPercent: Math.round((Math.max(0, t1.score) / totalPos) * 100),
@@ -360,8 +383,7 @@ function computeResult(scores: Record<EnneaType, number>, pages: Page[], ageBand
     thirdType: t3.type, thirdPercent: Math.round((Math.max(0, t3.score) / totalPos) * 100),
     wingType: wingInfo.wing,
     confidence: c.pct,
-    confidenceLabel: confidenceLabel(c.pct),
-    insight,
+    insightKind,
     allScores,
   };
 }

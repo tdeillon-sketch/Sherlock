@@ -49,7 +49,6 @@ export const en = {
     // Daily ritual
     ritualEyebrow: "TODAY'S RITUAL",
     ritualCtaPrimary: 'Answer it',
-    ritualCtaSecondary: 'Later',
     ritualNoteTitle: 'Your answer',
     ritualNotePlaceholder: 'Write whatever comes to you…',
     ritualNoteSave: 'Save',
@@ -68,15 +67,6 @@ export const en = {
     seasonLockedAlertBody: "This season will be accessible once the book is published. You can sign up to be notified when it's out.",
     seasonLockedAlertCta: 'Notify me at launch',
     seasonLockedAlertCancel: 'Later',
-
-    // Solène teaser
-    soleneEyebrow: "COMING SOON · SOLÈNE'S VOICE",
-    soleneText: "One book, two perspectives. The final version will integrate Solène's voice — the mother, the wife, the other.",
-    soleneCta: 'Notify me at launch',
-    soleneAlertTitle: 'Get notified at launch',
-    soleneAlertBody: "The book will be published soon with Solène's voice integrated. To be notified the moment it's available, write to us.",
-    soleneAlertCta: 'Write to us',
-    soleneAlertCancel: 'Later',
 
     // Tools
     toolsLabel: "The traveler's tools",
@@ -97,6 +87,24 @@ export const en = {
     celebritiesDesc: 'The Sherlock Files: learn to spot types in the wild — playfully.',
     duoTitle: 'Duo',
     duoDesc: 'Discover the dynamic between any two profiles, in every context.',
+  },
+
+  // My family (home)
+  family: {
+    title: 'My family',
+    me: 'Me',
+  },
+
+  // Onboarding (first launch)
+  onboarding: {
+    skip: 'Skip',
+    start: 'Get started',
+    s1Title: 'Welcome to 5herlock',
+    s1Body: 'The companion to the book "We all need someone else" — to understand yourself better, and your children.',
+    s2Title: 'The Enneagram in 30 seconds',
+    s2Body: "9 ways of being in the world, 9 ways of loving and reacting. Discovering your child's type means learning their language.",
+    s3Title: 'Start with the quiz',
+    s3Body: "A few minutes is enough to reveal a profile — yours or your child's. Everything is free.",
   },
 
   subject: {
@@ -144,6 +152,17 @@ export const en = {
     nextPage: 'Next page →',
     seeProfile: 'See my profile →',
     budgetUsed: 'Points to distribute',
+    budgetRemaining: '{{n}} point(s) left to distribute',
+    budgetReady: '✓ Ready — you can continue',
+    distributeToContinue: 'Distribute your points to continue',
+    scaleLeft: 'Not at all',
+    scaleRight: 'Completely',
+    pageN: 'Page {{n}}',
+    lastStep: 'Last step',
+    radarCaption: 'The 9 Enneagram types',
+    quitTitle: 'Quit the quiz?',
+    quitBody: 'Your progress will be lost.',
+    quitConfirm: 'Quit',
     confidence: 'Confidence',
     confidenceResult: 'Result confidence',
   },
@@ -152,12 +171,22 @@ export const en = {
     profileLabel: 'YOUR PROFILE',
     subjectChild: "Your child's profile",
     subjectAdult: 'Your profile',
-    subjectAdo: 'Your profile',
     type: 'Type',
     typeProb: 'Likely Type {{n}}',
     confidenceVal: '{{pct}}%',
     confidence: 'match',
     insightLabel: '💡 Our reading',
+    keysLabel: '💡 How to support them',
+    keysMore: 'All 3 keys in detail in the full profile ↓',
+    childCaveat: "At this age a profile isn't fixed — it sharpens as your child grows. A lead to understand them better, not a label.",
+    shareCta: '📤 Share my result',
+    shareTitle: 'My Enneagram profile',
+    insight_composite: 'Composite profile — several types coexist (Types {{a}}, {{b}}, {{c}}).',
+    insight_wingMarked: 'Type {{top}} stands out with a strong {{second}} wing.',
+    insight_closeSecond: "Type {{top}} leads, but Type {{second}} isn't far behind.",
+    insight_clear: 'Type {{top}} comes through clearly ({{nick}}).',
+    insight_veryMarked: 'Very pronounced profile: Type {{top}} ({{nick}}).',
+    insightWing: 'Wing detected: {{top}}w{{wing}}.',
     topThree: 'Top 3 most marked types',
     typeOverview: '{{name}} — overview',
     fearLabel: 'Core fear:',
@@ -198,7 +227,8 @@ export const en = {
     nbTest: '{{n}} test',
     last: 'last: Type {{t}}',
     stable: '✓ Stable profile across {{n}} test(s)',
-    evolution: '⚡ Change observed: Type {{from}} → Type {{to}}',
+    evolution: "⚡ Different result: Type {{from}} then Type {{to}} — that's normal, a child's profile sharpens over time.",
+    vsSecond: '{{p}}% (vs {{q}}% for Type {{t}})',
   },
 
   // Sign-in / Auth screen
@@ -277,12 +307,6 @@ export const en = {
     age1316: 'Ages 13 to 16',
   },
 
-  // Banner for sections still in French (Duo, Case files)
-  enComingSoon: {
-    label: '🇬🇧 ENGLISH CONTENT COMING SOON',
-    text: 'This section is currently available in French only. English translation is in progress and will land in a future update. For now, you can read the French version below.',
-  },
-
   // Chapter detail page
   chapter: {
     notFound: 'Chapter not found.',
@@ -295,6 +319,7 @@ export const en = {
   duo: {
     title: 'Duo',
     subtitle: 'Dynamics between Enneagram profiles',
+    shortcuts: 'Quick compare',
     profileA: 'Profile A',
     profileB: 'Profile B',
     roleAdulte: 'Adult',

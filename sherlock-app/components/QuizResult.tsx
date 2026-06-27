@@ -1,14 +1,33 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { TYPES, QuizMode } from '../constants/data';
 import { TYPES as TYPES_V3 } from '../constants/quiz_v3';
 import type { EnneaType } from '../constants/quiz_v3';
-import { QuizResult as QuizResultType } from '../hooks/useQuiz';
+import type { InsightKind } from '../hooks/useAdaptiveQuiz';
+import { TYPES_EN } from '../i18n/types_en';
 import { useT, getTypeText } from '../i18n';
 
+// Result shape consumed by this card. Relocated here from the legacy
+// hooks/useQuiz.ts (removed); the live quiz builds this object in
+// app/(tabs)/quiz.tsx from the adaptive engine's AdaptiveResult.
+export interface QuizResultData {
+  topType: number;
+  topPercent: number;
+  secondType: number;
+  secondPercent: number;
+  thirdType: number;
+  thirdPercent: number;
+  wingType: number | null;
+  isAmbiguous: boolean;
+  ambiguousPair: [number, number] | null;
+  insightKind: InsightKind;
+}
+
 interface QuizResultProps {
-  result: QuizResultType;
+  result: QuizResultData;
   mode: QuizMode;
   onViewProfile: () => void;
   onSaveProfile: () => void;
@@ -16,10 +35,11 @@ interface QuizResultProps {
   onReset: () => void;
 }
 
-const TYPE_COLORS: Record<number, string> = {
-  1: '#6b8f71', 2: '#c0713a', 3: '#d4a437', 4: '#7b68b5',
-  5: '#4a90d9', 6: '#5b9e8f', 7: '#e07b54', 8: '#c0443a', 9: '#8fa68f',
-};
+/** Single source of truth for type colors (data.ts) — so the same type never
+ *  shows two different colors on one screen (hero badge vs top-3 rows). */
+function typeColor(typeNum: number): string {
+  return TYPES[typeNum - 1]?.color ?? '#c0713a';
+}
 
 /** Locale-aware type name, falling back to data.ts FR name */
 function localizedTypeName(typeNum: number, locale: 'fr' | 'en'): string {
@@ -40,15 +60,45 @@ export default function QuizResult({
   const thirdName = localizedTypeName(result.thirdType, locale);
   const wingName = result.wingType ? localizedTypeName(result.wingType, locale) : '';
 
+  // Localized "Our reading" insight, built from the engine's insightKind so it
+  // renders in the active language (was previously a hardcoded French string).
+  const v3Top = TYPES_V3[result.topType as EnneaType];
+  const topNick = v3Top ? getTypeText(v3Top, 'nick', locale) : topName;
+  const insightBody = t(`result.insight_${result.insightKind}`, {
+    a: result.topType, b: result.secondType, c: result.thirdType,
+    top: result.topType, second: result.secondType, nick: topNick,
+  });
+  const insightText = result.wingType
+    ? `${insightBody} ${t('result.insightWing', { top: result.topType, wing: result.wingType })}`
+    : insightBody;
+
   const subjectLabel =
-    mode === 'enfant' ? t('result.subjectChild') :
-    mode === 'ado'    ? t('result.subjectAdo')   :
-                        t('result.subjectAdult');
+    mode === 'enfant' ? t('result.subjectChild') : t('result.subjectAdult');
+
+  // "How to support them" — preview of the 3 parenting keys for this type
+  // (child mode only; the keys are framed as supporting a child of this type).
+  const enType = TYPES_EN[result.topType];
+  const accompanyKeys = ((locale === 'en' && enType?.keys?.length)
+    ? enType.keys
+    : (TYPES[result.topType - 1]?.keys ?? [])).slice(0, 3);
+
+  // Share: capture the (branded) hero card to a PNG and open the native sheet.
+  const shareRef = useRef<View>(null);
+  const onShare = async () => {
+    try {
+      const uri = await captureRef(shareRef, { format: 'png', quality: 1 });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t('result.shareTitle') });
+      }
+    } catch {
+      // capture/share unavailable (e.g. web) — ignore silently
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* ── Hero with top type ── */}
-      <View style={styles.hero}>
+      {/* ── Hero with top type (also the shareable card) ── */}
+      <View ref={shareRef} collapsable={false} style={styles.hero}>
         <View style={[styles.heroBadge, { backgroundColor: top.color }]}>
           <Text style={styles.heroBadgeNum}>{result.topType}</Text>
         </View>
@@ -61,12 +111,18 @@ export default function QuizResult({
           <Text style={styles.heroPercent}>{result.topPercent}%</Text>
           <Text style={styles.heroPercentLabel}>{t('result.confidence')}</Text>
         </View>
+        <Text style={styles.heroBrand}>5herlock</Text>
       </View>
+
+      {/* Responsible framing: a child's type is a hypothesis, not a label. */}
+      {mode === 'enfant' && (
+        <Text style={styles.childCaveat}>{t('result.childCaveat')}</Text>
+      )}
 
       {/* ── "Our reading" ── */}
       <View style={styles.insightCard}>
         <Text style={styles.insightLabel}>{t('result.insightLabel')}</Text>
-        <Text style={styles.insightText}>{result.insight}</Text>
+        <Text style={styles.insightText}>{insightText}</Text>
       </View>
 
       {/* ── Top 3 types with bars ── */}
@@ -78,7 +134,7 @@ export default function QuizResult({
           type={result.topType}
           name={topName}
           percent={result.topPercent}
-          color={TYPE_COLORS[result.topType]}
+          color={typeColor(result.topType)}
           wingTag={t('result.wingTagShort')}
         />
         <TypeRow
@@ -86,7 +142,7 @@ export default function QuizResult({
           type={result.secondType}
           name={secondName}
           percent={result.secondPercent}
-          color={TYPE_COLORS[result.secondType]}
+          color={typeColor(result.secondType)}
           isWing={result.wingType === result.secondType}
           wingTag={t('result.wingTagShort')}
         />
@@ -95,7 +151,7 @@ export default function QuizResult({
           type={result.thirdType}
           name={thirdName}
           percent={result.thirdPercent}
-          color={TYPE_COLORS[result.thirdType]}
+          color={typeColor(result.thirdType)}
           wingTag={t('result.wingTagShort')}
         />
       </View>
@@ -113,6 +169,22 @@ export default function QuizResult({
         </View>
       )}
 
+      {/* ── How to support them (3 keys preview, child mode) ── */}
+      {mode === 'enfant' && accompanyKeys.length > 0 && (
+        <View style={styles.keysCard}>
+          <Text style={styles.keysLabel}>{t('result.keysLabel')}</Text>
+          {accompanyKeys.map((k, i) => (
+            <View key={i} style={styles.keyRow}>
+              <View style={styles.keyNumBox}>
+                <Text style={styles.keyNum}>{i + 1}</Text>
+              </View>
+              <Text style={styles.keyTitle}>{k.title}</Text>
+            </View>
+          ))}
+          <Text style={styles.keysMore}>{t('result.keysMore')}</Text>
+        </View>
+      )}
+
       {/* ── Actions ── */}
       <View style={styles.actions}>
         <Pressable
@@ -121,6 +193,15 @@ export default function QuizResult({
         >
           <Text style={styles.btnPrimaryText}>{t('result.actionsViewProfile')}</Text>
         </Pressable>
+
+        {Platform.OS !== 'web' && (
+          <Pressable
+            onPress={onShare}
+            style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
+          >
+            <Text style={styles.btnSecondaryText}>{t('result.shareCta')}</Text>
+          </Pressable>
+        )}
 
         {mode === 'enfant' && (
           <>
@@ -205,6 +286,15 @@ const styles = StyleSheet.create({
   heroPercentBox: { alignItems: 'center', marginTop: spacing.xs },
   heroPercent: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '700' as any, color: colors.accent },
   heroPercentLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted },
+  heroBrand: {
+    fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
+    marginTop: spacing.md, letterSpacing: 1,
+  },
+  childCaveat: {
+    fontFamily: fonts.sans, fontSize: 12, lineHeight: 18,
+    color: colors.textMuted, fontStyle: 'italic', textAlign: 'center',
+    paddingHorizontal: spacing.sm,
+  },
 
   // Insight
   insightCard: {
@@ -275,6 +365,28 @@ const styles = StyleSheet.create({
   },
   wingDesc: {
     fontFamily: fonts.sans, fontSize: 13, lineHeight: 20, color: colors.textSoft,
+  },
+
+  // How-to-support keys
+  keysCard: {
+    backgroundColor: colors.surface, borderRadius: radius.md,
+    padding: spacing.md, borderWidth: 1, borderColor: colors.border, gap: spacing.sm,
+  },
+  keysLabel: {
+    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
+    color: colors.accent, letterSpacing: 0.5, marginBottom: spacing.xs,
+  },
+  keyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  keyNumBox: {
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: colors.accentFill, borderWidth: 1, borderColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  keyNum: { fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accent },
+  keyTitle: { flex: 1, fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: colors.text },
+  keysMore: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
+    fontStyle: 'italic', marginTop: spacing.xs,
   },
 
   // Actions

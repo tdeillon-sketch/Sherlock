@@ -8,7 +8,7 @@
 
 L'application **5herlock** (ci-après « l'Application ») est éditée par **Thomas Deillon**, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».
 
-Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter à l'adresse : **contact@thomasdeillon.com** *(à remplacer par votre email de contact réel)*.
+Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter à l'adresse : **contact@thomasdeillon.com**.
 
 ---
 
@@ -101,7 +101,7 @@ Conformément au Règlement Général sur la Protection des Données (RGPD), vou
 - **Droit d'opposition** : vous opposer au traitement de vos données
 - **Droit de limitation** : demander la limitation du traitement
 
-Pour exercer ces droits, envoyez un email à **contact@thomasdeillon.com** *(adresse à adapter)* avec comme sujet « RGPD — [votre demande] ».
+Pour exercer ces droits, envoyez un email à **contact@thomasdeillon.com** avec comme sujet « RGPD — [votre demande] ».
 
 Nous nous engageons à répondre dans un délai de **30 jours maximum**.
 
@@ -137,7 +137,7 @@ La date de dernière mise à jour figure en haut de ce document.
 
 ## 11. Contact et réclamation
 
-**Contact** : contact@thomasdeillon.com *(à remplacer par votre email réel)*
+**Contact** : contact@thomasdeillon.com
 
 **Réclamation auprès de l'autorité de contrôle** : vous pouvez déposer une réclamation auprès de la **CNIL** (Commission Nationale de l'Informatique et des Libertés), 3 Place de Fontenoy, 75007 Paris — [www.cnil.fr](https://www.cnil.fr).
 

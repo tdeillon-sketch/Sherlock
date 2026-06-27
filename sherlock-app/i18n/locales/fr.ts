@@ -52,7 +52,6 @@ export const fr = {
     // Daily ritual
     ritualEyebrow: 'LE RITUEL DU JOUR',
     ritualCtaPrimary: 'Y répondre',
-    ritualCtaSecondary: 'Plus tard',
     ritualNoteTitle: 'Votre réponse',
     ritualNotePlaceholder: 'Notez ce qui vous vient…',
     ritualNoteSave: 'Enregistrer',
@@ -71,15 +70,6 @@ export const fr = {
     seasonLockedAlertBody: 'Cette saison sera accessible quand le livre paraîtra. Vous pouvez vous inscrire pour être prévenu·e à la sortie.',
     seasonLockedAlertCta: "M'avertir à la sortie",
     seasonLockedAlertCancel: 'Plus tard',
-
-    // Solène teaser
-    soleneEyebrow: 'BIENTÔT · LA VOIX DE SOLÈNE',
-    soleneText: "Un même livre, deux regards. La version finale intègrera la voix de Solène — la mère, l'épouse, l'autre.",
-    soleneCta: "M'avertir à la sortie",
-    soleneAlertTitle: 'Soyez prévenu·e à la sortie',
-    soleneAlertBody: "Le livre sortira prochainement avec la voix de Solène intégrée. Pour être averti·e dès qu'il est disponible, écrivez-nous.",
-    soleneAlertCta: 'Nous écrire',
-    soleneAlertCancel: 'Plus tard',
 
     // Tools
     toolsLabel: 'Les outils du voyage',
@@ -101,6 +91,24 @@ export const fr = {
     celebritiesDesc: "Les Dossiers Sherlock : apprenez à reconnaître les profils en jouant.",
     duoTitle: 'Duo',
     duoDesc: 'Découvrez la dynamique entre deux profils, dans tous les contextes.',
+  },
+
+  // Ma famille (home)
+  family: {
+    title: 'Ma famille',
+    me: 'Moi',
+  },
+
+  // Onboarding (premier lancement)
+  onboarding: {
+    skip: 'Passer',
+    start: 'Commencer',
+    s1Title: 'Bienvenue dans 5herlock',
+    s1Body: "Le compagnon du livre « On a tous besoin de quelqu'un d'autre » — pour mieux vous comprendre, et comprendre vos enfants.",
+    s2Title: "L'Ennéagramme en 30 secondes",
+    s2Body: "9 façons d'être au monde, 9 manières d'aimer et de réagir. Découvrir le type de votre enfant, c'est apprendre sa langue.",
+    s3Title: 'Commencez par le quiz',
+    s3Body: 'Quelques minutes suffisent pour révéler un profil — le vôtre ou celui de votre enfant. Tout est gratuit.',
   },
 
   // Quiz: subject selection
@@ -151,6 +159,17 @@ export const fr = {
     nextPage: 'Page suivante →',
     seeProfile: 'Voir mon profil →',
     budgetUsed: 'Budget à distribuer',
+    budgetRemaining: 'Encore {{n}} point(s) à distribuer',
+    budgetReady: '✓ Prêt — vous pouvez continuer',
+    distributeToContinue: 'Distribuez vos points pour continuer',
+    scaleLeft: 'Pas du tout',
+    scaleRight: 'Tout à fait',
+    pageN: 'Page {{n}}',
+    lastStep: 'Dernière étape',
+    radarCaption: "Les 9 types de l'Ennéagramme",
+    quitTitle: 'Quitter le quiz ?',
+    quitBody: 'Votre progression sera perdue.',
+    quitConfirm: 'Quitter',
     confidence: 'Confiance',
     confidenceResult: 'Confiance du résultat',
   },
@@ -160,12 +179,22 @@ export const fr = {
     profileLabel: 'VOTRE PROFIL',
     subjectChild: 'Profil de votre enfant',
     subjectAdult: 'Votre profil',
-    subjectAdo: 'Ton profil',
     type: 'Type',
     typeProb: 'Probablement Type {{n}}',
     confidenceVal: '{{pct}}%',
     confidence: 'de correspondance',
     insightLabel: '💡 Notre lecture',
+    keysLabel: "💡 Comment l'accompagner",
+    keysMore: 'Les 3 clés en détail dans le profil complet ↓',
+    childCaveat: "Chez l'enfant, le profil n'est pas figé : il se précise en grandissant. Une piste pour mieux le comprendre, pas une étiquette.",
+    shareCta: '📤 Partager mon résultat',
+    shareTitle: 'Mon profil Ennéagramme',
+    insight_composite: 'Profil composite — plusieurs types cohabitent ({{a}}, {{b}}, {{c}}).',
+    insight_wingMarked: 'Le Type {{top}} ressort avec une aile {{second}} marquée.',
+    insight_closeSecond: "Le Type {{top}} est en tête mais le Type {{second}} n'est pas loin.",
+    insight_clear: 'Le Type {{top}} ressort clairement ({{nick}}).',
+    insight_veryMarked: 'Profil très marqué : Type {{top}} ({{nick}}).',
+    insightWing: 'Aile détectée : {{top}}w{{wing}}.',
     topThree: 'Les 3 types les plus marqués',
     typeOverview: '{{name}} — aperçu',
     fearLabel: 'Peur racine :',
@@ -208,7 +237,8 @@ export const fr = {
     nbTest: '{{n}} test',
     last: 'dernier : Type {{t}}',
     stable: '✓ Profil stable sur {{n}} test(s)',
-    evolution: '⚡ Évolution observée : Type {{from}} → Type {{to}}',
+    evolution: "⚡ Résultat différent : Type {{from}} puis Type {{to}} — c'est normal, le profil d'un enfant se précise avec le temps.",
+    vsSecond: '{{p}}% (vs {{q}}% pour le {{t}})',
   },
 
   // Sign-in / Auth screen
@@ -288,12 +318,6 @@ export const fr = {
     age1316: 'De 13 à 16 ans',
   },
 
-  // Banner for sections only available in French (Duo, Case files)
-  enComingSoon: {
-    label: 'EN CONTENU EN ANGLAIS À VENIR',
-    text: 'Cette section est encore disponible uniquement en français. La traduction anglaise est en cours.',
-  },
-
   // Chapter detail page
   chapter: {
     notFound: 'Chapitre introuvable.',
@@ -306,6 +330,7 @@ export const fr = {
   duo: {
     title: 'Duo',
     subtitle: 'Dynamiques entre profils Ennéagramme',
+    shortcuts: 'Comparer rapidement',
     profileA: 'Profil A',
     profileB: 'Profil B',
     roleAdulte: 'Adulte',

@@ -170,8 +170,8 @@ export function useDossier() {
           setProgress({
             ...DEFAULT_PROGRESS,
             ...p,
-            bestCombo: (p as any).bestCombo ?? 0,
-            wrongCases: (p as any).wrongCases ?? [],
+            bestCombo: p.bestCombo ?? 0,
+            wrongCases: p.wrongCases ?? [],
           });
         }
       })
@@ -181,7 +181,7 @@ export function useDossier() {
 
   const persistProgress = useCallback((p: DossierProgress) => {
     const uid = auth.currentUser?.uid;
-    if (uid) saveDossierProgress(uid, p as any).catch(() => {});
+    if (uid) saveDossierProgress(uid, p).catch(() => {});
   }, []);
 
   // ── Navigation ──

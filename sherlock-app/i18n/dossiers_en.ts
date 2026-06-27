@@ -388,7 +388,7 @@ export const FICHES_EN: Record<string, FicheEn> = {
   },
   darth_vader: {
     name: 'Darth Vader',
-    quote: "I am your father.",
+    quote: "You don't know the power of the Dark Side.",
     quoteSource: "Star Wars: The Empire Strikes Back",
     coreFear: "Vulnerability, loving and losing",
     coreDesire: "To control, never to be hurt again",
@@ -624,7 +624,7 @@ export const CASES_EN: Record<string, CaseEn> = {
   l7: {
     quote: "When something is important enough, you do it even if the odds are not in your favor.",
     author: 'Elon Musk',
-    explanation: "Musk reveals Type 3 in this quote: a goal's importance is measured by its potential impact on his reputation and legacy. Type 3 takes risks not out of courage but ambition.",
+    explanation: "This line sounds like sheer will (Type 8) or duty (Type 1) — that's the trap. The Type 3 tell is the stake: importance is measured by impact on image, reputation, legacy. The 3 takes risks out of ambition, not courage.",
   },
   l8: {
     indices: [
@@ -705,7 +705,7 @@ export const CASES_EN: Record<string, CaseEn> = {
     explanation: "Sherlock Holmes is the fictional Type 5 par excellence. His emotional detachment, intellect as sole armor, distant observation of the human world, and encyclopedic collection of useless lore define the Investigator.",
   },
   f2: {
-    quote: "I am your father.",
+    quote: "You don't know the power of the Dark Side.",
     author: 'Darth Vader — Star Wars',
     explanation: "This quote is the Type 8 reveal beneath the mask. Vader's whole tragedy comes from a Type 8 who let fear corrupt him: the fear of vulnerability (losing Padmé) turned him into a tyrant.",
   },
@@ -930,7 +930,7 @@ export const FUN_FACTS_EN: Record<string, string> = {
 
   // Type 8
   churchill:      "Churchill received his ministers in his bath. This total absence of awkwardness, this rejection of protocol when it blocks action: very Type 8.",
-  mlk:            "Martin Luther King kept walking after being stabbed in 1958 — the blade had grazed his aorta. Not retreating in the face of physical violence: essence of Type 8.",
+  mlk:            "Stabbed in 1958 with the blade against his aorta, Martin Luther King had to lie perfectly still for weeks (a single sneeze could have killed him) — then returned to the fight, never backing down. Refusing to be intimidated: essence of Type 8.",
   steve_jobs:     "Steve Jobs would make engineers cry in meetings, then tell them days later they had produced 'the best work of their lives.' Bluntness and recognition: classic Type 8 pairing.",
   serena:         "Serena Williams won the 2017 Australian Open while 8 weeks pregnant. Refusing to let her body dictate her limits — that's pure Type 8.",
   darth_vader:    "Darth Vader chokes an officer who contradicts him without even touching him. Type 8 under stress — when power becomes the only language — reaches this caricature.",
