@@ -36,6 +36,23 @@ function getFicheLocalized(id: string, locale: Locale) {
   };
 }
 
+// ── Avatar helpers: 2-letter monogram + a darker shade for the gradient disc ──
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+function darken(hex: string, amt = 0.4): string {
+  const h = hex.replace('#', '');
+  if (h.length !== 6) return hex;
+  const n = parseInt(h, 16);
+  const r = Math.max(0, Math.round(((n >> 16) & 255) * (1 - amt)));
+  const g = Math.max(0, Math.round(((n >> 8) & 255) * (1 - amt)));
+  const b = Math.max(0, Math.round((n & 255) * (1 - amt)));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+}
+
 function getTypeName(typeNum: number, locale: Locale): string {
   if (locale === 'en' && TYPE_NAMES_EN[typeNum]) return TYPE_NAMES_EN[typeNum];
   return TYPE_NAMES[typeNum];
@@ -737,9 +754,14 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
                   >
                     {unlocked ? (
                       <>
-                        <Text style={[styles.pokedexInitial, { color: TYPE_COLORS[typeNum] }]}>
-                          {displayName.charAt(0)}
-                        </Text>
+                        <LinearGradient
+                          colors={[TYPE_COLORS[typeNum], darken(TYPE_COLORS[typeNum])]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.pokedexAvatar}
+                        >
+                          <Text style={styles.pokedexInitial}>{initials(displayName)}</Text>
+                        </LinearGradient>
                         <Text style={styles.pokedexName} numberOfLines={1}>{displayName}</Text>
                       </>
                     ) : (
@@ -781,11 +803,14 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
       </View>
 
       <View style={[styles.ficheHero, { borderColor: typeColor }]}>
-        <View style={[styles.ficheAvatar, { backgroundColor: typeColor + '33' }]}>
-          <Text style={[styles.ficheAvatarLetter, { color: typeColor }]}>
-            {fiche.name.charAt(0)}
-          </Text>
-        </View>
+        <LinearGradient
+          colors={[typeColor, darken(typeColor)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.ficheAvatar}
+        >
+          <Text style={styles.ficheAvatarLetter}>{initials(fiche.name)}</Text>
+        </LinearGradient>
         <Text style={styles.ficheName}>{fiche.name}</Text>
         <TypeBadge typeNum={fiche.type} />
       </View>
@@ -1434,7 +1459,12 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   pokedexCellLocked: { backgroundColor: colors.surface, borderColor: colors.border, opacity: 0.5 },
-  pokedexInitial: { fontFamily: fonts.serif, fontSize: 28, fontWeight: '700' as any, marginBottom: 4 },
+  pokedexAvatar: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)',
+  },
+  pokedexInitial: { fontFamily: fonts.serif, fontSize: 17, fontWeight: '700' as any, color: colors.white, letterSpacing: 0.5 },
   pokedexName: { fontFamily: fonts.sans, fontSize: 9, color: colors.textSoft, textAlign: 'center' },
   pokedexLockEmoji: { fontSize: 18, marginBottom: 4 },
   pokedexLockText: { fontFamily: fonts.sans, fontSize: 10, color: colors.textMuted },
@@ -1446,8 +1476,12 @@ const styles = StyleSheet.create({
     margin: spacing.md, padding: spacing.lg, alignItems: 'center', gap: spacing.sm,
     backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 2,
   },
-  ficheAvatar: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
-  ficheAvatarLetter: { fontFamily: fonts.serif, fontSize: 36, fontWeight: '700' as any },
+  ficheAvatar: {
+    width: 84, height: 84, borderRadius: 42,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.28)',
+  },
+  ficheAvatarLetter: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '700' as any, color: colors.white, letterSpacing: 1 },
   ficheName: { fontFamily: fonts.serif, fontSize: 22, color: colors.text },
   ficheQuoteBlock: {
     marginHorizontal: spacing.md, marginBottom: spacing.md, padding: spacing.md,

@@ -849,6 +849,24 @@ export default function AdminScreen() {
                     )}
                   </View>
 
+                  {(() => {
+                    const selfQ = u.quizResults.filter(q => q.mode === 'adulte');
+                    const selfT = selfQ.length ? selfQ[selfQ.length - 1].topType : null;
+                    if (!selfT && u.childProfiles.length === 0) return null;
+                    const parts = [
+                      ...(selfT ? [`🪞 Moi · T${selfT}`] : []),
+                      ...u.childProfiles.map(c => {
+                        const l = c.history?.[c.history.length - 1];
+                        return `${c.name} · T${l?.topType ?? '?'}${l?.wingType ? 'w' + l.wingType : ''}`;
+                      }),
+                    ];
+                    return (
+                      <Text style={styles.familyLine} numberOfLines={2}>
+                        👨‍👩‍👧 {parts.join('   ')}
+                      </Text>
+                    );
+                  })()}
+
                   {expanded && (
                     <View style={styles.detailWrap}>
                       {/* Dates précises */}
@@ -1423,6 +1441,10 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontFamily: fonts.sans, fontSize: 11, color: colors.textSoft, fontWeight: '600',
+  },
+  familyLine: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.textSoft,
+    marginTop: spacing.xs, lineHeight: 17,
   },
   legendText: {
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
