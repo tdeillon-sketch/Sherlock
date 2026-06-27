@@ -48,6 +48,7 @@ export const fr = {
     pilotChapterTitle: 'Le seul animal qui ne sait pas élever ses petits',
     pilotTagline: "Pourquoi sommes-nous le seul être vivant à arriver au monde sans mode d'emploi ?",
     pilotCta: 'Commencer la lecture',
+    bookTeaser: 'Saison 1 (le chapitre ci-dessus) en lecture libre. Les 3 autres saisons arrivent avec le livre.',
 
     // Daily ritual
     ritualEyebrow: 'LE RITUEL DU JOUR',

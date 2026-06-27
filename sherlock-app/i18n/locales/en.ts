@@ -45,6 +45,7 @@ export const en = {
     pilotChapterTitle: "The only animal that doesn't know how to raise its young",
     pilotTagline: "Why are we the only living being who arrives in this world without a manual?",
     pilotCta: 'Start reading',
+    bookTeaser: 'Season 1 (the chapter above) is free to read. The 3 other seasons arrive with the book.',
 
     // Daily ritual
     ritualEyebrow: "TODAY'S RITUAL",
