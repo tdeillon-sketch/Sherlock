@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
-  useWindowDimensions, TextInput,
+  useWindowDimensions, TextInput, Alert, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -17,6 +17,7 @@ import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebas
 import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
 import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
 import { useT, getTypeText } from '../../i18n';
+import { hapticLight } from '../../utils/haptics';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
@@ -68,6 +69,21 @@ export default function QuizScreen() {
     }
     if (phase !== 'result') savedRef.current = false;
   }, [phase, subject, ageBand, result, scores]);
+
+  // ── Entrance animations: fade the radar in, reveal the result card ──
+  const radarAnim = useRef(new Animated.Value(0)).current;
+  const resultAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (phase === 'questions') {
+      Animated.timing(radarAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+    }
+  }, [phase, radarAnim]);
+  useEffect(() => {
+    if (phase === 'result') {
+      resultAnim.setValue(0);
+      Animated.timing(resultAnim, { toValue: 1, duration: 450, useNativeDriver: true }).start();
+    }
+  }, [phase, resultAnim]);
 
   // ─────────────────────────────────────────────
   //  PHASE: select_subject
@@ -160,8 +176,21 @@ export default function QuizScreen() {
   }
 
   // ── Common header pour le flow actif ──
+  // Confirm before discarding an in-progress quiz (back during questions wipes
+  // all answers). On result/other phases, just reset.
   const handleBack = () => {
-    reset();
+    if (phase === 'questions') {
+      Alert.alert(
+        t('quiz.quitTitle'),
+        t('quiz.quitBody'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: reset },
+        ],
+      );
+    } else {
+      reset();
+    }
   };
 
   const subjectLabel =
@@ -173,7 +202,7 @@ export default function QuizScreen() {
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
-    <View style={[styles.radarSection, isWide && styles.radarSectionWide]}>
+    <Animated.View style={[styles.radarSection, isWide && styles.radarSectionWide, { opacity: radarAnim }]}>
       <RadarChart scores={scores as unknown as Record<number, number>} size={radarSize} />
       {phase === 'result' && (
         <View style={styles.legendRow}>
@@ -183,7 +212,7 @@ export default function QuizScreen() {
           </Text>
         </View>
       )}
-    </View>
+    </Animated.View>
   );
 
   const topBar = (
@@ -201,14 +230,22 @@ export default function QuizScreen() {
     phase === 'result' ? 1 :
     Math.min(stepIndex / Math.max(1, estimatedTotal), 0.98);
 
+  const progressCaption =
+    phase === 'questions' && currentPage
+      ? (currentPage.kind === 'wing' ? t('quiz.lastStep') : t('quiz.pageN', { n: pageIndex + 1 }))
+      : null;
+
   const progressBar = (
-    <View style={styles.progressTrack}>
-      <LinearGradient
-        colors={[colors.accent, '#e8a06a']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={[styles.progressFill, { width: `${progress * 100}%` as any }]}
-      />
+    <View>
+      <View style={styles.progressTrack}>
+        <LinearGradient
+          colors={[colors.accent, '#e8a06a']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.progressFill, { width: `${progress * 100}%` as any }]}
+        />
+      </View>
+      {progressCaption && <Text style={styles.progressCaption}>{progressCaption}</Text>}
     </View>
   );
 
@@ -227,6 +264,9 @@ export default function QuizScreen() {
           ageBand={ageBand}
           onChange={updateResponse}
         />
+        {(currentPage.kind === 'budget' || currentPage.kind === 'final') && !canAdvance && (
+          <Text style={styles.navHint}>{t('quiz.distributeToContinue')}</Text>
+        )}
         <View style={styles.navRow}>
           {pageIndex > 0 ? (
             <Pressable onPress={goToPrevPage} style={({ pressed }) => [styles.navBtn, styles.navBtnGhost, pressed && { opacity: 0.7 }]}>
@@ -234,7 +274,7 @@ export default function QuizScreen() {
             </Pressable>
           ) : <View style={{ width: 100 }} />}
           <Pressable
-            onPress={advancePage}
+            onPress={() => { hapticLight(); advancePage(); }}
             disabled={!canAdvance}
             style={({ pressed }) => [
               styles.navBtn,
@@ -271,7 +311,12 @@ export default function QuizScreen() {
     const legacyMode = subject === 'self' ? 'adulte' : 'enfant';
 
     mainContent = (
-      <>
+      <Animated.View
+        style={{
+          opacity: resultAnim,
+          transform: [{ translateY: resultAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+        }}
+      >
         <QuizResult
           result={adaptedResult}
           mode={legacyMode}
@@ -283,7 +328,7 @@ export default function QuizScreen() {
 
         {/* Score de confiance (sans bouton "Affiner" — retiré en v3) */}
         <ConfidenceBar confidence={result.confidence} />
-      </>
+      </Animated.View>
     );
   }
 
@@ -555,6 +600,14 @@ const styles = StyleSheet.create({
   // Progress
   progressTrack: { height: 3, backgroundColor: colors.subtle06 },
   progressFill: { height: 3, borderRadius: 2 },
+  progressCaption: {
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
+    textAlign: 'center', marginTop: 4, letterSpacing: 0.3,
+  },
+  navHint: {
+    fontFamily: fonts.sans, fontSize: 12, color: colors.accent, fontWeight: '600',
+    textAlign: 'center', paddingHorizontal: spacing.md, marginBottom: spacing.xs,
+  },
   scrollFlex: { flex: 1 },
   scrollContent: { paddingBottom: spacing.xxl },
 

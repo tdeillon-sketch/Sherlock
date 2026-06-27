@@ -147,9 +147,6 @@ export default function HomeScreen() {
             >
               <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualCtaPrimary')}</Text>
             </Pressable>
-            <View style={styles.ritualCtaSecondary}>
-              <Text style={styles.ritualCtaSecondaryText}>{t('home.ritualCtaSecondary')}</Text>
-            </View>
           </View>
         ) : (
           <View style={styles.ritualNoteWrap}>

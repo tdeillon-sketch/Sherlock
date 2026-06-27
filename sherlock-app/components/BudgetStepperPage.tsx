@@ -10,6 +10,7 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
 import { findStmt } from '../constants/quiz_v3';
 import { useT, getStmtText } from '../i18n';
+import { hapticSelection } from '../utils/haptics';
 
 interface Props {
   stmtIds: string[];
@@ -37,6 +38,7 @@ export default function BudgetStepperPage({
   const { t, locale } = useT();
 
   const used = stmtIds.reduce((s, id) => s + Math.abs(responses[id] ?? 0), 0);
+  const remaining = Math.max(0, budget - used);
   const meterColor =
     used === budget ? colors.success :
     used > budget   ? colors.error   :
@@ -54,6 +56,11 @@ export default function BudgetStepperPage({
         </Text>
       </View>
 
+      {/* Explicit remaining-points feedback (why "Next" stays disabled). */}
+      <Text style={[styles.budgetStatus, { color: remaining === 0 ? colors.success : colors.accent }]}>
+        {remaining > 0 ? t('quiz.budgetRemaining', { n: remaining }) : t('quiz.budgetReady')}
+      </Text>
+
       {stmtIds.map((sid) => {
         const stmt = findStmt(sid, ageBand);
         if (!stmt) return null;
@@ -64,6 +71,7 @@ export default function BudgetStepperPage({
           if (newV < MIN || newV > MAX) return;
           const absDelta = Math.abs(newV) - Math.abs(v);
           if (absDelta > 0 && used >= budget) return;
+          hapticSelection();
           onChange(sid, newV);
         };
         const canMinus = v > MIN && !(Math.abs(v - 1) > Math.abs(v) && used >= budget);
@@ -135,6 +143,10 @@ const styles = StyleSheet.create({
   },
   meterValue: {
     fontFamily: fonts.serif, fontSize: 22, fontWeight: '700',
+  },
+  budgetStatus: {
+    fontFamily: fonts.sans, fontSize: 13, fontWeight: '600',
+    textAlign: 'center', marginTop: -spacing.sm, marginBottom: spacing.md,
   },
 
   row: {

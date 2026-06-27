@@ -16,6 +16,7 @@ import {
 import { useDossier, getRankInfo } from '../../hooks/useDossier';
 import { trackScreen } from '../../constants/firebase';
 import { useT, type Locale } from '../../i18n';
+import { hapticSuccess, hapticError } from '../../utils/haptics';
 
 // ── Locale-aware lookups (field-level fallback) ──
 // In EN, prefer the EN translation; if a field is missing, fall back to FR.
@@ -495,6 +496,10 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
   onQuit: () => void;
 }) {
   const { t, locale } = useT();
+  // Haptic feedback on reveal: success/error matching the answer.
+  useEffect(() => {
+    if (playState.correct) hapticSuccess(); else hapticError();
+  }, []);
   const c = playState.currentCase;
   const ficheId = (c as any).ficheId as string | undefined;
   const fiche = ficheId ? getFicheLocalized(ficheId, locale) : null;

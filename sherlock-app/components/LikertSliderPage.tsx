@@ -10,6 +10,7 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
 import { findStmt } from '../constants/quiz_v3';
 import { useT, getStmtText } from '../i18n';
+import { hapticSelection } from '../utils/haptics';
 
 interface Props {
   stmtIds: string[];
@@ -50,7 +51,10 @@ function SliderRow({
     const raw = MIN + ratio * STEPS;
     const snapped = Math.round(raw);
     const bounded = Math.max(MIN, Math.min(MAX, snapped));
-    if (bounded !== value) onChange(bounded);
+    if (bounded !== value) {
+      hapticSelection();
+      onChange(bounded);
+    }
   };
 
   // Thumb position as percentage
@@ -114,11 +118,17 @@ export default function LikertSliderPage({
   subtitle,
   hint,
 }: Props) {
-  const { locale } = useT();
+  const { t, locale } = useT();
   return (
     <View style={styles.container}>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {hint && <Text style={styles.hint}>{hint}</Text>}
+
+      {/* Verbal scale anchors so the slider direction is unambiguous. */}
+      <View style={styles.scaleLegend}>
+        <Text style={styles.scaleLegendText}>← {t('quiz.scaleLeft')}</Text>
+        <Text style={styles.scaleLegendText}>{t('quiz.scaleRight')} →</Text>
+      </View>
 
       {stmtIds.map((sid) => {
         const stmt = findStmt(sid, ageBand);
@@ -146,6 +156,15 @@ const styles = StyleSheet.create({
   hint: {
     fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
     fontStyle: 'italic', marginBottom: spacing.md,
+  },
+
+  scaleLegend: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    marginBottom: spacing.sm, paddingHorizontal: spacing.xs,
+  },
+  scaleLegendText: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '600',
+    color: colors.textMuted, letterSpacing: 0.3,
   },
 
   row: {
