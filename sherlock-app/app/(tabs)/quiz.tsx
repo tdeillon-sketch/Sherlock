@@ -472,8 +472,11 @@ export default function QuizScreen() {
             onPress={() => { hapticLight(); startSecondOpinion(); }}
             style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
           >
-            <Text style={styles.secondCtaText}>{t('second.cta')}</Text>
-            <Text style={styles.secondCtaHint}>{t('second.ctaHint')}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.secondCtaText}>{t('second.cta')}</Text>
+              <Text style={styles.secondCtaHint}>{t('second.ctaHint')}</Text>
+            </View>
+            <Text style={styles.secondCtaArrow}>›</Text>
           </Pressable>
         )}
 
@@ -951,13 +954,14 @@ const styles = StyleSheet.create({
 
   // Second avis
   secondCta: {
-    marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.sm,
-    backgroundColor: colors.bgLight, borderWidth: 1, borderColor: colors.accent,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    marginHorizontal: spacing.lg, marginTop: spacing.lg, marginBottom: spacing.sm,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accent, borderLeftWidth: 4,
     borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
-    alignItems: 'center',
   },
-  secondCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.accent },
-  secondCtaHint: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
+  secondCtaText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accent },
+  secondCtaHint: { fontFamily: fonts.sans, fontSize: 12.5, color: colors.textMuted, marginTop: 3 },
+  secondCtaArrow: { fontFamily: fonts.sans, fontSize: 26, color: colors.accent, lineHeight: 28 },
   cmpRow: {
     backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1,
     borderColor: colors.border, padding: spacing.md, gap: 6,

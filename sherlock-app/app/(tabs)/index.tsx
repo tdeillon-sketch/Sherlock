@@ -211,6 +211,18 @@ export default function HomeScreen() {
               );
             })}
           </View>
+          <Pressable
+            onPress={() => router.push('/checkin' as never)}
+            style={({ pressed }) => [styles.checkinCta, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.checkinCtaText}>{t('checkin.cta')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/family-map' as never)}
+            style={({ pressed }) => [styles.checkinCta, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.checkinCtaText}>{t('familyMap.cta')}</Text>
+          </Pressable>
         </View>
       )}
 
@@ -420,6 +432,12 @@ const styles = StyleSheet.create({
   familyName: { fontFamily: fonts.sans, fontSize: 14, color: colors.text, fontWeight: '600' },
   familyType: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
   familyChevron: { fontSize: 24, color: colors.textDim, paddingHorizontal: spacing.xs },
+  checkinCta: {
+    marginTop: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+    borderRadius: radius.md, alignItems: 'center',
+  },
+  checkinCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', color: colors.accent },
 
   // ── Section label (shared) ──
   sectionLabel: {

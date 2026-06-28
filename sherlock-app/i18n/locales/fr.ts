@@ -142,6 +142,36 @@ export const fr = {
     obsDesc: "Vous répondez en l'observant de l'extérieur. Pratique, mais moins précis.",
   },
 
+  familyMap: {
+    title: 'Carte de famille',
+    cta: '🗺️ Voir la carte de famille',
+    needTwo: 'Type au moins 2 personnes (toi, ton/ta partenaire, tes enfants) pour voir les dynamiques.',
+    centerTitle: 'Le centre de gravité du foyer',
+    gut: 'Ventre · instinct, action, colère',
+    heart: 'Cœur · émotion, image, relation',
+    head: 'Tête · mental, peur, anticipation',
+    overlooked: "{{name}} est seul·e de son côté — souvent la voix qu'on entend le moins. À écouter exprès.",
+    dynamicsTitle: 'Les dynamiques, deux à deux',
+    frictionLabel: '⚡ Frictions',
+    strengthLabel: '✨ Forces',
+  },
+
+  checkin: {
+    title: 'Comment va-t-il/elle ?',
+    cta: '🌡️ Comment vont-ils en ce moment ?',
+    pick: 'De qui veux-tu prendre des nouvelles ?',
+    intro: 'Une lecture du moment, pas une étiquette. Fie-toi à ton ressenti.',
+    me: 'Moi',
+    questionFor: 'Comment va {{name}} en ce moment ?',
+    stressLabel: 'Si tu observes plutôt ça (un moment de stress)',
+    securityLabel: 'Bon signe (il/elle est dans un bon moment)',
+    tryLabel: '✅ À essayer',
+    avoidLabel: '🚫 À éviter',
+    hedge: "Ce n'est peut-être rien — fatigue, faim, une mauvaise journée. Une piste pour comprendre, jamais un verdict.",
+    back: "Quelqu'un d'autre",
+    empty: "Type d'abord un proche ou un enfant pour utiliser le radar.",
+  },
+
   second: {
     cta: '🔎 Faire vérifier par un proche',
     ctaHint: "Se typer soi-même est difficile : confronte ton profil au regard d'un proche.",
@@ -432,7 +462,8 @@ export const fr = {
   // Sherlock Files / Case files screen
   dossiers: {
     hubTitle: 'Les Dossiers Sherlock',
-    hubSubtitle: 'Apprenez à reconnaître les profils en jouant',
+    hubSubtitle: 'Apprenez à reconnaître les 9 façons d\'être — et ce qui les distingue',
+    lessonLabel: '💡 Ce que ça révèle',
     rankCurrent: 'Rang actuel',
     rankXp: 'XP Sherlock',
     rankUntil: 'avant',

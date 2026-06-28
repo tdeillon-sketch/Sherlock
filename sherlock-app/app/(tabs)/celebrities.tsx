@@ -578,6 +578,7 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
         )}
 
         <View style={styles.revealExplanation}>
+          <Text style={styles.lessonLabel}>{t('dossiers.lessonLabel')}</Text>
           <Text style={styles.revealExplanationText}>{explanationOrKeyDiff}</Text>
         </View>
 
@@ -1427,6 +1428,7 @@ const styles = StyleSheet.create({
     padding: spacing.md, backgroundColor: colors.surface, borderRadius: radius.sm,
     borderWidth: 1, borderColor: colors.border,
   },
+  lessonLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 6 },
   revealExplanationText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 22, color: colors.textSoft },
 
   funFactCard: {

@@ -137,6 +137,36 @@ export const en = {
     obsDesc: 'You answer by observing them from the outside. Handy, but less precise.',
   },
 
+  familyMap: {
+    title: 'Family map',
+    cta: '🗺️ See the family map',
+    needTwo: 'Type at least 2 people (you, your partner, your kids) to see the dynamics.',
+    centerTitle: "The household's center of gravity",
+    gut: 'Gut · instinct, action, anger',
+    heart: 'Heart · emotion, image, relating',
+    head: 'Head · mind, fear, anticipation',
+    overlooked: "{{name}} is the only one on their side — often the least-heard voice. Worth listening to on purpose.",
+    dynamicsTitle: 'The dynamics, pair by pair',
+    frictionLabel: '⚡ Friction',
+    strengthLabel: '✨ Strengths',
+  },
+
+  checkin: {
+    title: 'How are they doing?',
+    cta: '🌡️ How are they doing right now?',
+    pick: 'Who would you like to check in on?',
+    intro: 'A read on the moment, not a label. Trust your own sense.',
+    me: 'Me',
+    questionFor: 'How is {{name}} doing right now?',
+    stressLabel: 'If you see more of this (a stressed moment)',
+    securityLabel: "Good sign (they're in a good place)",
+    tryLabel: '✅ Try this',
+    avoidLabel: '🚫 Avoid',
+    hedge: 'It might be nothing — tiredness, hunger, a rough day. A hint to understand, never a verdict.',
+    back: 'Someone else',
+    empty: 'Type a child or a close adult first to use the radar.',
+  },
+
   second: {
     cta: '🔎 Have someone close check it',
     ctaHint: "Typing yourself is hard — check your profile against a close person's view.",
@@ -421,7 +451,8 @@ export const en = {
   // Sherlock Files / Case files screen
   dossiers: {
     hubTitle: 'The Sherlock Files',
-    hubSubtitle: 'Learn to recognize profiles — playfully',
+    hubSubtitle: 'Learn to recognize the 9 ways of being — and what sets them apart',
+    lessonLabel: '💡 What this reveals',
     rankCurrent: 'Current rank',
     rankXp: 'Sherlock XP',
     rankUntil: 'until',
