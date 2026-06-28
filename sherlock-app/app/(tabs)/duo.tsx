@@ -389,14 +389,18 @@ export default function DuoScreen() {
         {quickPairs.length > 0 && (
           <View style={styles.shortcutsRow}>
             <Text style={styles.shortcutsLabel}>{t('duo.shortcuts')}</Text>
-            <View style={styles.shortcutsChips}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.shortcutsChips}
+            >
               {quickPairs.map((c) => (
                 <Pressable
                   key={c.id}
                   onPress={() => {
                     setRoleA('adulte');
                     setTypeA(family!.self!.type!);
-                    setRoleB('enfant');
+                    setRoleB(c.kind === 'adult' ? 'adulte' : 'enfant');
                     setTypeB(c.type!);
                   }}
                   style={({ pressed }) => [styles.shortcutChip, pressed && { opacity: 0.7 }]}
@@ -404,7 +408,7 @@ export default function DuoScreen() {
                   <Text style={styles.shortcutChipText}>{t('family.me')} ↔ {c.name}</Text>
                 </Pressable>
               ))}
-            </View>
+            </ScrollView>
           </View>
         )}
 
@@ -594,7 +598,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted, letterSpacing: 0.8, textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
-  shortcutsChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  shortcutsChips: { flexDirection: 'row', gap: 8, paddingRight: spacing.md },
   shortcutChip: {
     paddingHorizontal: 12, paddingVertical: 8,
     borderRadius: radius.full,

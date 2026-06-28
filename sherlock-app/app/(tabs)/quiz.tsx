@@ -473,6 +473,7 @@ export default function QuizScreen() {
             style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
           >
             <Text style={styles.secondCtaText}>{t('second.cta')}</Text>
+            <Text style={styles.secondCtaHint}>{t('second.ctaHint')}</Text>
           </Pressable>
         )}
 
@@ -956,6 +957,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.accent },
+  secondCtaHint: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
   cmpRow: {
     backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1,
     borderColor: colors.border, padding: spacing.md, gap: 6,

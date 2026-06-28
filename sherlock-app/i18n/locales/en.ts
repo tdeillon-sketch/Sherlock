@@ -139,6 +139,7 @@ export const en = {
 
   second: {
     cta: '🔎 Have someone close check it',
+    ctaHint: "Typing yourself is hard — check your profile against a close person's view.",
     introTitle: "A close person's view",
     introBody: 'Typing yourself is hard. Hand the phone to someone who knows you well: a few questions about you, then we compare their view with yours.',
     introStart: 'Hand over the phone',

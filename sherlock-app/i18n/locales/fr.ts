@@ -144,6 +144,7 @@ export const fr = {
 
   second: {
     cta: '🔎 Faire vérifier par un proche',
+    ctaHint: "Se typer soi-même est difficile : confronte ton profil au regard d'un proche.",
     introTitle: "Le regard d'un proche",
     introBody: 'Se typer soi-même est difficile. Passez le téléphone à un proche qui vous connaît bien : quelques questions sur vous, puis on compare son regard au vôtre.',
     introStart: 'Passer le téléphone',
