@@ -1,9 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import {
-  getAuth, signInAnonymously, onAuthStateChanged, User,
+  getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, User,
   GoogleAuthProvider, OAuthProvider, signInWithCredential, signOut as fbSignOut,
   deleteUser,
 } from 'firebase/auth';
+// getReactNativePersistence ships in firebase's React Native build but is absent
+// from the default TS types — import it separately and suppress the type error.
+// @ts-ignore
+import { getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getFirestore,
   doc,
@@ -42,7 +47,19 @@ const firebaseConfig = {
 
 // ── Init ──
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+// Persist the auth session across app restarts. React Native has no browser
+// storage, so the default getAuth() keeps the session only in memory — the user
+// is logged out on every cold start. initializeAuth + AsyncStorage fixes that.
+// (Falls back to getAuth if auth is already initialized, e.g. on Fast Refresh.)
+export const auth = (() => {
+  try {
+    return initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
+  } catch {
+    return getAuth(app);
+  }
+})();
+
 export const db = getFirestore(app);
 
 // ── Auth helpers ──
