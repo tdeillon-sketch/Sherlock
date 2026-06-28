@@ -10,7 +10,7 @@ import {
 import { getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  getFirestore,
+  initializeFirestore,
   doc,
   getDoc,
   setDoc,
@@ -60,7 +60,10 @@ export const auth = (() => {
   }
 })();
 
-export const db = getFirestore(app);
+// ignoreUndefinedProperties: drop undefined fields on write (e.g. a profile saved
+// without an age) instead of throwing "Unsupported field value: undefined", which
+// previously made age-less profile saves fail silently (caught by .catch).
+export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 
 // ── Auth helpers ──
 export async function signInAnon(): Promise<User> {

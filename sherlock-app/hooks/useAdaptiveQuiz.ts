@@ -176,6 +176,17 @@ function pickStmtId(type: EnneaType, ageBand: AgeBand, used: Set<string>): strin
   return pool[Math.floor(Math.random() * pool.length)].id;
 }
 
+function buildLikertForTypes(types: EnneaType[], ageBand: AgeBand, used: Set<string>): LikertPage {
+  const ids: string[] = [];
+  for (const t of types) {
+    const id = pickStmtId(t, ageBand, used);
+    if (id) { ids.push(id); used.add(id); }
+  }
+  const responses: Record<string, number> = {};
+  ids.forEach(id => { responses[id] = 0; });
+  return { kind: 'likert', stmtIds: ids, responses };
+}
+
 function buildLikertPage1(ageBand: AgeBand, used: Set<string>): LikertPage {
   const ids: string[] = [];
   for (const t of [1, 3, 5, 7, 9] as EnneaType[]) {
@@ -320,6 +331,13 @@ function buildNextPage(
 
   // After wing page, we're done
   if (hasWing) return null;
+
+  // Observed-adult mode ('adulte-obs'): 3 lighter intro pages (triplets of 3)
+  // instead of 2 dense pages of 5, because the observed statements are longer.
+  if (ageBand === 'adulte-obs') {
+    const triplets: EnneaType[][] = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+    if (pageIdx < triplets.length) return buildLikertForTypes(triplets[pageIdx], ageBand, used);
+  }
 
   // Page 0 : Likert 1
   if (pageIdx === 0) return buildLikertPage1(ageBand, used);
@@ -492,7 +510,9 @@ export function useAdaptiveQuiz() {
   // Init first page when entering 'questions'
   useEffect(() => {
     if (phase === 'questions' && ageBand && pages.length === 0) {
-      const firstPage = buildLikertPage1(ageBand, new Set());
+      const firstPage = ageBand === 'adulte-obs'
+        ? buildLikertForTypes([1, 2, 3], ageBand, new Set())
+        : buildLikertPage1(ageBand, new Set());
       setPages([firstPage]);
       setPageIndex(0);
     }
@@ -610,9 +630,14 @@ export function useAdaptiveQuiz() {
     }
     const obsTotal = cands.reduce((a, t) => a + Math.max(0, obs[t]), 0) || 1;
     const observerTop = cands.slice().sort((a, b) => obs[b] - obs[a])[0];
+    // Renormalize the self score over the SAME 3 candidates so the "you vs them"
+    // bars share a denominator (else self% is over 9 types, obs% over 3 → misleading).
+    const selfRaw: Record<number, number> = {};
+    cands.forEach(t => { selfRaw[t] = result.allScores.find(s => s.type === t)?.score ?? 0; });
+    const selfTotal = cands.reduce((a, t) => a + Math.max(0, selfRaw[t]), 0) || 1;
     const candidates = cands.map(t => ({
       type: t,
-      selfPercent: result.allScores.find(s => s.type === t)?.percent ?? 0,
+      selfPercent: Math.round((Math.max(0, selfRaw[t]) / selfTotal) * 100),
       obsPercent: Math.round((Math.max(0, obs[t]) / obsTotal) * 100),
     }));
     setSecondResult({

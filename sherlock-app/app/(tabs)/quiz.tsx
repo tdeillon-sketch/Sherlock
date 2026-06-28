@@ -182,6 +182,7 @@ export default function QuizScreen() {
     return (
       <SaveProfileScreen
         existingProfiles={childProfiles}
+        isAdult={subject !== 'enfant'}
         onCancel={backToResult}
         onSave={async (name, age, existingId) => {
           await saveChildResult(name, age, existingId);
@@ -524,9 +525,10 @@ export default function QuizScreen() {
 // ─────────────────────────────────────────────
 
 function SaveProfileScreen({
-  existingProfiles, onCancel, onSave,
+  existingProfiles, isAdult, onCancel, onSave,
 }: {
   existingProfiles: ChildProfile[];
+  isAdult?: boolean;
   onCancel: () => void;
   onSave: (name: string, age: number | undefined, existingId: string | undefined) => void;
 }) {
@@ -580,18 +582,20 @@ function SaveProfileScreen({
         placeholderTextColor={colors.textDim}
         style={styles.saveInput}
       />
-      <TextInput
-        value={ageStr}
-        onChangeText={setAgeStr}
-        placeholder={t('saveProfile.agePlaceholder')}
-        placeholderTextColor={colors.textDim}
-        keyboardType="numeric"
-        style={styles.saveInput}
-      />
+      {!isAdult && (
+        <TextInput
+          value={ageStr}
+          onChangeText={setAgeStr}
+          placeholder={t('saveProfile.agePlaceholder')}
+          placeholderTextColor={colors.textDim}
+          keyboardType="numeric"
+          style={styles.saveInput}
+        />
+      )}
 
       <Pressable
         onPress={() => {
-          const age = ageStr ? parseInt(ageStr, 10) : undefined;
+          const age = isAdult ? undefined : (ageStr ? parseInt(ageStr, 10) : undefined);
           onSave(name, age, selectedExisting ?? undefined);
         }}
         disabled={!canSave}
