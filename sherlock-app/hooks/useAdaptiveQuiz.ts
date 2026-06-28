@@ -31,11 +31,15 @@ export type { AgeBand, EnneaType, QuizSubject } from '../constants/quiz_v3';
 // ── Phases (même shape que v2) ────────────────────────────────────
 export type AdaptivePhase =
   | 'select_subject'
+  | 'proche_mode'       // sous-choix "un proche" : il répond / je le décris
   | 'age_picker'
   | 'questions'
   | 'result'
   | 'save_profile'
-  | 'history';
+  | 'history'
+  | 'second_intro'      // "second avis" : passe le tél à un proche
+  | 'second_questions'  // round court (pool observé, types candidats)
+  | 'second_result';    // accord / divergence
 
 // ── Page types ────────────────────────────────────────────────────
 export interface LikertPage {
@@ -80,6 +84,14 @@ export interface AdaptiveResult {
   confidence: number;           // 0..100
   insightKind: InsightKind;
   allScores: { type: EnneaType; score: number; percent: number }[];
+}
+
+// ── Second avis (regard d'un proche sur le résultat "self") ────────
+export interface SecondOpinionResult {
+  selfTop: EnneaType;
+  observerTop: EnneaType;
+  agree: boolean;
+  candidates: { type: EnneaType; selfPercent: number; obsPercent: number }[];
 }
 
 // ── Constantes ────────────────────────────────────────────────────
@@ -258,6 +270,27 @@ function buildWingPage(ageBand: AgeBand, topType: EnneaType): WingPage {
 }
 
 /**
+ * "Second avis" — a SHORT observer round on the self-result's candidate types.
+ * Two likert pages, one observed-adult statement per candidate type each.
+ * Always uses the 'adulte-obs' pool (a close person rating statements about you).
+ */
+function buildSecondOpinionPages(candidates: EnneaType[]): LikertPage[] {
+  const used = new Set<string>();
+  const pages: LikertPage[] = [];
+  for (let p = 0; p < 2; p++) {
+    const ids: string[] = [];
+    for (const t of candidates) {
+      const id = pickStmtId(t, 'adulte-obs', used);
+      if (id) { ids.push(id); used.add(id); }
+    }
+    const responses: Record<string, number> = {};
+    ids.forEach(id => { responses[id] = 0; });
+    pages.push({ kind: 'likert', stmtIds: ids, responses });
+  }
+  return pages;
+}
+
+/**
  * A budget/final page is only completable if its budget can actually be spent:
  * the user must reach Σ|v| === budget, and each statement caps at a per-page max
  * (mirrors BudgetStepperPage: 5 for budget, 6 for final). If the statement pool
@@ -299,7 +332,13 @@ function buildNextPage(
   const answered = pages.flatMap(p => Object.values(p.responses)).filter(v => v !== 0).length;
   const c = computeConfidenceData(scores, answered);
   const atMax = pageIdx >= MAX_PAGES - 1; // -1 because we'll still add wing
-  const goToWing = () => (c.top ? buildWingPage(ageBand, c.top) : null);
+  const goToWing = () => {
+    if (!c.top) return null;
+    // Skip the wing step entirely when the band has no wing statements
+    // (e.g. 'adulte-obs'): an empty wing page would dead-end / show nothing.
+    const wp = buildWingPage(ageBand, c.top);
+    return wp.stmtIds.length ? wp : null;
+  };
 
   // Early stop: high confidence AND min pages → go to wing
   if (pageIdx >= MIN_PAGES && c.pct >= EARLY_STOP_PCT) {
@@ -405,6 +444,11 @@ export function useAdaptiveQuiz() {
   const [childProfiles, setChildProfiles] = useState<ChildProfile[]>([]);
   const [profilesLoaded, setProfilesLoaded] = useState(false);
 
+  // Second avis (regard d'un proche)
+  const [secondPages, setSecondPages] = useState<Page[]>([]);
+  const [secondPageIndex, setSecondPageIndex] = useState(0);
+  const [secondResult, setSecondResult] = useState<SecondOpinionResult | null>(null);
+
   // Load profiles on mount
   useEffect(() => {
     const uid = auth.currentUser?.uid;
@@ -427,13 +471,17 @@ export function useAdaptiveQuiz() {
   // ── Transitions ──
   const selectSubject = useCallback((s: QuizSubject) => {
     setSubject(s);
-    if (s === 'self') {
-      setAgeBand('adulte');
-      setPhase('questions');
-    } else {
+    if (s === 'enfant') {
       setPhase('age_picker');
+      return;
     }
+    // self / proche-self → pool adulte (1re pers.) ; proche-obs → pool observé
+    setAgeBand(s === 'proche-obs' ? 'adulte-obs' : 'adulte');
+    setPhase('questions');
   }, []);
+
+  // "Un proche" → sous-choix (il répond / je le décris)
+  const goToProcheMode = useCallback(() => { setSubject(null); setPhase('proche_mode'); }, []);
 
   const selectAge = useCallback((age: number) => {
     setChildAge(age);
@@ -506,6 +554,9 @@ export function useAdaptiveQuiz() {
     setPages([]);
     setPageIndex(0);
     setResult(null);
+    setSecondPages([]);
+    setSecondPageIndex(0);
+    setSecondResult(null);
   }, []);
 
   const restartSameSubject = useCallback(() => {
@@ -519,6 +570,62 @@ export function useAdaptiveQuiz() {
   const goToHistory = useCallback(() => setPhase('history'), []);
   const backToResult = useCallback(() => { if (result) setPhase('result'); }, [result]);
 
+  // ── Second avis (regard d'un proche sur le résultat "self") ──
+  const startSecondOpinion = useCallback(() => {
+    if (!result) return;
+    const cands = [result.topType, result.secondType, result.thirdType];
+    setSecondPages(buildSecondOpinionPages(cands));
+    setSecondPageIndex(0);
+    setSecondResult(null);
+    setPhase('second_intro');
+  }, [result]);
+
+  const beginSecondQuestions = useCallback(() => setPhase('second_questions'), []);
+
+  const updateSecondResponse = useCallback((stmtId: string, value: number) => {
+    setSecondPages(prev => {
+      const next = [...prev];
+      const page = { ...next[secondPageIndex] };
+      page.responses = { ...page.responses, [stmtId]: value };
+      next[secondPageIndex] = page as Page;
+      return next;
+    });
+  }, [secondPageIndex]);
+
+  const advanceSecondPage = useCallback(() => {
+    if (secondPageIndex < secondPages.length - 1) {
+      setSecondPageIndex(i => i + 1);
+      return;
+    }
+    if (!result) return;
+    const cands = [result.topType, result.secondType, result.thirdType];
+    const obs: Record<number, number> = {};
+    cands.forEach(t => { obs[t] = 0; });
+    for (const pg of secondPages) {
+      for (const sid of pg.stmtIds) {
+        const v = pg.responses[sid] ?? 0;
+        const stmt = getStatements('adulte-obs').find(s => s.id === sid);
+        if (stmt && obs[stmt.t] !== undefined) obs[stmt.t] += v;
+      }
+    }
+    const obsTotal = cands.reduce((a, t) => a + Math.max(0, obs[t]), 0) || 1;
+    const observerTop = cands.slice().sort((a, b) => obs[b] - obs[a])[0];
+    const candidates = cands.map(t => ({
+      type: t,
+      selfPercent: result.allScores.find(s => s.type === t)?.percent ?? 0,
+      obsPercent: Math.round((Math.max(0, obs[t]) / obsTotal) * 100),
+    }));
+    setSecondResult({
+      selfTop: result.topType,
+      observerTop,
+      agree: observerTop === result.topType,
+      candidates,
+    });
+    setPhase('second_result');
+  }, [secondPages, secondPageIndex, result]);
+
+  const secondCurrentPage = secondPages[secondPageIndex] ?? null;
+
   const saveChildResult = useCallback(async (
     childName: string,
     age?: number,
@@ -528,7 +635,7 @@ export function useAdaptiveQuiz() {
     if (!uid || !subject || !result) return;
     const entry: ChildProfileEntry = {
       date: new Date().toISOString(),
-      mode: subject === 'self' ? 'adulte' : (ageBand ?? 'enfant'),
+      mode: subject === 'enfant' ? (ageBand ?? 'enfant') : 'adulte',
       topType: result.topType,
       topPercent: result.topPercent,
       secondType: result.secondType,
@@ -546,6 +653,7 @@ export function useAdaptiveQuiz() {
         id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         name: childName.trim() || 'Sans nom',
         age,
+        kind: subject === 'enfant' ? 'child' : 'adult',
         history: [entry],
       };
       updated = [...childProfiles, newProfile];
@@ -584,6 +692,7 @@ export function useAdaptiveQuiz() {
     // Transitions
     selectSubject,
     selectAge,
+    goToProcheMode,
 
     // Page actions
     updateResponse,
@@ -598,5 +707,15 @@ export function useAdaptiveQuiz() {
     backToResult,
     saveChildResult,
     deleteChildProfile,
+
+    // Second avis (regard d'un proche)
+    startSecondOpinion,
+    beginSecondQuestions,
+    updateSecondResponse,
+    advanceSecondPage,
+    secondCurrentPage,
+    secondPageIndex,
+    secondTotal: secondPages.length,
+    secondResult,
   };
 }

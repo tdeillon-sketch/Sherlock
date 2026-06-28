@@ -286,7 +286,7 @@ export default function DuoScreen() {
     }, []),
   );
   const quickPairs = (family?.self?.type != null)
-    ? family.children.filter((c) => c.type != null)
+    ? [...family.adults, ...family.children].filter((c) => c.type != null)
     : [];
 
   const context = deriveContext(roleA, roleB);

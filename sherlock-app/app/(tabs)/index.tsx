@@ -41,7 +41,7 @@ export default function HomeScreen() {
   );
 
   const familyMembers = family
-    ? [...(family.self ? [family.self] : []), ...family.children].filter((m) => m.type != null)
+    ? [...(family.self ? [family.self] : []), ...family.adults, ...family.children].filter((m) => m.type != null)
     : [];
 
   const openSubscribe = () => setSubscribeOpen(true);
@@ -199,6 +199,12 @@ export default function HomeScreen() {
                     <Text style={styles.familyType}>
                       {t('result.type')} {typeNum}{m.wingType ? `w${m.wingType}` : ''} · {typeName}
                     </Text>
+                    {m.kind === 'adult' && (
+                      <Text style={styles.familyType}>👥 {t('subject.procheTitle')}</Text>
+                    )}
+                    {m.kind === 'child' && m.age != null && (
+                      <Text style={styles.familyType}>🧒 {t('subject.yearsOld', { n: m.age })}</Text>
+                    )}
                   </View>
                   <Text style={styles.familyChevron}>›</Text>
                 </Pressable>

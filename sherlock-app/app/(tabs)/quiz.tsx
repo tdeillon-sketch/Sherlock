@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { TYPES } from '../../constants/data';
 import { useAdaptiveQuiz } from '../../hooks/useAdaptiveQuiz';
+import type { SecondOpinionResult } from '../../hooks/useAdaptiveQuiz';
 import { trackScreen } from '../../constants/firebase';
 import RadarChart from '../../components/RadarChart';
 import AdaptiveQuestion from '../../components/AdaptiveQuestion';
@@ -44,17 +45,21 @@ export default function QuizScreen() {
   const {
     phase, subject, ageBand, childAge, currentPage, scores,
     stepIndex, estimatedTotal, result, childProfiles, canAdvance, pageIndex,
-    selectSubject, selectAge,
+    selectSubject, selectAge, goToProcheMode,
     updateResponse, advancePage, goToPrevPage,
     reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
     saveChildResult, deleteChildProfile,
+    startSecondOpinion, beginSecondQuestions, updateSecondResponse,
+    advanceSecondPage, secondCurrentPage, secondPageIndex, secondTotal, secondResult,
   } = useAdaptiveQuiz();
 
   // Save quiz result to Firebase au passage en 'result'
   const savedRef = useRef(false);
   useEffect(() => {
-    if (phase === 'result' && subject && result && !savedRef.current) {
+    // On n'enregistre dans l'historique perso que SES propres tests (soi / enfant).
+    // Un proche se sauvegarde explicitement comme profil nommé (pas d'auto-save).
+    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && !savedRef.current) {
       savedRef.current = true;
       const uid = auth.currentUser?.uid;
       if (uid) {
@@ -108,6 +113,17 @@ export default function QuizScreen() {
               </View>
             </Pressable>
           ))}
+
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={goToProcheMode}
+          >
+            <Text style={styles.modeEmoji}>👥</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('subject.procheTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('subject.procheDesc')}</Text>
+            </View>
+          </Pressable>
 
           {childProfiles.length > 0 && (
             <Pressable style={styles.historyBtn} onPress={goToHistory}>
@@ -175,6 +191,122 @@ export default function QuizScreen() {
     );
   }
 
+  // ─────────────────────────────────────────────
+  //  PHASE: proche_mode (il répond / je le décris)
+  // ─────────────────────────────────────────────
+  if (phase === 'proche_mode') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Pressable onPress={reset} style={styles.backLink}>
+            <Text style={styles.backLinkText}>‹ {t('common.back')}</Text>
+          </Pressable>
+          <Text style={styles.selectTitle}>{t('proche.title')}</Text>
+          <Text style={styles.selectSub}>{t('proche.subtitle')}</Text>
+
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={() => selectSubject('proche-self')}
+          >
+            <Text style={styles.modeEmoji}>🗣️</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('proche.selfTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('proche.selfDesc')}</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={() => selectSubject('proche-obs')}
+          >
+            <Text style={styles.modeEmoji}>👀</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('proche.obsTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('proche.obsDesc')}</Text>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_intro (passe le tél à un proche)
+  // ─────────────────────────────────────────────
+  if (phase === 'second_intro') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Text style={styles.modeEmoji}>👥</Text>
+          <Text style={styles.selectTitle}>{t('second.introTitle')}</Text>
+          <Text style={styles.selectSub}>{t('second.introBody')}</Text>
+          <Pressable
+            onPress={() => { hapticLight(); beginSecondQuestions(); }}
+            style={({ pressed }) => [styles.saveBtn, { width: '100%' }, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.saveBtnText}>{t('second.introStart')}</Text>
+          </Pressable>
+          <Pressable onPress={backToResult} style={styles.skipBtn}>
+            <Text style={styles.skipBtnText}>{t('second.introCancel')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_questions (round court, pool observé)
+  // ─────────────────────────────────────────────
+  if (phase === 'second_questions' && secondCurrentPage) {
+    const last = secondPageIndex >= secondTotal - 1;
+    return (
+      <View style={styles.narrowContainer}>
+        <View style={styles.quizTopBar}>
+          <Pressable onPress={backToResult} style={styles.quizBackBtn}>
+            <Text style={styles.quizBackBtnText}>‹</Text>
+          </Pressable>
+          <Text style={styles.quizTopBarTitle}>{t('subject.headerProche')}</Text>
+          <View style={styles.quizBackBtn} />
+        </View>
+        <ScrollView
+          style={styles.scrollFlex}
+          contentContainerStyle={styles.narrowScroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[styles.progressCaption, { marginTop: spacing.md }]}>
+            {t('second.pageN', { n: secondPageIndex + 1 })}
+          </Text>
+          <View style={styles.questionArea}>
+            <AdaptiveQuestion
+              page={secondCurrentPage}
+              pageIndex={secondPageIndex}
+              ageBand={'adulte-obs'}
+              onChange={updateSecondResponse}
+            />
+            <View style={styles.navRow}>
+              <View style={{ width: 100 }} />
+              <Pressable
+                onPress={() => { hapticLight(); advanceSecondPage(); }}
+                style={({ pressed }) => [styles.navBtn, styles.navBtnPrimary, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.navBtnPrimaryText}>
+                  {last ? t('second.seeResult') : t('quiz.nextPage')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_result (accord / divergence)
+  // ─────────────────────────────────────────────
+  if (phase === 'second_result' && secondResult) {
+    return <SecondResultScreen sr={secondResult} onDone={backToResult} />;
+  }
+
   // ── Common header pour le flow actif ──
   // Confirm before discarding an in-progress quiz (back during questions wipes
   // all answers). On result/other phases, just reset.
@@ -196,9 +328,11 @@ export default function QuizScreen() {
   const subjectLabel =
     subject === 'self'
       ? t('subject.headerSelf')
-      : childAge != null
-        ? t('subject.headerChildAge', { age: childAge })
-        : t('subject.headerChild');
+      : (subject === 'proche-self' || subject === 'proche-obs')
+        ? t('subject.headerProche')
+        : childAge != null
+          ? t('subject.headerChildAge', { age: childAge })
+          : t('subject.headerChild');
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
@@ -209,7 +343,11 @@ export default function QuizScreen() {
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
           <Text style={styles.legendText}>
-            {subject === 'self' ? t('subject.legendSelf') : t('subject.legendChild')}
+            {subject === 'self'
+              ? t('subject.legendSelf')
+              : (subject === 'proche-self' || subject === 'proche-obs')
+                ? t('subject.legendProche')
+                : t('subject.legendChild')}
           </Text>
         </View>
       )}
@@ -309,7 +447,7 @@ export default function QuizScreen() {
       insightKind: result.insightKind,
     };
     // mode pour QuizResult : 'enfant' si subject=enfant, 'adulte' si self
-    const legacyMode = subject === 'self' ? 'adulte' : 'enfant';
+    const legacyMode = subject === 'enfant' ? 'enfant' : 'adulte';
 
     mainContent = (
       <Animated.View
@@ -326,6 +464,16 @@ export default function QuizScreen() {
           onNewChild={restartSameSubject}
           onReset={reset}
         />
+
+        {/* Second avis : proposé seulement pour l'auto-évaluation */}
+        {subject === 'self' && (
+          <Pressable
+            onPress={() => { hapticLight(); startSecondOpinion(); }}
+            style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.secondCtaText}>{t('second.cta')}</Text>
+          </Pressable>
+        )}
 
         {/* Score de confiance (sans bouton "Affiner" — retiré en v3) */}
         <ConfidenceBar confidence={result.confidence} />
@@ -547,6 +695,63 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
 }
 
 // ─────────────────────────────────────────────
+//  Second opinion result (you vs a close person)
+// ─────────────────────────────────────────────
+
+function SecondResultScreen({ sr, onDone }: { sr: SecondOpinionResult; onDone: () => void }) {
+  const { t, locale } = useT();
+  const agree = sr.agree;
+  return (
+    <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
+      <View style={styles.quizTopBar}>
+        <Pressable onPress={onDone} style={styles.quizBackBtn}>
+          <Text style={styles.quizBackBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.quizTopBarTitle}>{t('second.resultTitle')}</Text>
+        <View style={styles.quizBackBtn} />
+      </View>
+
+      <Text style={styles.saveTitle}>{agree ? t('second.agreeTitle') : t('second.divergeTitle')}</Text>
+      <Text style={styles.saveSub}>
+        {agree
+          ? t('second.agreeBody', { self: sr.selfTop })
+          : t('second.divergeBody', { self: sr.selfTop, obs: sr.observerTop })}
+      </Text>
+
+      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
+        {sr.candidates.map((c) => {
+          const v3 = TYPES_V3[c.type as EnneaType];
+          const name = v3 ? getTypeText(v3, 'name', locale) : (TYPES[c.type - 1]?.name ?? '');
+          return (
+            <View key={c.type} style={styles.cmpRow}>
+              <Text style={styles.cmpType}>{t('result.type')} {c.type} · {name}</Text>
+              <View style={styles.cmpBarLine}>
+                <Text style={styles.cmpBarLabel}>{t('second.youLabel')}</Text>
+                <View style={styles.cmpTrack}>
+                  <View style={[styles.cmpFill, { width: `${c.selfPercent}%` as any, backgroundColor: colors.accent }]} />
+                </View>
+                <Text style={styles.cmpPct}>{c.selfPercent}%</Text>
+              </View>
+              <View style={styles.cmpBarLine}>
+                <Text style={styles.cmpBarLabel}>{t('second.themLabel')}</Text>
+                <View style={styles.cmpTrack}>
+                  <View style={[styles.cmpFill, { width: `${c.obsPercent}%` as any, backgroundColor: TYPE_COLORS[c.type] }]} />
+                </View>
+                <Text style={styles.cmpPct}>{c.obsPercent}%</Text>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+
+      <Pressable onPress={onDone} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.85 }]}>
+        <Text style={styles.saveBtnText}>{t('second.done')}</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+// ─────────────────────────────────────────────
 //  STYLES
 // ─────────────────────────────────────────────
 
@@ -738,4 +943,23 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 13, color: colors.accent,
     fontWeight: '600', marginTop: spacing.sm, textAlign: 'center',
   },
+
+  // Second avis
+  secondCta: {
+    marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.sm,
+    backgroundColor: colors.bgLight, borderWidth: 1, borderColor: colors.accent,
+    borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+  },
+  secondCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.accent },
+  cmpRow: {
+    backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1,
+    borderColor: colors.border, padding: spacing.md, gap: 6,
+  },
+  cmpType: { fontFamily: fonts.serif, fontSize: 15, color: colors.text, marginBottom: 2 },
+  cmpBarLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  cmpBarLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, width: 64 },
+  cmpTrack: { flex: 1, height: 8, backgroundColor: colors.subtle06, borderRadius: 4, overflow: 'hidden' },
+  cmpFill: { height: 8, borderRadius: 4 },
+  cmpPct: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, width: 36, textAlign: 'right' },
 });

@@ -122,6 +122,37 @@ export const en = {
     legendSelf: 'Your profile',
     legendChild: "Your child's profile",
     yearsOld: 'age {{n}}',
+    procheTitle: 'Someone close',
+    procheDesc: 'Type your partner, a friend, a parent…',
+    headerProche: '👥 Someone close',
+    legendProche: "Your loved one's profile",
+  },
+
+  proche: {
+    title: 'How would you like to proceed?',
+    subtitle: 'Two ways to type someone close.',
+    selfTitle: 'They answer themselves',
+    selfDesc: 'Most reliable: hand them the phone and let them answer for themselves.',
+    obsTitle: 'I describe them',
+    obsDesc: 'You answer by observing them from the outside. Handy, but less precise.',
+  },
+
+  second: {
+    cta: '🔎 Have someone close check it',
+    introTitle: "A close person's view",
+    introBody: 'Typing yourself is hard. Hand the phone to someone who knows you well: a few questions about you, then we compare their view with yours.',
+    introStart: 'Hand over the phone',
+    introCancel: 'Later',
+    pageN: 'Question {{n}}',
+    seeResult: 'See the comparison',
+    resultTitle: 'You vs someone close',
+    agreeTitle: '✅ Your views agree',
+    agreeBody: 'You see yourself as Type {{self}}, and so does your loved one. A good sign of reliability.',
+    divergeTitle: '🤔 Your views differ',
+    divergeBody: "You see yourself as Type {{self}}; your loved one sees you more as Type {{obs}}. Neither is 'right' — it's a great basis for conversation.",
+    youLabel: 'You',
+    themLabel: 'Them',
+    done: 'Done',
   },
 
   age: {

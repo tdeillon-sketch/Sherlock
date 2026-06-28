@@ -323,6 +323,8 @@ export interface ChildProfile {
   name: string;
   /** Optional age at the time the profile was created */
   age?: number;
+  /** 'child' (default, legacy) or 'adult' for a typed close person (partner, friend…) */
+  kind?: 'child' | 'adult';
   history: ChildProfileEntry[];
 }
 
@@ -345,7 +347,7 @@ export async function saveChildProfiles(uid: string, profiles: ChildProfile[]): 
 // ═══════════════════════════════════════════════════════════════
 
 export interface FamilyMember {
-  kind: 'self' | 'child';
+  kind: 'self' | 'child' | 'adult';
   id: string;            // 'self' or the child profile id
   name: string;          // child name; '' for self (UI supplies the label)
   type: number | null;   // latest top type
@@ -358,9 +360,10 @@ export interface FamilyMember {
 export interface Family {
   self: FamilyMember | null;
   children: FamilyMember[];
+  adults: FamilyMember[];   // typed close persons (partner, friend…)
 }
 
-/** Load the user's own type (latest 'adulte' quiz) + their saved child profiles. */
+/** Load the user's own type (latest 'adulte' quiz) + saved profiles (children + adults). */
 export async function loadFamily(uid: string): Promise<Family> {
   const data = await getUserData(uid);
   const selfResults = (data?.quizResults ?? []).filter(r => r.mode === 'adulte');
@@ -371,16 +374,18 @@ export async function loadFamily(uid: string): Promise<Family> {
     testCount: selfResults.length, lastDate: lastSelf.completedAt ?? null,
   } : null;
   const profiles: ChildProfile[] = Array.isArray((data as any)?.childProfiles) ? (data as any).childProfiles : [];
-  const children: FamilyMember[] = profiles.map(p => {
+  const toMember = (p: ChildProfile, kind: 'child' | 'adult'): FamilyMember => {
     const hist = Array.isArray(p.history) ? p.history : [];
     const last = hist.length ? hist[hist.length - 1] : null;
     return {
-      kind: 'child' as const, id: p.id, name: p.name,
+      kind, id: p.id, name: p.name,
       type: last?.topType ?? null, wingType: last?.wingType ?? null,
       age: p.age, testCount: hist.length, lastDate: last?.date ?? null,
     };
-  });
-  return { self, children };
+  };
+  const children = profiles.filter(p => p.kind !== 'adult').map(p => toMember(p, 'child'));
+  const adults = profiles.filter(p => p.kind === 'adult').map(p => toMember(p, 'adult'));
+  return { self, children, adults };
 }
 
 // ═══════════════════════════════════════════════════════════════

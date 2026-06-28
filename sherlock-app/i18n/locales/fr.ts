@@ -127,6 +127,37 @@ export const fr = {
     legendSelf: 'Votre profil',
     legendChild: 'Profil de votre enfant',
     yearsOld: '{{n}} ans',
+    procheTitle: 'Un proche',
+    procheDesc: 'Typer votre conjoint, un ami, un parent…',
+    headerProche: '👥 Un proche',
+    legendProche: 'Profil de votre proche',
+  },
+
+  proche: {
+    title: 'Comment voulez-vous procéder ?',
+    subtitle: 'Deux façons de typer un proche.',
+    selfTitle: "C'est lui/elle qui répond",
+    selfDesc: 'Le plus fiable : passez-lui le téléphone, il/elle répond pour lui/elle-même.',
+    obsTitle: 'Je le/la décris',
+    obsDesc: "Vous répondez en l'observant de l'extérieur. Pratique, mais moins précis.",
+  },
+
+  second: {
+    cta: '🔎 Faire vérifier par un proche',
+    introTitle: "Le regard d'un proche",
+    introBody: 'Se typer soi-même est difficile. Passez le téléphone à un proche qui vous connaît bien : quelques questions sur vous, puis on compare son regard au vôtre.',
+    introStart: 'Passer le téléphone',
+    introCancel: 'Plus tard',
+    pageN: 'Question {{n}}',
+    seeResult: 'Voir la comparaison',
+    resultTitle: 'Vous vs un proche',
+    agreeTitle: '✅ Vos regards concordent',
+    agreeBody: 'Vous vous voyez Type {{self}}, et votre proche aussi. Bon signe de fiabilité.',
+    divergeTitle: '🤔 Vos regards diffèrent',
+    divergeBody: "Vous vous voyez Type {{self}}, votre proche vous voit plutôt Type {{obs}}. Ni l'un ni l'autre n'a « raison » — c'est une belle base de discussion.",
+    youLabel: 'Vous',
+    themLabel: 'Le proche',
+    done: 'Terminé',
   },
 
   // Quiz: age picker

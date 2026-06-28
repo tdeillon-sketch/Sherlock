@@ -19,8 +19,8 @@
 
 export type EnneaType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type TypeWeights = Partial<Record<EnneaType, number>>;
-export type AgeBand = '5-8' | '9-12' | '13-17' | 'adulte';
-export type QuizSubject = 'enfant' | 'self';
+export type AgeBand = '5-8' | '9-12' | '13-17' | 'adulte' | 'adulte-obs';
+export type QuizSubject = 'enfant' | 'self' | 'proche-self' | 'proche-obs';
 
 /** Determine l'age band à partir d'un age entier */
 export function ageToBand(age: number): AgeBand {
@@ -409,49 +409,122 @@ const STATEMENTS_13_17: Statement[] = [
   { id:'s3c_1317', t:3, e:'🎭', txt:'Il/elle s\'adapte à chaque groupe social pour y avoir sa place', txtEn:'They adapt to each social group to find their place', dim:'behavior' },
   { id:'s3d_1317', t:3, e:'⏭️', txt:'Il/elle met ses difficultés émotionnelles en pause pour avancer', txtEn:'They put their emotional difficulties on pause to keep going', dim:'shadow' },
   { id:'s3e_1317', t:3, e:'🏅', txt:'Sa valeur est liée à ses résultats scolaires, sportifs ou sociaux', txtEn:'Their worth is tied to their grades, sports, or social wins', dim:'belief' },
-  { id:'s3f_1317', t:3, e:'⚙️', txt:'Il/elle enchaîne projets, jobs, compétitions sans vraiment s\'arrêter', txtEn:'They line up projects, jobs, competitions without really stopping', dim:'stress' },
+  { id:'s3f_1317', t:3, e:'⚙️', txt:'Il/elle se pousse à toujours faire mieux que les autres, à être le/la meilleur·e', txtEn:'They push themselves to always outdo others, to be the best', dim:'stress' },
   // T4
   { id:'s4a_1317', t:4, e:'🫥', txt:'Il/elle se sent profondément différent·e, à part', txtEn:'They feel deeply different, set apart', dim:'identity' },
-  { id:'s4b_1317', t:4, e:'🌫️', txt:'Il/elle traverse des phases existentielles, se questionne sur le sens', txtEn:'They go through existential phases, question meaning', dim:'fear' },
+  { id:'s4b_1317', t:4, e:'🌫️', txt:'Il/elle traverse des phases de mélancolie, comme si quelque chose d\'essentiel lui manquait au fond', txtEn:'They go through phases of melancholy, as if something essential were missing deep inside', dim:'fear' },
   { id:'s4c_1317', t:4, e:'🎨', txt:'Ses émotions sont centrales, il/elle vit par elles, les assume pleinement', txtEn:'Their emotions are central — they live by them, fully claim them', dim:'emotion' },
   { id:'s4d_1317', t:4, e:'🌙', txt:'Il/elle cultive un style personnel marqué (musique, vêtements, esthétique)', txtEn:'They cultivate a marked personal style (music, clothes, aesthetic)', dim:'aesthetic' },
-  { id:'s4e_1317', t:4, e:'🌑', txt:'Il/elle supporte mal la routine, a besoin d\'intensité, de beau, de sens', txtEn:'They can\'t bear routine — they need intensity, beauty, meaning', dim:'shadow' },
+  { id:'s4e_1317', t:4, e:'🌑', txt:'La banalité l\'attriste — il/elle est en quête de beauté, de profondeur, pour se sentir vraiment vivant·e', txtEn:'Banality saddens them — they seek beauty and depth to feel truly alive', dim:'shadow' },
   { id:'s4f_1317', t:4, e:'🎭', txt:'Il/elle s\'exprime par l\'art, la musique, l\'écriture — sensibilité revendiquée', txtEn:'They express themselves through art, music, writing — sensitivity claimed', dim:'compul' },
   // T5
   { id:'s5a_1317', t:5, e:'🔋', txt:'Il/elle a besoin de beaucoup plus de solitude que ses pairs', txtEn:'They need much more solitude than their peers', dim:'behavior' },
-  { id:'s5b_1317', t:5, e:'🔬', txt:'Il/elle observe, analyse avant de s\'engager — peu impulsif·ve', txtEn:'They observe, analyze before committing — not impulsive', dim:'behavior' },
-  { id:'s5c_1317', t:5, e:'🏰', txt:'Il/elle protège farouchement sa vie privée, ses secrets', txtEn:'They fiercely protect their privacy, their secrets', dim:'compul' },
+  { id:'s5b_1317', t:5, e:'🔬', txt:'Il/elle décide seul·e, à partir de sa propre analyse — il/elle veut d\'abord tout comprendre', txtEn:'They decide on their own, from their own analysis — they want to understand everything first', dim:'behavior' },
+  { id:'s5c_1317', t:5, e:'🏰', txt:'Il/elle garde sa vie privée pour lui/elle, ne partage que ce qu\'il/elle veut bien', txtEn:'They keep their private life to themselves, share only what they choose to', dim:'compul' },
   { id:'s5d_1317', t:5, e:'🧠', txt:'Il/elle reste dans sa tête, semble parfois distant·e émotionnellement', txtEn:'They stay in their head, sometimes seem emotionally distant', dim:'shadow' },
   { id:'s5e_1317', t:5, e:'📚', txt:'Il/elle approfondit ses centres d\'intérêt à un niveau quasi-expert', txtEn:'They go expert-deep in their interests', dim:'behavior' },
   { id:'s5f_1317', t:5, e:'📡', txt:'Les situations socialement denses l\'épuisent, il/elle s\'en retire', txtEn:'Dense social situations exhaust them — they pull back', dim:'stress' },
   // T6
   { id:'s6a_1317', t:6, e:'⚠️', txt:'Il/elle anticipe les problèmes, envisage les pires scénarios', txtEn:'They anticipate problems, envision worst-case scenarios', dim:'voice' },
-  { id:'s6b_1317', t:6, e:'📋', txt:'Il/elle se prépare à fond pour les examens, les événements importants', txtEn:'They prepare hard for exams and important events', dim:'behavior' },
+  { id:'s6b_1317', t:6, e:'📋', txt:'Il/elle se sur-prépare pour les examens et événements importants, avec un plan B pour tout ce qui pourrait déraper', txtEn:'They over-prepare for exams and big events, with a backup plan for anything that could go wrong', dim:'behavior' },
   { id:'s6c_1317', t:6, e:'❓', txt:'Il/elle doute de ses décisions, sollicite l\'avis de sa bande', txtEn:'They doubt their decisions, seek their friend group\'s opinion', dim:'shadow' },
-  { id:'s6d_1317', t:6, e:'🛡️', txt:'Il/elle rejette les autorités incohérentes, cherche des figures solides', txtEn:'They reject inconsistent authority, look for solid figures', dim:'motive' },
+  { id:'s6d_1317', t:6, e:'🛡️', txt:'Il/elle cherche une figure d\'autorité fiable sur qui s\'appuyer, mais la teste avant de lui faire confiance', txtEn:'They look for a reliable authority figure to lean on, but test it before giving their trust', dim:'motive' },
   { id:'s6e_1317', t:6, e:'🔎', txt:'Il/elle teste longuement les gens avant de leur faire confiance', txtEn:'They test people for a long time before trusting them', dim:'behavior' },
-  { id:'s6f_1317', t:6, e:'🤝', txt:'Il/elle est farouchement loyal·e à son groupe d\'amis proches', txtEn:'They\'re fiercely loyal to their close friend group', dim:'motive' },
+  { id:'s6f_1317', t:6, e:'🤝', txt:'Il/elle reste solidaire de ses amis de confiance même quand les soutenir est risqué ou que les autres les lâchent', txtEn:'They stand by their trusted friends even when backing them is risky or everyone else turns away', dim:'motive' },
   // T7
   { id:'s7a_1317', t:7, e:'✨', txt:'Il/elle enchaîne les projets, les passions, les envies', txtEn:'They line up projects, passions, desires', dim:'behavior' },
-  { id:'s7b_1317', t:7, e:'😊', txt:'Il/elle évite les sujets difficiles, pivote vers le positif', txtEn:'They avoid difficult subjects, pivot toward the positive', dim:'compul' },
+  { id:'s7b_1317', t:7, e:'😊', txt:'Dès qu\'un sujet devient lourd, il/elle l\'écarte en lançant une idée plus fun ou un nouveau plan', txtEn:'As soon as a topic gets heavy, they brush it aside by tossing out a more fun idea or a new plan', dim:'compul' },
   { id:'s7c_1317', t:7, e:'🎪', txt:'Il/elle mène plusieurs choses de front — études, amis, loisirs', txtEn:'They juggle several things at once — studies, friends, hobbies', dim:'behavior' },
   { id:'s7d_1317', t:7, e:'☀️', txt:'Il/elle reframe les galères en aventures, optimiste naturel', txtEn:'They reframe setbacks into adventures — a natural optimist', dim:'belief' },
   { id:'s7e_1317', t:7, e:'🔗', txt:'L\'ennui, la routine, les contraintes longues l\'étouffent vite', txtEn:'Boredom, routine, long obligations stifle them quickly', dim:'fear' },
-  { id:'s7f_1317', t:7, e:'🥂', txt:'C\'est un·e ado sociable, joyeux·se, avec un réseau large', txtEn:'They\'re a sociable, joyful teen with a wide network', dim:'belief' },
+  { id:'s7f_1317', t:7, e:'🥂', txt:'Toujours partant·e pour une sortie, une fête, une nouvelle expérience — il/elle déteste s\'ennuyer', txtEn:'Always up for an outing, a party, a new experience — they hate being bored', dim:'belief' },
   // T8
-  { id:'s8a_1317', t:8, e:'⚡', txt:'Il/elle est un·e leader naturel·le dans son groupe, influence les décisions', txtEn:'They\'re a natural leader in their group, influence decisions', dim:'behavior' },
+  { id:'s8a_1317', t:8, e:'⚡', txt:'Quand un groupe hésite, il/elle tranche et prend la direction — quitte à imposer sa volonté', txtEn:'When a group hesitates, they decide and take charge — even if it means imposing their will', dim:'behavior' },
   { id:'s8b_1317', t:8, e:'💬', txt:'Il/elle assume ses désaccords, dit les choses cash', txtEn:'They own their disagreements, say things bluntly', dim:'behavior' },
   { id:'s8c_1317', t:8, e:'👑', txt:'Il/elle ne se laisse jamais dominer ; il/elle veut rester maître de sa vie', txtEn:'They never let themselves be dominated; they want to stay in control of their life', dim:'fear' },
   { id:'s8d_1317', t:8, e:'🦁', txt:'Il/elle défend férocement ses proches, ne laisse rien passer', txtEn:'They fiercely defend their close ones, let nothing slide', dim:'motive' },
   { id:'s8e_1317', t:8, e:'⛓️', txt:'Il/elle supporte très mal d\'être dirigé·e, encadré·e', txtEn:'They really don\'t handle being directed, framed', dim:'fear' },
-  { id:'s8f_1317', t:8, e:'👑', txt:'Il/elle a une présence charismatique, une force physique assumée', txtEn:'They have charisma, an assumed physical strength', dim:'integ' },
+  { id:'s8f_1317', t:8, e:'👑', txt:'Il/elle impose sa présence physique, occupe l\'espace — sans chercher à plaire ni à séduire', txtEn:'They impose their physical presence, take up space — without trying to please or charm', dim:'integ' },
   // T9
   { id:'s9a_1317', t:9, e:'🕊️', txt:'Il/elle cherche l\'harmonie, évite les positions tranchées', txtEn:'They seek harmony, avoid hard positions', dim:'compul' },
   { id:'s9b_1317', t:9, e:'💤', txt:'Il/elle procrastine ses travaux, ses choix d\'orientation', txtEn:'They procrastinate on schoolwork, life choices', dim:'shadow' },
-  { id:'s9c_1317', t:9, e:'🌊', txt:'Il/elle s\'adapte aux différents groupes, se fond facilement', txtEn:'They adapt to different groups, blend easily', dim:'behavior' },
+  { id:'s9c_1317', t:9, e:'🌊', txt:'Il/elle ne fait jamais de vagues : dans chaque groupe, il/elle se range à l\'avis général plutôt que d\'imposer le sien', txtEn:'They never make waves: in any group, they go along with the general view rather than push their own', dim:'behavior' },
   { id:'s9d_1317', t:9, e:'☮️', txt:'Il/elle fuit les conflits ouverts, se mure dans le silence', txtEn:'They avoid open conflicts, retreat into silence', dim:'compul' },
   { id:'s9e_1317', t:9, e:'🤷', txt:'Il/elle a du mal à savoir ce qu\'il/elle veut vraiment pour son avenir', txtEn:'They struggle to know what they really want for their future', dim:'shadow' },
   { id:'s9f_1317', t:9, e:'☁️', txt:'Il/elle se noie dans les écrans, les séries, pour oublier les tensions', txtEn:'They drown in screens, series, to escape tensions', dim:'stress' },
+];
+
+// ────────────────────────────────────────────────────────────────
+//  POOL ADULTE — OBSERVÉ (3e personne — un proche décrit un adulte)
+//  Sert à : « typer un proche » (mode observation) + le « second avis ».
+//  Ancré sur la motivation cachée (« non pas X, mais Y »), pas le
+//  comportement de surface — généré puis vérifié pour la discriminance.
+// ────────────────────────────────────────────────────────────────
+
+const STATEMENTS_ADULTE_OBS: Statement[] = [
+  // T1
+  { id:'s1a_adobs', t:1, e:'📏', txt:'Il/elle fait bien les choses même sans témoin — non pour impressionner, mais parce que bâcler lui semblerait incorrect', txtEn:'They do things properly even with no one watching — not to impress, but because cutting corners would feel improper to them', dim:'behavior' },
+  { id:'s1b_adobs', t:1, e:'😤', txt:'Il/elle ravale son agacement non par souci de paix, mais parce que la colère lui semble une faute', txtEn:'They swallow their irritation not to keep the peace, but because anger itself feels to them like a fault', dim:'body' },
+  { id:'s1c_adobs', t:1, e:'⚖️', txt:'Pas la peur de se tromper, mais le verdict de ne jamais être assez bien le/la ronge', txtEn:'Not the fear of getting it wrong, but the verdict of never being good enough eats at them', dim:'voice' },
+  { id:'s1d_adobs', t:1, e:'🔒', txt:'Aucune détente avant le devoir accompli — comme s\'il fallait d\'abord mériter le droit de se faire plaisir', txtEn:'No relaxing until the duty is done — as if one first had to earn the right to enjoy oneself', dim:'compul' },
+  { id:'s1e_adobs', t:1, e:'🌍', txt:'Il/elle sait comment les choses devraient être — et le monde le/la déçoit sans cesse de ne pas l\'être', txtEn:'They know how things ought to be — and the world endlessly disappoints them for not being that way', dim:'belief' },
+  { id:'s1f_adobs', t:1, e:'😣', txt:'Il/elle refait en douce ce que d\'autres ont bâclé, puis culpabilise — comme si la colère était une faute', txtEn:'They quietly redo what others botched, then blame themselves — as if the anger itself were a wrong', dim:'shadow' },
+  // T2
+  { id:'s2a_adobs', t:2, e:'💞', txt:'Il/elle devine qu\'un proche va mal avant tout mot — et se sent rejeté·e si l\'autre se confie à un autre.', txtEn:'They sense a loved one is struggling before a word — and feel rejected if that person confides in someone else.', dim:'attunement' },
+  { id:'s2b_adobs', t:2, e:'🤲', txt:'Il/elle se rapproche en devinant et comblant les besoins des autres — non par pur altruisme, mais pour être aimé·e en retour.', txtEn:'They get close by sensing and meeting others\' needs — not from pure altruism, but to be loved in return.', dim:'behavior' },
+  { id:'s2c_adobs', t:2, e:'😞', txt:'Il/elle est secrètement blessé·e quand on ne remarque pas ce qu\'il/elle donne — même s\'il/elle jure que ce n\'était pas pour ça.', txtEn:'They\'re secretly hurt when no one notices what they give — even while insisting that wasn\'t the point.', dim:'shadow' },
+  { id:'s2d_adobs', t:2, e:'🔗', txt:'Il/elle se rend indispensable aux siens — non par dévouement pur, mais parce qu\'être irremplaçable le/la rassure.', txtEn:'They make themselves indispensable to loved ones — not from pure devotion, but because being irreplaceable reassures them.', dim:'compul' },
+  { id:'s2e_adobs', t:2, e:'🚫', txt:'S\'il/elle dit non à un proche, il/elle culpabilise et se rattrape vite — comme si refuser pouvait lui coûter l\'amour de l\'autre.', txtEn:'If they say no to a loved one, they feel guilty and quickly make up for it — as if refusing could cost them that person\'s love.', dim:'shadow' },
+  { id:'s2f_adobs', t:2, e:'🧭', txt:'Il/elle décide de ce qui est bon pour l\'autre et le lui impose sans qu\'on demande — persuadé·e d\'agir par amour.', txtEn:'They decide what\'s good for the other and impose it unasked — convinced they\'re acting out of love.', dim:'belief' },
+  // T3
+  { id:'s3a_adobs', t:3, e:'🦎', txt:'Il/elle ajuste sa manière d\'être selon le public, se moulant dans la version admirable qu\'on attend de lui/elle.', txtEn:'They tune how they come across to each audience, molding into the admirable version those people expect of them.', dim:'compul' },
+  { id:'s3b_adobs', t:3, e:'📸', txt:'L\'image qu\'on garde de lui/elle compte plus que ce qu\'il/elle a vécu — il/elle la soigne jusqu\'à y croire.', txtEn:'The image people keep of them matters more than what they lived — they polish it until they believe it.', dim:'behavior' },
+  { id:'s3c_adobs', t:3, e:'🚪', txt:'En public, toujours celui/celle qui réussit ; en privé seulement, il/elle se demande s\'il/elle vaudrait quelque chose sans ses succès.', txtEn:'In public, always the one who\'s winning; only in private do they wonder if they\'d be worth anything without the wins.', dim:'fear' },
+  { id:'s3d_adobs', t:3, e:'⏸️', txt:'Une émotion difficile monte ? Il/elle la range et reste sur l\'objectif — non par calme, mais parce qu\'elle menacerait sa réussite.', txtEn:'A hard emotion rises? They file it away and stay on the goal — not for peace, but because it would threaten their success.', dim:'shadow' },
+  { id:'s3e_adobs', t:3, e:'🏅', txt:'Un compliment sur ses accomplissements l\'illumine ; mais une réussite que personne n\'a vue le/la laisse vide, comme inexistante.', txtEn:'Praise for their achievements lights them up; yet a success no one saw leaves them empty, as if it never happened.', dim:'motive' },
+  { id:'s3f_adobs', t:3, e:'🎬', txt:'Au bord de l\'épuisement, il/elle tient la façade — non pour bien faire, mais pour que personne ne le/la voie flancher.', txtEn:'On the edge of burnout, they hold the front — not to do it well, but so no one sees them falter.', dim:'stress' },
+  // T4
+  { id:'s4a_adobs', t:4, e:'🫥', txt:'Il/elle se vit fondamentalement à part et y tient : ni mieux ni moins bien, mais d\'une autre étoffe.', txtEn:'They feel fundamentally set apart and cling to it: not better, not worse, but made of different stuff.', dim:'identity' },
+  { id:'s4b_adobs', t:4, e:'🌫️', txt:'Devant le bonheur tranquille des autres, sa première réaction n\'est pas la joie, mais l\'envie d\'une plénitude qu\'on lui aurait refusée.', txtEn:'Faced with others\' quiet happiness, their first reaction isn\'t joy but envy of a wholeness denied to them.', dim:'fear' },
+  { id:'s4c_adobs', t:4, e:'🎨', txt:'Quand une émotion monte, il/elle ne se calme pas mais s\'y enfonce — comme si ressentir fort prouvait qu\'il/elle est vraiment vivant·e.', txtEn:'When a feeling rises, they don\'t settle down but sink into it — as if feeling intensely proved they\'re truly alive.', dim:'emotion' },
+  { id:'s4d_adobs', t:4, e:'🌙', txt:'La mélancolie le/la touche plus que la gaieté facile — non pour se faire du mal, mais parce qu\'il/elle s\'y reconnaît enfin.', txtEn:'Melancholy moves them more than easy cheer — not to wallow, but because in it they finally recognize themselves.', dim:'aesthetic' },
+  { id:'s4e_adobs', t:4, e:'🌑', txt:'L\'ordinaire l\'éteint, mais ce qui lui manque n\'est pas l\'aventure : c\'est un absolu jamais atteint, dont le manque même le/la nourrit.', txtEn:'The ordinary dulls them, but what they miss isn\'t adventure: it\'s an unreachable absolute whose very absence feeds them.', dim:'shadow' },
+  { id:'s4f_adobs', t:4, e:'🎭', txt:'Blessé·e, il/elle amplifie sa douleur : être consolé·e ne suffit pas, il faut reconnaître que personne ne ressent comme lui/elle.', txtEn:'When wounded, they amplify their pain: being comforted isn\'t enough, one must acknowledge that no one feels as they do.', dim:'stress' },
+  // T5
+  { id:'s5a_adobs', t:5, e:'🔋', txt:'Après une longue exposition aux autres, il/elle ressort à plat — ni bouderie ni conflit à digérer, mais une réserve interne vidée.', txtEn:'After a long stretch around people, they come out flat — not sulking, not a conflict to digest, but an inner reserve run dry.', dim:'stress' },
+  { id:'s5b_adobs', t:5, e:'🏰', txt:'Il/elle calcule l\'énergie que chaque chose coûtera, comme un budget — qu\'on lui prenne ce temps, c\'est un prélèvement, pas une gêne.', txtEn:'They reckon the energy each thing will cost, like a budget — time taken from them is a withdrawal, not a mere annoyance.', dim:'compul' },
+  { id:'s5c_adobs', t:5, e:'🔬', txt:'Il/elle refuse de se lancer avant d\'avoir tout compris — non par prudence, mais parce que se sentir incompétent·e lui est insupportable.', txtEn:'They refuse to start before grasping it fully — not out of caution, but because feeling incompetent is unbearable to them.', dim:'motive' },
+  { id:'s5d_adobs', t:5, e:'🧠', txt:'Dès qu\'une émotion monte, il/elle l\'analyse au lieu de la vivre — il/elle l\'explique clairement tout en restant coupé·e de la sensation.', txtEn:'As a feeling rises, they analyze it instead of living it — explaining it clearly while staying cut off from the sensation.', dim:'shadow' },
+  { id:'s5e_adobs', t:5, e:'📚', txt:'Il/elle disparaît des heures dans un sujet pointu — accumuler du savoir le/la rassure plus que la présence des gens.', txtEn:'They vanish for hours into a narrow subject — amassing knowledge reassures them more than people\'s company.', dim:'behavior' },
+  { id:'s5f_adobs', t:5, e:'🧊', txt:'Il/elle ne livre presque rien de lui/elle — non par méfiance, mais parce que se dévoiler coûte une énergie qu\'il/elle préfère garder.', txtEn:'They reveal almost nothing of themselves — not from distrust, but because opening up costs energy they\'d rather keep.', dim:'compul' },
+  // T6
+  { id:'s6a_adobs', t:6, e:'⚠️', txt:'Même quand tout va bien, il/elle ne se détend pas vraiment : son esprit cherche déjà ce qui pourrait tout faire s\'effondrer.', txtEn:'Even when all is well, they don\'t truly relax: their mind is already scanning for what could make it all collapse.', dim:'voice' },
+  { id:'s6b_adobs', t:6, e:'📞', txt:'Avant une décision qui l\'inquiète, il/elle consulte deux ou trois proches de confiance — son propre avis ne lui suffit pas.', txtEn:'Before a worrying decision, they consult two or three trusted people — their own judgment isn\'t enough for them.', dim:'shadow' },
+  { id:'s6c_adobs', t:6, e:'🛡️', txt:'Ce qui l\'apaise n\'est pas le confort, mais de savoir qu\'il/elle a des appuis solides si tout s\'écroule.', txtEn:'What settles them isn\'t comfort, but knowing they have solid people to lean on if everything falls apart.', dim:'motive' },
+  { id:'s6d_adobs', t:6, e:'🔎', txt:'Face à une autorité ou une promesse, il/elle reste sur ses gardes tant qu\'on n\'a pas prouvé qu\'on tiendra dans la durée.', txtEn:'Toward an authority or a promise, they stay guarded until you\'ve proven you\'ll come through over time.', dim:'belief' },
+  { id:'s6e_adobs', t:6, e:'🤝', txt:'Il/elle reste présent·e quand vous devenez un poids — non par devoir, mais parce qu\'abandonner quelqu\'un alors lui ferait horreur.', txtEn:'They stay present when you become a burden — not from duty, but because abandoning someone then would horrify them.', dim:'motive' },
+  { id:'s6f_adobs', t:6, e:'😰', txt:'Sous pression, son imagination fonce vers le pire et il/elle sur-prépare tout — non pour bien faire, mais pour n\'être jamais pris·e au dépourvu.', txtEn:'Under pressure, their mind races to the worst and they over-prepare — not to do well, but to never be caught off guard.', dim:'stress' },
+  // T7
+  { id:'s7a_adobs', t:7, e:'✨', txt:'Il/elle garde toujours plusieurs portes ouvertes — non par indécision, mais parce que choisir une chose revient à se priver des autres', txtEn:'They always keep several doors open — not from indecision, but because choosing one thing means going without all the others', dim:'behavior' },
+  { id:'s7b_adobs', t:7, e:'🙈', txt:'Face à la peine d\'un proche, il/elle ne reste pas dans la tristesse : il/elle relativise, plaisante ou propose vite un plan', txtEn:'Faced with a loved one\'s pain, they won\'t stay in the sadness: they reframe it, joke, or quickly suggest a plan', dim:'attunement' },
+  { id:'s7c_adobs', t:7, e:'🎠', txt:'S\'engager pour de bon le/la met mal à l\'aise — non par légèreté, mais par peur d\'un quotidien sans échappatoire', txtEn:'Committing for good makes them uneasy — not from flightiness, but from fear of a daily life with no way out', dim:'fear' },
+  { id:'s7d_adobs', t:7, e:'🎈', txt:'Il/elle déserte dès que ça devient répétitif — non par paresse, car le creux de l\'effort lui pèse plus que l\'échec', txtEn:'They desert the moment it turns repetitive — not from laziness, since the dull stretch of effort weighs on them more than failure', dim:'compul' },
+  { id:'s7e_adobs', t:7, e:'🥀', txt:'Devant une contrainte qui dure, il/elle s\'agite et cherche une issue plus agréable plutôt que de supporter le manque', txtEn:'Faced with a constraint that drags on, they get restless and hunt a pleasanter way out rather than tolerating the lack', dim:'stress' },
+  { id:'s7f_adobs', t:7, e:'🌈', txt:'Il/elle imagine sans cesse mieux ailleurs — non par fantaisie, mais faute de pouvoir se contenter de ce qui est là', txtEn:'They endlessly picture something better elsewhere — not from whimsy, but for want of being able to settle for what\'s here', dim:'motive' },
+  // T8
+  { id:'s8a_adobs', t:8, e:'🪨', txt:'Si on le/la materne, il/elle se braque — pas par fierté, mais parce qu\'être pris·e en charge lui retire le contrôle.', txtEn:'If you coddle them, they bristle — not from pride, but because being taken care of strips away their control.', dim:'shadow' },
+  { id:'s8b_adobs', t:8, e:'⚔️', txt:'Là où d\'autres cèdent pour la paix, il/elle pousse l\'affrontement — pas par anxiété, mais pour voir qui tient.', txtEn:'Where others give in for peace, they push the confrontation — not from anxiety, but to see who holds firm.', dim:'behavior' },
+  { id:'s8c_adobs', t:8, e:'🚧', txt:'Une règle imposée sans justification le/la braque, même quand il/elle est d\'accord : l\'intolérable, c\'est qu\'on décide à sa place.', txtEn:'A rule imposed without reason makes them bristle, even when they agree: the intolerable part is being decided for.', dim:'fear' },
+  { id:'s8d_adobs', t:8, e:'🦁', txt:'Qu\'on s\'en prenne à l\'un des siens et il/elle se dresse aussitôt — non par calcul, mais comme si l\'attaque le/la visait.', txtEn:'Let someone go after one of their own and they rise up at once — not by calculation, but as if the attack targeted them.', dim:'motive' },
+  { id:'s8e_adobs', t:8, e:'🥊', txt:'Touché·e, il/elle réplique par la colère ou l\'action — non pour blesser, mais parce que montrer sa vulnérabilité, c\'est se livrer.', txtEn:'When hurt, they hit back with anger or action — not to wound, but because showing vulnerability means surrendering.', dim:'compul' },
+  { id:'s8f_adobs', t:8, e:'📡', txt:'Il/elle repère d\'instinct qui détient vraiment le pouvoir et qui bluffe — les titres ne l\'impressionnent pas une seconde.', txtEn:'They instinctively spot who really holds power and who\'s bluffing — titles don\'t impress them for a second.', dim:'attunement' },
+  // T9
+  { id:'s9a_adobs', t:9, e:'🕊️', txt:'Il/elle adopte l\'avis des autres sans effort — comme si le calme comptait plus qu\'une position à soi.', txtEn:'They take on others\' views effortlessly — as if calm mattered more than having a stance of their own.', dim:'compul' },
+  { id:'s9b_adobs', t:9, e:'🤐', txt:'Quand quelque chose le/la contrarie, sa contrariété s\'évapore d\'elle-même : il/elle minimise pour ne pas troubler le calme.', txtEn:'When something upsets them, the upset just evaporates: they play it down so nothing disturbs the calm.', dim:'behavior' },
+  { id:'s9c_adobs', t:9, e:'💤', txt:'Il/elle s\'enlise dans de petites tâches faciles et n\'attaque jamais l\'essentiel qui compte pour lui/elle.', txtEn:'They sink into small easy tasks and never tackle the essential thing that matters to them.', dim:'shadow' },
+  { id:'s9d_adobs', t:9, e:'😶', txt:'Interrogé·e sur ce qui lui ferait vraiment plaisir, il/elle reste sincèrement sans réponse — l\'envie elle-même semble endormie.', txtEn:'Asked what would genuinely please them, they draw a sincere blank — the wanting itself seems asleep.', dim:'fear' },
+  { id:'s9e_adobs', t:9, e:'☁️', txt:'Poussé·e au conflit, il/elle ne s\'oppose jamais de front : il/elle ralentit, devient évasif/évasive et résiste sans bruit.', txtEn:'Pushed toward conflict, they never oppose head-on: they slow down, go vague, and resist without a sound.', dim:'stress' },
+  { id:'s9f_adobs', t:9, e:'🌱', txt:'En sécurité, il/elle se réveille enfin : il/elle nomme ses désirs, prend parti et s\'engage, au lieu de s\'effacer.', txtEn:'When safe, they finally wake up: they name their wants, take a side and commit, instead of fading.', dim:'integ' },
 ];
 
 export const STATEMENTS_BY_AGE: Record<AgeBand, Statement[]> = {
@@ -459,6 +532,7 @@ export const STATEMENTS_BY_AGE: Record<AgeBand, Statement[]> = {
   '9-12': STATEMENTS_9_12,
   '13-17': STATEMENTS_13_17,
   'adulte': STATEMENTS_ADULTE,
+  'adulte-obs': STATEMENTS_ADULTE_OBS,
 };
 
 // ────────────────────────────────────────────────────────────────
@@ -557,6 +631,8 @@ export const WING_STATEMENTS_BY_AGE: Record<AgeBand, WingStatement[]> = {
   '9-12': WING_9_12,
   '13-17': WING_13_17,
   'adulte': WING_ADULTE,
+  // Mode "observé" : pas d'étape aile (le builder skippe le wing si le pool est vide)
+  'adulte-obs': [],
 };
 
 // ═══════════════════════════════════════════════════════════════
