@@ -3,8 +3,12 @@
 Présentation PowerPoint de l'itinéraire **Copenhague → Lac Åsnen → Västervik → Stockholm**
 (13 jours, 12 nuits, 4 hébergements).
 
-**Livrable : [`Roadtrip-Scandinavie-12-nuits.pptx`](Roadtrip-Scandinavie-12-nuits.pptx)** — 28 slides,
-format 16:9, français.
+**Livrables** — 28 slides, format 16:9, français :
+
+- [`Roadtrip-Scandinavie-12-nuits.pptx`](Roadtrip-Scandinavie-12-nuits.pptx) — source éditable ;
+- [`Roadtrip-Scandinavie-12-nuits.pdf`](Roadtrip-Scandinavie-12-nuits.pdf) — version à lire et
+  à partager, texte sélectionnable, polices embarquées (Carlito et Caladea, clones
+  métriquement compatibles de Calibri et Cambria : la mise en page est identique).
 
 ## Structure du deck
 
@@ -46,6 +50,10 @@ python3 make_map.py         # la carte
 python3 make_scenes.py      # les 18 illustrations
 python3 make_overlays.py    # les voiles dégradés cuits dans les images
 ./rebuild.sh                # génère, valide et rend le .pptx
+
+# export PDF
+python3 /root/.claude/skills/synced/*/pptx/scripts/office/soffice.py \
+  --headless --convert-to pdf --outdir .. ../Roadtrip-Scandinavie-12-nuits.pptx
 ```
 
 | Fichier | Rôle |
