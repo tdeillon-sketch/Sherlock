@@ -3,7 +3,7 @@
 Présentation PowerPoint de l'itinéraire **Copenhague → Lac Åsnen → Västervik → Stockholm**
 (13 jours, 12 nuits, 4 hébergements).
 
-**Livrables** — 28 slides, format 16:9, français :
+**Livrables** — 29 slides, format 16:9, français :
 
 - [`Roadtrip-Scandinavie-12-nuits.pptx`](Roadtrip-Scandinavie-12-nuits.pptx) — source éditable ;
 - [`Roadtrip-Scandinavie-12-nuits.pdf`](Roadtrip-Scandinavie-12-nuits.pdf) — version à lire et
@@ -22,7 +22,31 @@ Présentation PowerPoint de l'itinéraire **Copenhague → Lac Åsnen → Väste
 | 11–15 | Étape 2 Lac Åsnen (+ où loger) + jours 4 à 6 |
 | 16–21 | Étape 3 Västervik (+ où dormir) + jours 7 à 10 |
 | 22–25 | Étape 4 Stockholm + jours 11 à 13 |
-| 26–28 | Hébergement à Stockholm · L'alternative Vättern · Recommandation |
+| 26–29 | Hébergement à Stockholm · L'alternative Vättern · Budget · Recommandation |
+
+## Budget (slide 28)
+
+Chiffrage indicatif, **pas un devis** — reconstruit faute de données fournies, sur les
+hypothèses suivantes : 4 personnes, 13 jours / 12 nuits en août, départ de Genève, bons
+logements équipés d'une cuisine, repas préparés soi-même.
+
+| Poste | Montant | Part |
+|---|--:|--:|
+| Hébergement | 2 800 € | 39 % |
+| Voiture (9 j, abandon en Suède, carburant, Øresund) | 1 250 € | 17 % |
+| Vols (Genève – Copenhague, Stockholm – Genève) | 1 150 € | 16 % |
+| Courses et repas | 1 000 € | 14 % |
+| Activités | 950 € | 13 % |
+| **Total** | **≈ 7 150 €** | |
+
+Soit ≈ 1 790 € par personne, ≈ 550 € par jour pour quatre. Les deux postes les plus
+volatils sont le supplément d'abandon de la voiture (150 à 450 € selon les loueurs) et
+les deux nuits à Stockholm. Les montants se modifient dans `POSTES` en tête du bloc
+budget de `build/deck.js`.
+
+Le camembert est un **graphique PowerPoint natif** (donc éditable, pas une image). Les cinq
+couleurs passent les contrôles d'accessibilité du validateur dans l'ordre des tranches,
+bouclage compris.
 
 ## Visuels
 

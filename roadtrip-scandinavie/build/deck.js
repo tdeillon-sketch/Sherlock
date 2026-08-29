@@ -503,6 +503,61 @@ daySlide(DAYS[12]);
       color: MUTED });
 }
 
+/* -------------------------------------------------------------- BUDGET */
+{
+  const s = lightSlide("ORDRE DE GRANDEUR", "Le budget, poste par poste",
+    "Quatre personnes, 13 jours en août, départ de Genève : bons logements équipés d’une cuisine, repas préparés soi-même.");
+  const POSTES = [
+    ["Hébergement", 2800, "A83E27", "12 nuits, 4 logements avec cuisine"],
+    ["Voiture", 1250, "2A78D6", "9 jours, abandon en Suède, carburant, Øresund"],
+    ["Vols", 1150, "C98500", "Genève – Copenhague, Stockholm – Genève"],
+    ["Courses et repas", 1000, "00958C", "On cuisine ; quelques cafés et glaces"],
+    ["Activités", 950, "7B4FA0", "Kayak guidé, bateaux d’archipel, canoë, élans, Vasa"]];
+  const total = POSTES.reduce((a, p) => a + p[1], 0);
+  const eur = n => n.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ") + " €";
+
+  s.addChart(pres.ChartType.pie,
+    [{ name: "Budget", labels: POSTES.map(p => p[0]), values: POSTES.map(p => p[1]) }],
+    { x: 0.55, y: 2.40, w: 5.90, h: 4.30,
+      chartColors: POSTES.map(p => p[2]),
+      dataBorder: { pt: 2, color: "FFFFFF" },
+      showLegend: false, showTitle: false,
+      showPercent: true, dataLabelPosition: "outEnd",
+      dataLabelFormatCode: '0" "%',
+      dataLabelColor: INK, dataLabelFontFace: SANS, dataLabelFontSize: 12,
+      dataLabelFontBold: true });
+
+  POSTES.forEach((p, i) => {
+    const y = 2.62 + i * 0.60;
+    s.addShape(pres.ShapeType.roundRect, { x: 6.62, y: y + 0.06, w: 0.22, h: 0.22,
+      rectRadius: 0.04, fill: { color: p[2] } });
+    T(s, p[0], { x: 7.00, y, w: 2.45, h: 0.30, fontFace: SANS, fontSize: 14,
+                 bold: true, color: INK });
+    T(s, p[3], { x: 7.00, y: y + 0.28, w: 3.5, h: 0.26, fontFace: SANS,
+                 fontSize: 10.5, color: MUTED });
+    T(s, eur(p[1]), { x: 10.55, y, w: 1.30, h: 0.30, fontFace: SANS, fontSize: 15,
+                      bold: true, color: INK, align: "right" });
+    T(s, Math.round(p[1] / total * 100) + " %", { x: 11.95, y: y + 0.02, w: 0.72,
+                      h: 0.28, fontFace: SANS, fontSize: 12.5, color: MUTED,
+                      align: "right" });
+  });
+
+  s.addShape(pres.ShapeType.line, { x: 6.62, y: 5.72, w: 6.05, h: 0,
+    line: { color: LINE, width: 1 } });
+  kicker(s, "TOTAL ESTIMÉ", 6.62, 5.92, MUTED, 3.0);
+  T(s, "≈ " + eur(total), { x: 6.62, y: 6.20, w: 3.4, h: 0.66, fontFace: SERIF,
+      fontSize: 34, bold: true, color: FALU });
+  T(s, "≈ 1 790 € par personne", { x: 10.10, y: 6.24, w: 2.57, h: 0.30,
+      fontFace: SANS, fontSize: 13, color: BODY, align: "right" });
+  T(s, "≈ 550 € par jour pour quatre", { x: 9.80, y: 6.56, w: 2.87, h: 0.30,
+      fontFace: SANS, fontSize: 13, color: MUTED, align: "right" });
+
+  T(s, "Estimation, pas un devis. Les deux postes qui bougeront le plus : le supplément d’abandon de la voiture (150 à 450 € selon les loueurs) et les deux nuits à Stockholm.",
+    { x: 0.62, y: 6.95, w: 5.90, h: 0.52, fontFace: SANS, fontSize: 11.5,
+      italic: true, color: MUTED, lineSpacingMultiple: 1.18 });
+  s.addNotes("Hypothèses : 4 personnes, 12 nuits, août, départ Genève, logements avec cuisine, repas maison. Vols multi-destinations. Voiture prise le jour 3 et rendue le jour 11.");
+}
+
 /* ------------------------------------------------------- RECOMMANDATION */
 {
   const s = pres.addSlide();
