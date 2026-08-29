@@ -1,0 +1,10 @@
+node_modules/
+slide-*.png
+*.pdf
+grid.jpg
+chk*.jpg
+contact*.jpg
+probe.jpg
+contenu.txt
+mini.pptx
+__pycache__/
