@@ -5,6 +5,7 @@ import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { useT, getTypeText } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
+import { openFeedbackEmail } from '../../utils/feedback';
 import { TYPES } from '../../constants/data';
 import { TYPES as TYPES_V3, type EnneaType } from '../../constants/quiz_v3';
 import { auth, isAdmin, onAuthChange, trackScreen, loadFamily, type Family } from '../../constants/firebase';
@@ -100,6 +101,13 @@ export default function HomeScreen() {
           ) : <View />}
           <Text style={styles.noteSignature}>{t('home.noteSignature')}</Text>
         </View>
+        <Pressable
+          onPress={() => openFeedbackEmail(t)}
+          hitSlop={6}
+          style={({ pressed }) => [styles.noteFeedback, pressed && { opacity: 0.6 }]}
+        >
+          <Text style={styles.noteFeedbackText}>{t('feedback.homeLink')}</Text>
+        </Pressable>
       </View>
 
       {/* ── Reading card (a free text to read) ── */}
@@ -295,6 +303,11 @@ const styles = StyleSheet.create({
   },
   noteSignature: {
     fontFamily: fonts.serifItalic, fontSize: 20, color: colors.text,
+  },
+  noteFeedback: { marginTop: spacing.md, alignSelf: 'flex-start' },
+  noteFeedbackText: {
+    fontFamily: fonts.sans, fontSize: 12.5, color: colors.textMuted,
+    textDecorationLine: 'underline',
   },
 
   // ── Pilot card (the marketing centerpiece) ──

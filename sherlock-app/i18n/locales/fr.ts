@@ -142,6 +142,17 @@ export const fr = {
     obsDesc: "Vous répondez en l'observant de l'extérieur. Pratique, mais moins précis.",
   },
 
+  feedback: {
+    homeLink: "✉️ Une idée pour améliorer l'app ? Écrivez-moi.",
+    cardTitle: "Améliorer l'app",
+    cardBody: "Si quelque chose résonne, si quelque chose vous heurte, ou si vous avez une idée pour améliorer l'app : écrivez-moi.",
+    cta: 'Écrire à Thomas',
+    subject: "5herlock — une idée pour améliorer l'app",
+    bodyIntro: 'Bonjour Thomas,',
+    errorTitle: "Impossible d'ouvrir la messagerie",
+    errorBody: 'Vous pouvez écrire directement à {{email}}.',
+  },
+
   familyMap: {
     title: 'Carte de famille',
     cta: '🗺️ Voir la carte de famille',

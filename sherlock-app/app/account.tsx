@@ -16,6 +16,7 @@ import {
   auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, trackScreen,
 } from '../constants/firebase';
 import { useT } from '../i18n';
+import { FEEDBACK_EMAIL, openFeedbackEmail } from '../utils/feedback';
 
 export default function AccountScreen() {
   const [busy, setBusy] = useState<null | 'signout' | 'delete'>(null);
@@ -160,6 +161,19 @@ export default function AccountScreen() {
         </View>
       </View>
 
+      {/* ── Feedback: write to Thomas ── */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('feedback.cardTitle')}</Text>
+        <Text style={styles.feedbackBody}>{t('feedback.cardBody')}</Text>
+        <Text selectable style={styles.feedbackEmail}>{FEEDBACK_EMAIL}</Text>
+        <Pressable
+          onPress={() => openFeedbackEmail(t)}
+          style={({ pressed }) => [styles.feedbackBtn, pressed && { opacity: 0.85 }]}
+        >
+          <Text style={styles.feedbackBtnText}>✉️  {t('feedback.cta')}</Text>
+        </Pressable>
+      </View>
+
       {/* ── Sign out ── */}
       <Pressable
         onPress={handleSignOut}
@@ -252,6 +266,22 @@ const styles = StyleSheet.create({
   cardValue: {
     fontFamily: fonts.serif, fontSize: 17, color: colors.text,
   },
+  feedbackBody: {
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
+    color: colors.textSoft, marginTop: 2,
+  },
+  feedbackEmail: {
+    fontFamily: fonts.sans, fontSize: 14, color: colors.text, marginTop: spacing.sm,
+  },
+  feedbackBtn: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    backgroundColor: colors.accentFill,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.accent,
+    alignItems: 'center',
+  },
+  feedbackBtnText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accent },
 
   actionBtn: {
     marginHorizontal: spacing.md, marginTop: spacing.lg,

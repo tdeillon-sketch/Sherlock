@@ -137,6 +137,17 @@ export const en = {
     obsDesc: 'You answer by observing them from the outside. Handy, but less precise.',
   },
 
+  feedback: {
+    homeLink: '✉️ An idea to improve the app? Write to me.',
+    cardTitle: 'Improve the app',
+    cardBody: 'If something resonates, if something bothers you, or if you have an idea to improve the app: write to me.',
+    cta: 'Write to Thomas',
+    subject: '5herlock — an idea to improve the app',
+    bodyIntro: 'Hi Thomas,',
+    errorTitle: "Couldn't open your mail app",
+    errorBody: 'You can write directly to {{email}}.',
+  },
+
   familyMap: {
     title: 'Family map',
     cta: '🗺️ See the family map',
