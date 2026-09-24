@@ -28,24 +28,36 @@ export const en = {
     duo: 'Duo',
   },
 
-  // Home screen — TV-series framing
+  // Home screen — what the app is for → what is what → what you can reach → why this app
   home: {
+    // Brand
     brandLabel: '5HERLOCK',
 
-    // A note from Thomas (paragraphs separated by a blank line)
-    noteEyebrow: 'A NOTE FROM THOMAS',
-    noteOpening: 'Why is it so hard to be a parent?',
-    noteBody: "There is no shortage of methods. If anything, there are too many. The difficulty lies elsewhere: each of us looks at the other from inside our own way of being. There are nine ways of being in the world, and none is better than another. It is not a box, it is a map. It helps you see the other as they are: your child, your partner.\n\nI am the father of two daughters. And every day, I doubt. Some evenings, after putting them to bed, I stay a moment in the hallway and ask myself whether I am doing it right. My father died. Since then, the question “what kind of father am I?” is no longer theoretical.\n\nI am not a parenting specialist. I grew up in a family where silence took the place of confrontation. What I feel, I think more than I show. I am working on it. I am far from having figured it all out.",
-    noteMore: 'Read more',
-    noteLess: 'Show less',
-    noteSignature: 'Thomas',
+    // 1 — What this app is for
+    introTitle: 'See the other as they are.',
+    introBody: "5herlock helps you understand your child, and your partner, as they are, not as you imagine them. It draws on the Enneagram: nine ways of being in the world, none better than another. Not a label, a map. To see what is happening in the other, and adjust your response.",
 
-    // Reading card
-    pilotEyebrow: 'A SHORT READ',
-    pilotDuration: '12 min',
-    pilotChapterTitle: "The only animal that doesn't know how to raise its young",
-    pilotTagline: "Why are we the only living being who arrives in this world without a manual?",
-    pilotCta: 'Start reading',
+    // 2 — What is what (the 4 tabs reuse their names via tabs.*)
+    guideTitle: 'What is what',
+    guideQuizDesc: 'Type yourself, your child or someone close. Then ask a second opinion from someone who knows you well.',
+    guideProfilesDesc: 'The nine profiles in depth, with concrete keys to support each one.',
+    guideDuoDesc: "What two profiles bring each other, and where they clash: parent and child, or couple.",
+    guideGameDesc: 'A game to learn to recognize the nine ways of being, through well-known figures.',
+    guideMapTitle: 'The family map',
+    guideMapDesc: 'Your household as a system: its balances, its frictions.',
+
+    // Where to start
+    startTitle: 'Where to start',
+    startBody: "With you. Take the quiz about yourself: a few minutes are enough. Then about your child. The rest falls into place: the profiles, the duo, the family map.",
+    startCta: 'Take the quiz',
+
+    // 3 — What you can reach (paragraphs separated by a blank line)
+    reachTitle: 'If you take the time to go deep',
+    reachBody: "See your child as they are, not as a small version of you.\n\nUnderstand why the same situation makes each of you react so differently, and stop reading it as bad will.\n\nKnow what to try, and what to avoid, when things boil over.\n\nRecognize the frictions in your couple and your family for what they are: two ways of being rubbing against each other.\n\nKeep, day after day, a trace of what you observe and what you learn.",
+
+    // Returning users (family already typed): the guide folds into one line
+    howToggle: 'How does it work?',
+    howToggleClose: 'Show less',
 
     // Daily ritual
     ritualEyebrow: "TODAY'S RITUAL",
@@ -55,28 +67,10 @@ export const en = {
     ritualNoteSave: 'Save',
     ritualNoteCancel: 'Cancel',
 
-    // Series
-    seriesEyebrow: 'THE SERIES · 4 SEASONS',
-    season1Title: 'Why',
-    season1Sub: "The most beautiful project in the world",
-    season2Title: 'Open your eyes',
-    season3Title: 'What holds when everything trembles',
-    season4Title: 'Learning to watch them go',
-    seasonEpisodes: '{{n}} ep.',
-    seasonLockedSub: 'With the book',
-    seasonLockedAlertTitle: 'Available with the book',
-    seasonLockedAlertBody: "This season will be accessible once the book is published. You can sign up to be notified when it's out.",
-    seasonLockedAlertCta: 'Notify me at launch',
-    seasonLockedAlertCancel: 'Later',
-
-    // Tools
-    toolsLabel: "The traveler's tools",
-    toolsIntro: 'While you wait for the book, these four tools accompany you starting today.',
-
-    // Launch notification (bottom CTA)
-    preorderHint: "You've just read the pilot.",
-    preorderText: 'Be the first to know when the full book is out.',
-    preorderCta: 'Notify me at launch →',
+    // 4 — Why this app (one block; paragraphs separated by a blank line)
+    whyTitle: 'Why this app',
+    whyBody: "I am the father of two daughters. I am not a parenting specialist, and I have no recipe for raising your children. Some evenings, after putting them to bed, I stand for a moment in the hallway and ask myself: am I doing this right? That question has been with me since the first time I held my daughter in my arms. That day, it took another form: what am I going to pass on to her?\n\nIt took on a different weight when my father died, in 2025. In becoming a father, I had asked myself what I would pass on. In losing mine, I measured what I had received: the good, the clumsy, the silent. In my family, silence often took the place of confrontation. My father had a saying: \"When you have a problem, you put it in your pocket and lay your handkerchief over it.\" It was said with kindness. I still carry its trace: what I feel, I think more than I show. If I do not sort through what I received, I will pass it all on, the best along with the worst. Because what we pass on travels as much through our reflexes and our silences as through our words.\n\nAn old story told by Plato helps me think about this task. Charged with sharing out qualities among living beings, Epimetheus gives strength to some, speed to others, wings or fur. When the turn of the human being comes, nothing is left. Prometheus brings him fire; Zeus, a sense of justice and mutual respect. But the manual, nobody gives him that. Man is the unfinished animal, and it is precisely in this bareness that his greatness lies.\n\nIt is because he is unfinished that he needs parents. A newborn child does not carry a program to run; he carries a potential to awaken. Raising an animal means activating what is already there. Raising a human means creating. It is terrifying, because nothing is guaranteed. It is exhilarating, because if nothing is written, everything is possible. What I received does not decide what I pass on.\n\nBut a child also makes something singular of what they receive. My daughters are growing up with the same father, and each lives our relationship in her own way. To accompany them, I need to know both the one who passes on and the one who receives. This app was born from that double gaze. My work is synthesis: I accompany companies through their transformations, and the work is the same at home. Knowing your strengths and your monsters. Stepping out of your box to see the other as they are. The nine ways of being in the world offered here are landmarks for that: understanding that your child is not a mini-you, and neither is your partner. It is a map, not a box: it is only worth something if it helps us see the person in front of us more clearly, and leaves them free to surprise us.\n\nI still doubt, at night, in the hallway. But a parent who doubts is a parent who searches, and my doubt is becoming more precise: have I left my daughters room to be themselves? A child is the most honest mirror life can hold up to you, and the whole point of this is to make yourself gradually unnecessary. So start by looking. Watch for a moment when your child does something you had not planned. What do they choose when no one tells them what to choose? That, too, is where passing on begins: in the room we make for what we did not choose.",
+    whySignature: 'Thomas',
   },
 
   tools: {

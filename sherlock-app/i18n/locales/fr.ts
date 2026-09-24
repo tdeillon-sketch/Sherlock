@@ -30,25 +30,36 @@ export const fr = {
     duo: 'Duo',
   },
 
-  // Home screen — TV-series framing: free pilot + daily ritual + 4 seasons
+  // Home screen — what the app is for → what is what → what you can reach → why this app
   home: {
     // Brand
     brandLabel: '5HERLOCK',
 
-    // A note from Thomas (paragraphs separated by a blank line)
-    noteEyebrow: 'UN MOT DE THOMAS',
-    noteOpening: "Pourquoi est-ce si difficile d'être parent ?",
-    noteBody: "Les méthodes ne manquent pas. Il y en a même trop. La difficulté est ailleurs : chacun regarde l'autre depuis sa propre manière d'être. Il existe neuf manières d'être au monde, et aucune n'est meilleure qu'une autre. Ce n'est pas une case, c'est une carte. Elle aide à voir l'autre tel qu'il est : son enfant, son conjoint.\n\nJe suis père de deux filles. Et chaque jour, je doute. Certains soirs, après les avoir couchées, je reste un moment dans le couloir et je me demande si je fais bien. Mon père est mort. Depuis, la question « quel père suis-je ? » n'est plus théorique.\n\nJe ne suis pas un spécialiste de la parentalité. J'ai grandi dans une famille où le silence remplaçait la confrontation. Ce que je ressens, je le pense plus que je ne le montre. J'y travaille. Je suis loin d'avoir tout compris.",
-    noteMore: 'Lire la suite',
-    noteLess: 'Réduire',
-    noteSignature: 'Thomas',
+    // 1 — À quoi sert cette app
+    introTitle: "Voir l'autre tel qu'il est.",
+    introBody: "5herlock vous aide à comprendre votre enfant, et votre conjoint, tel qu'il est, pas tel que vous l'imaginez. Il s'appuie sur l'Ennéagramme : neuf manières d'être au monde, aucune meilleure qu'une autre. Pas une étiquette, une carte. Pour voir ce qui se joue chez l'autre, et ajuster votre réponse.",
 
-    // Reading card
-    pilotEyebrow: 'À LIRE',
-    pilotDuration: '12 min',
-    pilotChapterTitle: 'Le seul animal qui ne sait pas élever ses petits',
-    pilotTagline: "Pourquoi sommes-nous le seul être vivant à arriver au monde sans mode d'emploi ?",
-    pilotCta: 'Commencer la lecture',
+    // 2 — Quoi est quoi (les 4 onglets reprennent leur nom via tabs.*)
+    guideTitle: 'Quoi est quoi',
+    guideQuizDesc: "Typez-vous, votre enfant ou un proche. Puis demandez un second avis à quelqu'un qui vous connaît bien.",
+    guideProfilesDesc: 'Les neuf profils en détail, avec des clés concrètes pour accompagner chacun.',
+    guideDuoDesc: "Ce que deux profils s'apportent, et là où ils se heurtent : parent et enfant, ou couple.",
+    guideGameDesc: "Un jeu pour apprendre à reconnaître les neuf façons d'être, à travers des personnalités connues.",
+    guideMapTitle: 'La carte de famille',
+    guideMapDesc: 'Votre foyer vu comme un système : ses équilibres, ses frictions.',
+
+    // Par quoi commencer
+    startTitle: 'Par quoi commencer',
+    startBody: "Par vous. Faites le quiz sur vous-même : quelques minutes suffisent. Puis sur votre enfant. Le reste s'éclaire ensuite : les profils, le duo, la carte de famille.",
+    startCta: 'Faire le quiz',
+
+    // 3 — Ce que vous pouvez atteindre (paragraphes séparés par une ligne vide)
+    reachTitle: "Si vous prenez le temps d'aller au fond",
+    reachBody: "Voir votre enfant tel qu'il est, et non comme un petit vous.\n\nComprendre pourquoi une même situation fait réagir chacun si différemment, et cesser d'y voir de la mauvaise volonté.\n\nSavoir quoi essayer, et quoi éviter, dans les moments où ça déborde.\n\nReconnaître les frictions de votre couple et de votre famille pour ce qu'elles sont : deux manières d'être qui se frottent.\n\nGarder, jour après jour, la trace de ce que vous observez et de ce que vous apprenez.",
+
+    // Utilisateur qui revient (famille déjà typée) : le mode d'emploi se replie en une ligne
+    howToggle: 'Comment ça marche ?',
+    howToggleClose: 'Réduire',
 
     // Daily ritual
     ritualEyebrow: 'LE RITUEL DU JOUR',
@@ -58,28 +69,10 @@ export const fr = {
     ritualNoteSave: 'Enregistrer',
     ritualNoteCancel: 'Annuler',
 
-    // Series block
-    seriesEyebrow: 'LA SÉRIE · 4 SAISONS',
-    season1Title: 'Pourquoi',
-    season1Sub: 'Le plus beau chantier du monde',
-    season2Title: 'Ouvre les yeux',
-    season3Title: 'Ce qui tient quand tout tremble',
-    season4Title: 'Apprendre à regarder partir',
-    seasonEpisodes: '{{n}} ép.',
-    seasonLockedSub: 'Avec le livre',
-    seasonLockedAlertTitle: 'Disponible avec le livre',
-    seasonLockedAlertBody: 'Cette saison sera accessible quand le livre paraîtra. Vous pouvez vous inscrire pour être prévenu·e à la sortie.',
-    seasonLockedAlertCta: "M'avertir à la sortie",
-    seasonLockedAlertCancel: 'Plus tard',
-
-    // Tools
-    toolsLabel: 'Les outils du voyage',
-    toolsIntro: "En attendant le livre, ces quatre outils vous accompagnent dès aujourd'hui.",
-
-    // Launch notification (bottom CTA)
-    preorderHint: 'Vous venez de lire le pilote.',
-    preorderText: 'Soyez prévenu·e dès la sortie du livre complet.',
-    preorderCta: "M'avertir à la sortie →",
+    // 4 — Pourquoi cette application (un seul bloc ; paragraphes séparés par une ligne vide)
+    whyTitle: 'Pourquoi cette application',
+    whyBody: "Je suis père de deux filles. Je ne suis pas un spécialiste de la parentalité, et je n'ai pas de recette pour élever vos enfants. Certains soirs, après les avoir couchées, je reste un moment dans le couloir et je me demande : est-ce que je fais bien ? Cette question m'accompagne depuis la première fois où j'ai tenu ma fille dans mes bras. Ce jour-là, elle s'est imposée sous une autre forme : que vais-je lui transmettre ?\n\nElle a pris un autre poids à la mort de mon père, en 2025. En devenant père, je m'étais demandé ce que j'allais transmettre. En perdant le mien, j'ai mesuré ce que j'avais reçu : le bon, le maladroit, le silencieux. Dans ma famille, le silence remplaçait souvent la confrontation. Mon père avait une phrase : « Quand on a un problème, on le met dans sa poche et on met son mouchoir dessus. » C'était dit avec bienveillance. J'en porte encore la trace : ce que je ressens, je le pense plus que je ne le montre. Si je ne trie pas ce que j'ai reçu, je le transmettrai en bloc, le meilleur comme le pire. Car la transmission passe autant par nos réflexes et nos silences que par nos paroles.\n\nUn vieux récit de Platon m'aide à penser cette tâche. Chargé de répartir les qualités entre les vivants, Épiméthée donne aux uns la force, aux autres la vitesse, les ailes ou la fourrure. Lorsque vient le tour de l'être humain, il ne reste rien. Prométhée lui apporte le feu ; Zeus, le sens de la justice et le respect mutuel. Mais le mode d'emploi, personne ne le lui donne. L'homme est l'animal inachevé, et c'est précisément dans ce dénuement que réside sa grandeur.\n\nC'est parce qu'il est inachevé qu'il a besoin de parents. L'enfant qui naît ne porte pas un programme à dérouler ; il porte un potentiel à éveiller. Élever un animal, c'est activer ce qui est déjà là. Élever un humain, c'est créer. C'est terrifiant, parce que rien n'est garanti. C'est exaltant, parce que si rien n'est écrit, tout est possible. Ce que j'ai reçu ne décide pas de ce que je transmets.\n\nMais l'enfant fait aussi quelque chose de singulier de ce qu'il reçoit. Mes filles grandissent auprès du même père, et chacune vit notre relation à sa manière. Pour les accompagner, il me faut donc connaître à la fois celui qui transmet et celle qui reçoit. Cette application est née de ce double regard. Mon métier, c'est la synthèse : j'accompagne des entreprises dans leurs transformations, et le travail est le même à la maison. Connaître ses forces et ses monstres. Sortir de sa boîte pour voir l'autre tel qu'il est. Les neuf manières d'être au monde proposées ici sont des repères pour cela : comprendre que votre enfant n'est pas un mini-vous, et que votre conjoint non plus. C'est une carte, pas une case : elle n'a de valeur que si elle aide à mieux voir la personne devant soi, en lui laissant la liberté de nous surprendre.\n\nJe doute encore, le soir, dans le couloir. Mais le parent qui doute est un parent qui cherche, et mon doute devient plus précis : ai-je laissé à mes filles la place d'être elles-mêmes ? L'enfant est le miroir le plus honnête que la vie puisse vous tendre, et la finalité de tout cela est de se rendre progressivement inutile. Alors commencez par regarder. Observez un moment où votre enfant fait quelque chose que vous n'aviez pas prévu. Que choisit-il quand personne ne lui dit quoi choisir ? La transmission commence aussi là : dans la place que nous faisons à ce que nous n'avons pas choisi.",
+    whySignature: 'Thomas',
   },
 
   // Tool cards (home screen)
