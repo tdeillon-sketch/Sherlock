@@ -19,10 +19,13 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryAddUsageDescription": "5herlock enregistre l'image de votre résultat dans vos photos lorsque vous le demandez.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.635336758858-dpqdvnbogs3pkcoe61d0shnb24qv53fg"
+              "com.googleusercontent.apps.635336758858-dpqdvnbogs3pkcoe61d0shnb24qv53fg",
+              "sherlock-app",
+              "com.thomasdeillon.sherlock"
             ]
           }
         ]

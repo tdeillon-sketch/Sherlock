@@ -44,13 +44,14 @@ function formatDuration(days: number | null): string {
 
 /**
  * Display label for a user, taking the provider into account.
- * Apple "Hide my email" → relay address @privaterelay.appleid.com → label as "Apple privé"
+ * Apple "Hide my email" → relay address @privaterelay.appleid.com (or the newer
+ *   @private.icloud.com domain Apple is rolling out) → label as "Apple privé"
  * No email at all but signed in → "Apple sans email" / "Google sans email"
  * Truly anonymous → "anonyme"
  */
 function userDisplayLabel(u: AdminUserRow): string {
   if (u.email) {
-    if (u.email.endsWith('@privaterelay.appleid.com')) {
+    if (u.email.endsWith('@privaterelay.appleid.com') || u.email.endsWith('@private.icloud.com')) {
       return `${u.email}  ·  Apple privé`;
     }
     return u.email;
