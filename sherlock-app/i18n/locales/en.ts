@@ -101,7 +101,7 @@ export const en = {
     skip: 'Skip',
     start: 'Get started',
     s1Title: 'Welcome to 5herlock',
-    s1Body: 'The companion to the book "We all need someone else" — to understand yourself better, and your children.',
+    s1Body: 'To understand yourself better — and the people you love: your children, your partner.',
     s2Title: 'The Enneagram in 30 seconds',
     s2Body: "9 ways of being in the world, 9 ways of loving and reacting. Discovering your child's type means learning their language.",
     s3Title: 'Start with the quiz',

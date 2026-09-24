@@ -1,25 +1,21 @@
 // ═══════════════════════════════════════════════════════════════
-//  Pilot reader — full Chapter 1, free in-app
-//  The marketing centerpiece: actually reading the book.
+//  Reading screen — a free text to read in the app (Chapter 1 text).
+//  No book promotion here: the release date is unknown.
 // ═══════════════════════════════════════════════════════════════
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { CHAPTER_1_FR, CHAPTER_1_EN, type Paragraph } from '../constants/chapter1';
 import { useT } from '../i18n';
-import LaunchSubscribeModal from '../components/LaunchSubscribeModal';
 import { trackScreen } from '../constants/firebase';
 
 export default function PilotScreen() {
   const { t, locale } = useT();
   const chapter = locale === 'en' ? CHAPTER_1_EN : CHAPTER_1_FR;
-  const [subscribeOpen, setSubscribeOpen] = useState(false);
   useEffect(() => { trackScreen('pilot').catch(() => {}); }, []);
-
-  const openSubscribe = () => setSubscribeOpen(true);
 
   const renderParagraph = (p: Paragraph, idx: number) => {
     switch (p.kind) {
@@ -53,7 +49,7 @@ export default function PilotScreen() {
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </Pressable>
         <Text style={styles.topBarLabel}>
-          {locale === 'en' ? 'PILOT EPISODE · FREE' : 'ÉPISODE PILOTE · GRATUIT'}
+          {locale === 'en' ? 'A SHORT READ' : 'À LIRE'}
         </Text>
         <View style={{ width: 26 }} />
       </View>
@@ -91,35 +87,28 @@ export default function PilotScreen() {
         <Text style={styles.signature}>{chapter.signature}</Text>
       </View>
 
-      {/* ── End-of-pilot CTA ── */}
+      {/* ── End card: a bridge to the quiz (no book promotion) ── */}
       <View style={styles.endCard}>
         <Text style={styles.endEyebrow}>
-          {locale === 'en' ? 'END OF PILOT EPISODE' : 'FIN DE L\'ÉPISODE PILOTE'}
+          {locale === 'en' ? 'WHAT NOW?' : 'ET MAINTENANT ?'}
         </Text>
         <Text style={styles.endTitle}>
-          {locale === 'en'
-            ? 'You\'ve just read the first chapter.'
-            : 'Vous venez de lire le premier chapitre.'}
+          {locale === 'en' ? 'Start by looking.' : 'Commencez par regarder.'}
         </Text>
         <Text style={styles.endText}>
           {locale === 'en'
-            ? "The full book continues with the camel, the lion, the child — Nietzsche's three metamorphoses, the family models, the Enneagram, and how to gradually become useless."
-            : "La suite du livre raconte le chameau, le lion, l'enfant — les trois métamorphoses de Nietzsche, les modèles familiaux, l'Ennéagramme, et comment se rendre progressivement inutile."}
+            ? "A few minutes are enough to sketch your profile, or your child's. A map, not a box."
+            : "Quelques minutes suffisent pour esquisser votre profil, ou celui de votre enfant. Une carte, pas une case."}
         </Text>
         <Pressable
-          onPress={openSubscribe}
+          onPress={() => router.push('/quiz' as never)}
           style={({ pressed }) => [styles.endCta, pressed && { opacity: 0.85 }]}
         >
           <Text style={styles.endCtaText}>
-            {locale === 'en' ? 'Notify me at launch  →' : "M'avertir à la sortie  →"}
+            {locale === 'en' ? 'Take the quiz  →' : 'Faire le quiz  →'}
           </Text>
         </Pressable>
       </View>
-
-      <LaunchSubscribeModal
-        visible={subscribeOpen}
-        onClose={() => setSubscribeOpen(false)}
-      />
     </ScrollView>
   );
 }

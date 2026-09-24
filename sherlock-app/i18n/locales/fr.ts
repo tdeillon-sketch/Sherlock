@@ -105,7 +105,7 @@ export const fr = {
     skip: 'Passer',
     start: 'Commencer',
     s1Title: 'Bienvenue dans 5herlock',
-    s1Body: "Le compagnon du livre « On a tous besoin de quelqu'un d'autre » — pour mieux vous comprendre, et comprendre vos enfants.",
+    s1Body: "Pour mieux vous comprendre, et mieux comprendre ceux que vous aimez : vos enfants, votre conjoint.",
     s2Title: "L'Ennéagramme en 30 secondes",
     s2Body: "9 façons d'être au monde, 9 manières d'aimer et de réagir. Découvrir le type de votre enfant, c'est apprendre sa langue.",
     s3Title: 'Commencez par le quiz',
