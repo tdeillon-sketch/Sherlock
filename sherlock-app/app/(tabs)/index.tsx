@@ -5,7 +5,6 @@ import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { useT, getTypeText } from '../../i18n';
 import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
 import { saveAnswer } from '../../constants/ritualJournal';
-import LaunchSubscribeModal from '../../components/LaunchSubscribeModal';
 import { TYPES } from '../../constants/data';
 import { TYPES as TYPES_V3, type EnneaType } from '../../constants/quiz_v3';
 import { auth, isAdmin, onAuthChange, trackScreen, loadFamily, type Family } from '../../constants/firebase';
@@ -14,7 +13,7 @@ export default function HomeScreen() {
   const { t, locale } = useT();
   const [ritualOpen, setRitualOpen] = useState(false);
   const [ritualNote, setRitualNote] = useState('');
-  const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
   const [admin, setAdmin] = useState(isAdmin(auth.currentUser));
   const [family, setFamily] = useState<Family | null>(null);
   const dailyQuestion = getDailyQuestion();
@@ -44,7 +43,11 @@ export default function HomeScreen() {
     ? [...(family.self ? [family.self] : []), ...family.adults, ...family.children].filter((m) => m.type != null)
     : [];
 
-  const openSubscribe = () => setSubscribeOpen(true);
+  // Thomas's note: paragraphs separated by a blank line. Collapsed = the subject +
+  // why it matters to him; "Read more" reveals the rest.
+  const NOTE_COLLAPSED_PARAS = 2;
+  const noteParas = t('home.noteBody').split('\n\n');
+  const visibleParas = noteOpen ? noteParas : noteParas.slice(0, NOTE_COLLAPSED_PARAS);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -52,7 +55,7 @@ export default function HomeScreen() {
       <View style={styles.topBar}>
         <View style={styles.brandRow}>
           <View style={styles.brandSquare}>
-            <Text style={styles.brandSquareLetter}>L</Text>
+            <Text style={styles.brandSquareLetter}>5</Text>
           </View>
           <Text style={styles.brandLabel}>{t('home.brandLabel')}</Text>
         </View>
@@ -78,14 +81,28 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ── Hero quote ── */}
-      <View style={styles.hero}>
-        <Text style={styles.heroQuote}>{t('home.heroQuote')}</Text>
-        <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
-        <Text style={styles.heroCredit}>{t('home.heroCredit')}</Text>
+      {/* ── A note from Thomas (the subject, why it matters to him, a bit of him) ── */}
+      <View style={styles.note}>
+        <Text style={styles.noteEyebrow}>{t('home.noteEyebrow')}</Text>
+        <Text style={styles.noteOpening}>{t('home.noteOpening')}</Text>
+        {visibleParas.map((p, i) => (
+          <Text key={i} style={styles.noteBody}>{p}</Text>
+        ))}
+        <View style={styles.noteFooter}>
+          {noteParas.length > NOTE_COLLAPSED_PARAS ? (
+            <Pressable
+              onPress={() => setNoteOpen((o) => !o)}
+              hitSlop={8}
+              style={({ pressed }) => pressed && { opacity: 0.6 }}
+            >
+              <Text style={styles.noteMore}>{noteOpen ? t('home.noteLess') : t('home.noteMore')}</Text>
+            </Pressable>
+          ) : <View />}
+          <Text style={styles.noteSignature}>{t('home.noteSignature')}</Text>
+        </View>
       </View>
 
-      {/* ── Pilot episode card (the marketing centerpiece) ── */}
+      {/* ── Reading card (a free text to read) ── */}
       <Pressable
         onPress={() => router.push('/pilot' as never)}
         style={({ pressed }) => [styles.pilotCard, pressed && { opacity: 0.92 }]}
@@ -94,7 +111,6 @@ export default function HomeScreen() {
           <Text style={styles.pilotEyebrow}>{t('home.pilotEyebrow')}</Text>
           <Text style={styles.pilotDuration}>{t('home.pilotDuration')}</Text>
         </View>
-        <Text style={styles.pilotChapterLabel}>{t('home.pilotChapterLabel')}</Text>
         <Text style={styles.pilotChapterTitle}>{t('home.pilotChapterTitle')}</Text>
         <Text style={styles.pilotTagline}>{t('home.pilotTagline')}</Text>
         <View style={styles.pilotCtaRow}>
@@ -102,18 +118,6 @@ export default function HomeScreen() {
           <Text style={styles.pilotCtaArrow}>→</Text>
         </View>
       </Pressable>
-
-      {/* ── Book teaser + notify (folds the old seasons list + preorder CTA) ── */}
-      <View style={styles.bookTeaser}>
-        <Text style={styles.bookTeaserText}>{t('home.bookTeaser')}</Text>
-        <Pressable
-          onPress={openSubscribe}
-          style={({ pressed }) => [styles.bookTeaserCta, pressed && { opacity: 0.7 }]}
-          hitSlop={6}
-        >
-          <Text style={styles.bookTeaserCtaText}>{t('home.seasonLockedAlertCta')}  →</Text>
-        </Pressable>
-      </View>
 
       {/* ── Daily ritual ── */}
       <View style={styles.ritualCard}>
@@ -226,10 +230,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <LaunchSubscribeModal
-        visible={subscribeOpen}
-        onClose={() => setSubscribeOpen(false)}
-      />
     </ScrollView>
   );
 }
@@ -270,25 +270,31 @@ const styles = StyleSheet.create({
   },
   adminBtnText: { color: colors.white, fontSize: 18, fontWeight: '700' },
 
-  // ── Hero ──
-  hero: {
+  // ── A note from Thomas ──
+  note: {
     paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md,
   },
-  heroQuote: {
+  noteEyebrow: {
+    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase',
+    color: colors.accent, fontWeight: '700', marginBottom: spacing.sm,
+  },
+  noteOpening: {
     fontFamily: fonts.serifItalic, fontSize: 26, lineHeight: 34,
     color: colors.text,
   },
-  heroAuthor: {
-    fontFamily: fonts.sans, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase',
-    color: colors.textMuted, fontWeight: '600', marginTop: spacing.sm,
-  },
-  heroSubtitle: {
-    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
+  noteBody: {
+    fontFamily: fonts.sans, fontSize: 14, lineHeight: 22,
     color: colors.textSoft, marginTop: spacing.md,
   },
-  heroCredit: {
-    fontFamily: fonts.serifItalic, fontSize: 12,
-    color: colors.textMuted, marginTop: 4,
+  noteFooter: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginTop: spacing.md,
+  },
+  noteMore: {
+    fontFamily: fonts.sans, fontSize: 13, fontWeight: '600', color: colors.accent,
+  },
+  noteSignature: {
+    fontFamily: fonts.serifItalic, fontSize: 20, color: colors.text,
   },
 
   // ── Pilot card (the marketing centerpiece) ──
@@ -309,9 +315,6 @@ const styles = StyleSheet.create({
   pilotDuration: {
     fontFamily: fonts.sans, fontSize: 11, color: '#b8a89b',
   },
-  pilotChapterLabel: {
-    fontFamily: fonts.serif, fontSize: 17, color: '#FBF7F1', marginTop: 4,
-  },
   pilotChapterTitle: {
     fontFamily: fonts.serifItalic, fontSize: 18, lineHeight: 24,
     color: '#FBF7F1', marginTop: 2,
@@ -331,21 +334,6 @@ const styles = StyleSheet.create({
   },
   pilotCtaArrow: {
     fontFamily: fonts.sans, fontSize: 18, color: colors.white,
-  },
-
-  // ── Book teaser (folds the seasons + preorder) ──
-  bookTeaser: {
-    marginHorizontal: spacing.md, marginTop: spacing.sm,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  bookTeaserText: {
-    flex: 1, fontFamily: fonts.sans, fontSize: 12, lineHeight: 17, color: colors.textMuted,
-  },
-  bookTeaserCta: { flexShrink: 0 },
-  bookTeaserCtaText: {
-    fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accent,
   },
 
   // ── Ritual ──

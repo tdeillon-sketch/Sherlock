@@ -33,22 +33,22 @@ export const fr = {
   // Home screen — TV-series framing: free pilot + daily ritual + 4 seasons
   home: {
     // Brand
-    brandLabel: 'LE LIVRE',
+    brandLabel: '5HERLOCK',
 
-    // Hero
-    heroQuote: 'Le parent qui doute\nest un parent qui\ncherche.',
-    heroAuthor: '— Thomas Deillon',
-    heroSubtitle: "Le voyage intérieur de parents imparfaits. Comment grandir avec ses enfants",
-    heroCredit: 'Auteurs : Solène et Thomas Deillon · à paraître',
+    // A note from Thomas (paragraphs separated by a blank line)
+    noteEyebrow: 'UN MOT DE THOMAS',
+    noteOpening: "Pourquoi est-ce si difficile d'être parent ?",
+    noteBody: "Les méthodes ne manquent pas. Il y en a même trop. La difficulté est ailleurs : chacun regarde l'autre depuis sa propre manière d'être. Il existe neuf manières d'être au monde, et aucune n'est meilleure qu'une autre. Ce n'est pas une case, c'est une carte. Elle aide à voir l'autre tel qu'il est : son enfant, son conjoint.\n\nJe suis père de deux filles. Et chaque jour, je doute. Certains soirs, après les avoir couchées, je reste un moment dans le couloir et je me demande si je fais bien. Mon père est mort. Depuis, la question « quel père suis-je ? » n'est plus théorique.\n\nJe ne suis pas un spécialiste de la parentalité. J'ai grandi dans une famille où le silence remplaçait la confrontation. Ce que je ressens, je le pense plus que je ne le montre. J'y travaille. Je suis loin d'avoir tout compris.",
+    noteMore: 'Lire la suite',
+    noteLess: 'Réduire',
+    noteSignature: 'Thomas',
 
-    // Pilot card
-    pilotEyebrow: 'ÉPISODE PILOTE · GRATUIT',
+    // Reading card
+    pilotEyebrow: 'À LIRE',
     pilotDuration: '12 min',
-    pilotChapterLabel: 'Chapitre 1',
     pilotChapterTitle: 'Le seul animal qui ne sait pas élever ses petits',
     pilotTagline: "Pourquoi sommes-nous le seul être vivant à arriver au monde sans mode d'emploi ?",
     pilotCta: 'Commencer la lecture',
-    bookTeaser: 'Saison 1 (le chapitre ci-dessus) en lecture libre. Les 3 autres saisons arrivent avec le livre.',
 
     // Daily ritual
     ritualEyebrow: 'LE RITUEL DU JOUR',

@@ -30,22 +30,22 @@ export const en = {
 
   // Home screen — TV-series framing
   home: {
-    brandLabel: 'THE BOOK',
+    brandLabel: '5HERLOCK',
 
-    // Hero
-    heroQuote: 'A parent who doubts\nis a parent who\nis searching.',
-    heroAuthor: '— Thomas Deillon',
-    heroSubtitle: 'The inner journey of imperfect parents. How to grow alongside your children.',
-    heroCredit: 'Authors: Solène and Thomas Deillon · forthcoming',
+    // A note from Thomas (paragraphs separated by a blank line)
+    noteEyebrow: 'A NOTE FROM THOMAS',
+    noteOpening: 'Why is it so hard to be a parent?',
+    noteBody: "There is no shortage of methods. If anything, there are too many. The difficulty lies elsewhere: each of us looks at the other from inside our own way of being. There are nine ways of being in the world, and none is better than another. It is not a box, it is a map. It helps you see the other as they are: your child, your partner.\n\nI am the father of two daughters. And every day, I doubt. Some evenings, after putting them to bed, I stay a moment in the hallway and ask myself whether I am doing it right. My father died. Since then, the question “what kind of father am I?” is no longer theoretical.\n\nI am not a parenting specialist. I grew up in a family where silence took the place of confrontation. What I feel, I think more than I show. I am working on it. I am far from having figured it all out.",
+    noteMore: 'Read more',
+    noteLess: 'Show less',
+    noteSignature: 'Thomas',
 
-    // Pilot card
-    pilotEyebrow: 'PILOT EPISODE · FREE',
+    // Reading card
+    pilotEyebrow: 'A SHORT READ',
     pilotDuration: '12 min',
-    pilotChapterLabel: 'Chapter 1',
     pilotChapterTitle: "The only animal that doesn't know how to raise its young",
     pilotTagline: "Why are we the only living being who arrives in this world without a manual?",
     pilotCta: 'Start reading',
-    bookTeaser: 'Season 1 (the chapter above) is free to read. The 3 other seasons arrive with the book.',
 
     // Daily ritual
     ritualEyebrow: "TODAY'S RITUAL",
