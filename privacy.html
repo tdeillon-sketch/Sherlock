@@ -100,7 +100,7 @@
 <p>L'application propose deux modes d'authentification au choix : <strong>Sign in with Apple</strong> ou <strong>Google Sign-In</strong>. Lors de votre connexion, nous recevons :</p>
 <ul>
   <li>Votre <strong>adresse email</strong> (avec Sign in with Apple, vous pouvez choisir de masquer votre adresse réelle ; Apple génère alors un alias privé qui transfère le courrier)</li>
-  <li>Votre <strong>nom</strong> (tel que renseigné sur votre compte Apple ou Google, et seulement si vous l'autorisez)</li>
+  <li>Votre <strong>nom</strong>, si vous vous connectez avec Google (tel que renseigné sur votre compte Google ; avec Apple, nous ne l'enregistrons pas)</li>
   <li>Un <strong>identifiant unique</strong> (UID) utilisé pour vous reconnaître</li>
 </ul>
 <p>Ces données sont transmises par Apple ou Google lors de votre authentification et sont stockées de manière sécurisée via les services Firebase Authentication de Google.</p>
@@ -117,9 +117,8 @@
 
 <h3>2.3 Données techniques</h3>
 <ul>
-  <li>Date de dernière connexion</li>
+  <li>Date de création du compte et de dernière connexion</li>
   <li>Nombre de visites par écran de l'application</li>
-  <li>Logs d'erreurs éventuelles (pour le débogage)</li>
 </ul>
 
 <h3>2.4 Ce que nous ne collectons PAS</h3>
@@ -146,7 +145,8 @@
 <p>Vos données sont hébergées par <strong>Google Firebase</strong>. Google Firebase est certifié conforme au <strong>RGPD</strong>. Vous pouvez consulter la politique de confidentialité de Google Cloud à l'adresse : <a href="https://cloud.google.com/security/privacy" target="_blank" rel="noopener">cloud.google.com/security/privacy</a>.</p>
 
 <h2>5. Combien de temps conservons-nous vos données ?</h2>
-<p>Vos données sont conservées <strong>tant que votre compte est actif</strong>. Si vous n'utilisez plus l'application pendant <strong>24 mois consécutifs</strong>, votre compte et toutes les données associées sont automatiquement supprimés.</p>
+<p>Vos données sont conservées <strong>jusqu'à ce que vous les supprimiez</strong>, depuis l'application (ci-dessous) ou par email (section 7).</p>
+<p>Sans compte, vos données sont liées à un identifiant anonyme propre à cet appareil : pour les effacer, touchez « Effacer mes données » avant de désinstaller l'application. Après une désinstallation, nous ne pouvons plus les relier à vous ; elles restent enregistrées, sans email ni nom.</p>
 
 <h3>Supprimer votre compte directement depuis l'application</h3>
 <p>Vous pouvez supprimer définitivement votre compte à tout moment, <strong>sans nous contacter</strong>, depuis l'application :</p>

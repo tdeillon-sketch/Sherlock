@@ -18,7 +18,7 @@ Pour toute question relative à cette politique de confidentialité, vous pouvez
 
 L'Application propose deux modes d'authentification au choix : **Sign in with Apple** ou **Google Sign-In**. Lors de votre connexion, nous recevons :
 - Votre **adresse email** (avec Sign in with Apple, vous pouvez choisir de masquer votre adresse réelle ; Apple génère alors un alias privé qui transfère le courrier)
-- Votre **nom** (tel que renseigné sur votre compte Apple ou Google, et seulement si vous l'autorisez)
+- Votre **nom**, si vous vous connectez avec Google (tel que renseigné sur votre compte Google ; avec Apple, nous ne l'enregistrons pas)
 - Un **identifiant unique** (UID) utilisé pour vous reconnaître
 
 Ces données sont transmises par Apple ou Google lors de votre authentification et sont **stockées de manière sécurisée** via les services Firebase Authentication de Google.
@@ -37,9 +37,8 @@ Dans le cadre de l'utilisation de l'Application, nous enregistrons :
 ### 2.3 Données techniques
 
 À des fins de fonctionnement de l'Application :
-- **Date de dernière connexion**
+- **Date de création du compte et de dernière connexion**
 - **Nombre de visites par écran** de l'Application
-- **Logs d'erreurs éventuelles** (pour le débogage)
 
 ### 2.4 Ce que nous ne collectons PAS
 
@@ -76,11 +75,9 @@ Google Firebase est certifié conforme au **RGPD**. Vous pouvez consulter la pol
 
 ## 5. Combien de temps conservons-nous vos données ?
 
-Vos données sont conservées **tant que votre compte est actif**.
+Vos données sont conservées **jusqu'à ce que vous les supprimiez**, depuis l'Application (« Supprimer mon compte », ou « Effacer mes données » sans compte) ou par email (voir section 7).
 
-Si vous n'utilisez plus l'Application pendant **24 mois consécutifs**, votre compte et toutes les données associées sont automatiquement supprimés.
-
-Vous pouvez également demander la suppression immédiate de votre compte à tout moment (voir section 7).
+Sans compte, vos données sont liées à un identifiant anonyme propre à cet appareil : pour les effacer, touchez « Effacer mes données » avant de désinstaller l'Application. Après une désinstallation, nous ne pouvons plus les relier à vous ; elles restent enregistrées, sans email ni nom.
 
 ---
 
