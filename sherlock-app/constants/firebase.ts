@@ -185,7 +185,10 @@ export async function clearPendingAnonMerges(uid: string): Promise<void> {
   const keys = (await AsyncStorage.getAllKeys().catch(() => [] as readonly string[]))
     .filter((k) => k.startsWith(PENDING_PREFIX));
   for (const k of keys) {
-    const p = JSON.parse((await AsyncStorage.getItem(k).catch(() => null)) ?? 'null');
+    // A copy that can't be read is dropped too (never throws: deleteAccount
+    // calls this after the journal is already gone).
+    let p: any = null;
+    try { p = JSON.parse((await AsyncStorage.getItem(k).catch(() => null)) ?? 'null'); } catch {}
     if (!p || p.anonUid === uid || p.target === uid) await AsyncStorage.removeItem(k).catch(() => {});
   }
 }
@@ -275,16 +278,85 @@ async function connectWithCredential(
   return res.user;
 }
 
+// ── Sign in with Apple: revoked on account deletion ──
+// Apple requires it. Firebase keeps no Apple token, so the account screen
+// always asks for Apple again right before deleting: Firebase checks the
+// identity token of that sheet, and its one-time authorization code (single
+// use, valid 5 minutes) is kept here, in memory, for this account only.
+const APPLE_CODE_MAX_AGE_MS = 4 * 60 * 1000;
+const APPLE_REVOKE_TIMEOUT_MS = 8000;
+const IOS_BUNDLE_ID = 'com.thomasdeillon.sherlock';
+let appleCode: { uid: string; code: string; at: number } | null = null;
+
+// Dropped as soon as another account (or none) is signed in: sign-out,
+// account switch, deleteUser.
+onAuthStateChanged(auth, (u) => { if (appleCode && appleCode.uid !== u?.uid) appleCode = null; });
+
+export function forgetAppleRevokeCode(): void {
+  appleCode = null;
+}
+
+/** This account's code, once: null if none, too old, or from another account. */
+function takeAppleRevokeCode(uid: string): string | null {
+  const c = appleCode;
+  appleCode = null;
+  return c && c.uid === uid && Date.now() - c.at < APPLE_CODE_MAX_AGE_MS ? c.code : null;
+}
+
+/** The Identity Toolkit request that revokes Sign in with Apple with an
+ *  authorization code: the same body and bundle header as the native iOS
+ *  SDK's revokeToken(withAuthorizationCode:). The JS SDK's revokeAccessToken
+ *  only takes an access token, which a native sign-in never gets. No
+ *  redirectUri: a native code was issued without one. */
+export function appleRevokeRequest(code: string, idToken: string): { url: string; init: RequestInit } {
+  return {
+    url: `https://identitytoolkit.googleapis.com/v2/accounts:revokeToken?key=${firebaseConfig.apiKey}`,
+    init: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Ios-Bundle-Identifier': IOS_BUNDLE_ID },
+      body: JSON.stringify({ providerId: 'apple.com', tokenType: 'CODE', token: code, idToken }),
+    },
+  };
+}
+
+/** Best effort, never throws: true only if the revocation was accepted.
+ *  Fails (false) while the Apple provider has no "OAuth code flow
+ *  configuration" in the Firebase console: see ADMIN.md. */
+async function revokeAppleSignIn(user: User, code: string): Promise<boolean> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), APPLE_REVOKE_TIMEOUT_MS);
+  try {
+    const { url, init } = appleRevokeRequest(code, await user.getIdToken());
+    const res = await fetch(url, { ...init, signal: ctrl.signal });
+    if (!res.ok && __DEV__) {
+      const body = await res.json().catch(() => null);
+      console.warn('[apple-revoke]', res.status, body?.error?.message);
+    }
+    return res.ok;
+  } catch {
+    return false; // offline, timeout
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Confirm identity again (required by Firebase before deleting an account
  *  signed in a while ago). Does not switch or link anything. */
 export async function reauthWithGoogleIdToken(idToken: string): Promise<void> {
   if (!auth.currentUser) throw new Error('no user');
   await reauthenticateWithCredential(auth.currentUser, GoogleAuthProvider.credential(idToken));
 }
-export async function reauthWithAppleIdToken(identityToken: string, rawNonce: string): Promise<void> {
-  if (!auth.currentUser) throw new Error('no user');
+export async function reauthWithAppleIdToken(
+  identityToken: string, rawNonce: string, authorizationCode?: string | null,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('no user');
+  appleCode = null;
   const credential = new OAuthProvider('apple.com').credential({ idToken: identityToken, rawNonce });
-  await reauthenticateWithCredential(auth.currentUser, credential);
+  await reauthenticateWithCredential(user, credential);
+  // Same account confirmed (another Apple ID throws above): keep the code of
+  // this Apple sheet for the revocation that follows.
+  if (authorizationCode) appleCode = { uid: user.uid, code: authorizationCode, at: Date.now() };
 }
 
 /** Read-modify-write of the family profiles in a transaction: never builds on
@@ -352,22 +424,32 @@ export async function signOut(): Promise<void> {
  * Permanently delete the current user's account:
  *  - Removes the journal entries /journals/{uid}/entries/*
  *  - Removes the Firestore document /users/{uid}
+ *  - Apple account: revokes Sign in with Apple (App Store rule), with the
+ *    code of the Apple confirmation shown just before (see account.tsx)
  *  - Deletes the Firebase Auth user
  * The caller also clears the local journal copy (clearLocalJournal).
  * After this, the user will be signed out and the local state should be reset.
+ * appleRevoked: true / false for an Apple account (false: not revoked, the
+ * deletion went on anyway), null otherwise.
  *
  * NOTE: Firebase requires a recent sign-in for `deleteUser`. If the call
  * throws "auth/requires-recent-login", the caller should re-authenticate
  * the user (sign in again) before retrying.
  */
-export async function deleteAccount(): Promise<void> {
+export async function deleteAccount(): Promise<{ appleRevoked: boolean | null }> {
   const user = auth.currentUser;
   if (!user) throw new Error("Aucun utilisateur connecté");
-  // Copies kept on the phone during an account switch go too.
-  await clearPendingAnonMerges(user.uid);
+  // Taken now, so it is used at most once whatever happens below (a retry
+  // asks for Apple again and gets a new code).
+  const code = takeAppleRevokeCode(user.uid);
+  const apple = isAppleSignedIn(user);
   // 0. The journal holds personal answers: if it can't be deleted (e.g.
   //    offline), stop here so nothing personal is left behind online.
   await deleteAllJournalEntriesRemote(user.uid);
+  // Copies kept on the phone during an account switch go too: only now,
+  // so a deletion stopped above loses nothing (and before the account
+  // goes, so none can be merged back into it at the next launch).
+  await clearPendingAnonMerges(user.uid);
   // 1. Delete Firestore data first (best-effort — if it fails the auth
   //    user remains so we don't end up with orphaned data).
   try {
@@ -376,9 +458,15 @@ export async function deleteAccount(): Promise<void> {
     // Continue anyway — the auth user must still be deleted to comply
     // with Apple's account-deletion requirement.
   }
-  // 2. Delete the auth user. If "requires-recent-login", let the caller
+  // 2. Revoke Sign in with Apple: after the step that can stop the deletion
+  //    (offline: nothing deleted, nothing revoked), before the account goes
+  //    (the request needs its ID token). Best effort, 8 s at most: the
+  //    account is deleted even if Apple can't be reached.
+  const appleRevoked = apple ? (code ? await revokeAppleSignIn(user, code) : false) : null;
+  // 3. Delete the auth user. If "requires-recent-login", let the caller
   //    handle re-auth.
   await deleteUser(user);
+  return { appleRevoked };
 }
 
 // ── User data types ──

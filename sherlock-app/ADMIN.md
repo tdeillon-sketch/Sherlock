@@ -16,6 +16,37 @@ sign-in screen, with a "Continuer sans compte" retry.
 Anonymous sessions (one per install) appear in the admin as a separate count
 ("sessions sans compte"), not in the account lists.
 
+## Prerequisite: Sign in with Apple revocation
+
+Apple requires that deleting an account also revokes Sign in with Apple. The
+app always asks for Apple once more before deleting an Apple account, then
+sends that sheet's one-time code to Firebase (`accounts:revokeToken`), which
+exchanges it with Apple using the key stored in the Firebase console.
+
+State checked on 2026-09-25 (Firebase console > Authentication > Sign-in
+method > **Apple**), nothing to do:
+- **Services ID** = `com.thomasdeillon.sherlock` (the bundle ID). **Do not
+  change it.** The project has no Firebase iOS app (only the web app), so this
+  field is what lets the iPhone's Apple tokens in, and it is the client the
+  one-time code is issued to. Replacing it with a separate Services ID would
+  break every Apple sign-in, and with it the deletion of Apple accounts.
+- **OAuth code flow configuration**: Team ID (`6VXK7BJANY`), Key ID and
+  private key are filled in.
+
+Only if that key is ever revoked: Apple Developer > Keys > **+**, enable
+**Sign in with Apple** with Primary App ID `com.thomasdeillon.sherlock`,
+download the `.p8` (only once), then paste the new Key ID and the whole `.p8`
+(BEGIN/END lines included) into "OAuth code flow configuration". Leave the
+Services ID as it is.
+
+If a revocation fails (no answer within 8 s, key problem), the account and its data are
+still deleted, and the app tells the user they can remove 5herlock under Sign
+in with Apple in their Apple Account settings. Check on a TestFlight build
+(not Expo Go): after deleting an Apple account, 5herlock must be gone from
+that list. This admin tool only deletes Firestore documents, and deleting a
+user in the Firebase console does not revoke Apple either (no code): only the
+in-app deletion does.
+
 ## Required Firestore security rules
 
 For the admin to be able to read the full `/users` collection, and for

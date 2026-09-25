@@ -166,7 +166,9 @@ export default function AuthScreen({ onSuccess, mode = 'gate', onClose }: Props)
         throw new Error(t('auth.errorAppleNoToken'));
       }
       if (isReauth) {
-        await reauthWithAppleIdToken(credential.identityToken, raw);
+        // Firebase checks the identity token; the one-time code of this same
+        // sheet is kept so the deletion can revoke Sign in with Apple.
+        await reauthWithAppleIdToken(credential.identityToken, raw, credential.authorizationCode);
         onSuccess();
         return;
       }
@@ -230,7 +232,10 @@ export default function AuthScreen({ onSuccess, mode = 'gate', onClose }: Props)
           {isReauth ? t('auth.reauthTitle') : isModal ? t('auth.saveTitle') : t('auth.title')}
         </Text>
         <Text style={styles.subtitle}>
-          {isReauth ? t('auth.reauthSubtitle') : isModal ? t('auth.saveSubtitle') : t('auth.subtitle')}
+          {isReauth
+            ? t(showApple && !showGoogle ? 'auth.reauthSubtitleApple'
+              : showGoogle && !showApple ? 'auth.reauthSubtitleGoogle' : 'auth.reauthSubtitle')
+            : isModal ? t('auth.saveSubtitle') : t('auth.subtitle')}
         </Text>
 
         {!isReauth && (

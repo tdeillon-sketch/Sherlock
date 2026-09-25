@@ -358,6 +358,8 @@ export const fr = {
     continueWithout: 'Continuer sans compte',
     errorNoNetwork: 'Pas de connexion pour le moment. Réessayez dans un instant.',
     reauthSubtitle: 'Pour supprimer votre compte, reconnectez-vous avec le même compte Apple ou Google.',
+    reauthSubtitleApple: 'Pour supprimer votre compte, confirmez une dernière fois avec votre compte Apple. La suppression se terminera ensuite.',
+    reauthSubtitleGoogle: 'Pour supprimer votre compte, confirmez une dernière fois avec votre compte Google. La suppression se terminera ensuite.',
     errorReauthMismatch: "Ce n'est pas le compte actuellement connecté. Utilisez le même compte Apple ou Google.",
     close: 'Fermer',
     errorNoGoogleIdToken: "Pas d'id_token reçu de Google",
@@ -394,6 +396,11 @@ export const fr = {
     deleteConfirmAction: 'Supprimer définitivement',
     deleteConfirm2Title: 'Êtes-vous absolument sûr ?',
     deleteConfirm2Body: 'Dernière confirmation. Voulez-vous vraiment supprimer votre compte et toutes vos données ?',
+    // Without an account ("Effacer mes données"): no family, no journal.
+    dangerDescAnon: 'Effacer vos données supprime définitivement vos résultats de quiz et votre progression. Cette action est irréversible.',
+    eraseConfirmTitle: 'Effacer définitivement vos données ?',
+    eraseConfirmBody: "Cette action est irréversible. Seront effacés :\n\n• Résultats de quiz et seconds avis\n• Progression du carnet d'enquête et XP Sherlock\n\nCela ne peut pas être annulé.",
+    eraseConfirm2Body: 'Dernière confirmation. Voulez-vous vraiment effacer toutes vos données ?',
     deleteConfirm2Action: 'Oui, supprimer',
     cancel: 'Annuler',
     reauthTitle: 'Reconnexion requise',
@@ -401,6 +408,11 @@ export const fr = {
     reauthAction: 'Se reconnecter',
     deleteFailedTitle: 'Suppression impossible',
     deleteFailedBody: 'La suppression n\'a pas pu aboutir. Vérifiez votre connexion et réessayez.',
+    deletedTitle: 'Compte supprimé',
+    deletedBody: 'Votre compte et vos données sont supprimés. Vous pouvez continuer à utiliser 5herlock sans compte.',
+    erasedTitle: 'Données effacées',
+    erasedBody: 'Vos données sont effacées. Vous repartez de zéro.',
+    deletedAppleBody: "Votre compte et vos données sont supprimés. 5herlock peut encore figurer dans les réglages de votre compte Apple : vous pouvez l'en retirer, sous « Se connecter avec Apple ».",
   },
 
   // Profiles list page

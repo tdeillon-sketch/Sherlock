@@ -25,7 +25,8 @@ export function openSignIn(): void {
 }
 
 /** Confirm the identity again (same Apple / Google account), then run
- *  `action`: Firebase requires a recent sign-in to delete an account. */
+ *  `action`: Firebase requires a recent sign-in to delete an account, and
+ *  revoking Sign in with Apple needs the code of a fresh Apple sheet. */
 export function requireReauth(action: () => void): void {
   pending = action;
   router.push('/sign-in?mode=reauth' as never);

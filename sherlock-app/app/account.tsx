@@ -8,7 +8,7 @@
 
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator,
+  View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator, Platform,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { onIdTokenChanged } from 'firebase/auth';
@@ -55,28 +55,37 @@ export default function AccountScreen() {
   };
 
   const performDelete = async (afterReauth = false) => {
-    // With an account signed in a while ago, Firebase will refuse the final
-    // step: confirm the identity FIRST, before anything is deleted. (Skipped
-    // right after that confirmation, so a phone clock ahead can't loop it.)
+    // Confirm the identity FIRST, before anything is deleted (skipped right
+    // after that confirmation, so nothing can loop it):
+    //  - Apple (on iPhone): always. Revoking Sign in with Apple (App Store
+    //    rule) needs the one-time code of an Apple sheet shown just before.
+    //  - Otherwise, when signed in a while ago (Firebase would refuse the
+    //    final step; a phone clock ahead can't loop it either).
     const current = auth.currentUser;
     if (current && !current.isAnonymous && !afterReauth) {
-      const info = await current.getIdTokenResult().catch(() => null);
-      const age = info ? Date.now() - Date.parse(info.authTime) : Infinity;
-      if (!(age < 4 * 60 * 1000)) {
-        Alert.alert(t('account.reauthTitle'), t('account.reauthBody'), [
-          { text: t('account.reauthAction'), onPress: () => requireReauth(() => { performDelete(true); }) },
-          { text: t('account.cancel'), style: 'cancel' },
-        ]);
-        return;
+      let confirm = Platform.OS === 'ios' && isAppleSignedIn(current);
+      if (!confirm) {
+        const info = await current.getIdTokenResult().catch(() => null);
+        const age = info ? Date.now() - Date.parse(info.authTime) : Infinity;
+        confirm = !(age < 4 * 60 * 1000);
       }
+      // Straight to the confirmation screen: it says why, and that the
+      // deletion finishes right after.
+      if (confirm) { requireReauth(() => { performDelete(true); }); return; }
     }
     setBusy('delete');
     const uid = auth.currentUser?.uid;
+    const hadAccount = !isAnonymousUser(auth.currentUser);
     // No journal upload may land after the online copy has been listed.
     if (uid) stopJournalSync(uid);
     try {
-      await deleteAccount();
+      const { appleRevoked } = await deleteAccount();
       if (uid) await clearLocalJournal(uid);
+      // Always say it is done (the app then looks as before: a fresh session
+      // without an account). Apple could not be told (offline, timeout): say
+      // where the user can remove 5herlock from their Apple Account.
+      if (!hadAccount) Alert.alert(t('account.erasedTitle'), t('account.erasedBody'));
+      else Alert.alert(t('account.deletedTitle'), t(appleRevoked === false ? 'account.deletedAppleBody' : 'account.deletedBody'));
       // The root layout starts a fresh session without an account and
       // remounts every screen.
     } catch (e: any) {
@@ -84,11 +93,16 @@ export default function AccountScreen() {
       if (code === 'auth/requires-recent-login') {
         // The data was already deleted online before this error. Firebase
         // wants a recent sign-in to delete the account itself: confirm the
-        // identity with the same Apple / Google account, then finish.
+        // identity with the same Apple / Google account, then finish. (For
+        // Apple, that sheet also brings a new code: the retry revokes too.)
         if (uid) await clearLocalJournal(uid);
         // Without an account there is nothing to confirm: the data is gone,
         // start a fresh session.
-        if (isAnonymousUser(auth.currentUser)) { await signOut().catch(() => {}); return; }
+        if (isAnonymousUser(auth.currentUser)) {
+          await signOut().catch(() => {});
+          Alert.alert(t('account.erasedTitle'), t('account.erasedBody'));
+          return;
+        }
         Alert.alert(
           t('account.reauthTitle'),
           t('account.reauthBody'),
@@ -109,8 +123,8 @@ export default function AccountScreen() {
   const handleDelete = () => {
     if (busy) return;
     Alert.alert(
-      t('account.deleteConfirmTitle'),
-      t('account.deleteConfirmBody'),
+      t(anonymous ? 'account.eraseConfirmTitle' : 'account.deleteConfirmTitle'),
+      t(anonymous ? 'account.eraseConfirmBody' : 'account.deleteConfirmBody'),
       [
         { text: t('account.cancel'), style: 'cancel' },
         {
@@ -120,7 +134,7 @@ export default function AccountScreen() {
             // Second confirmation, per Apple's "prevent accidental deletion"
             Alert.alert(
               t('account.deleteConfirm2Title'),
-              t('account.deleteConfirm2Body'),
+              t(anonymous ? 'account.eraseConfirm2Body' : 'account.deleteConfirm2Body'),
               [
                 { text: t('account.cancel'), style: 'cancel' },
                 {
@@ -237,7 +251,7 @@ export default function AccountScreen() {
       <View style={styles.dangerZone}>
         <Text style={styles.dangerLabel}>{t('account.dangerLabel')}</Text>
         <Text style={styles.dangerDesc}>
-          {t('account.dangerDesc')}
+          {t(anonymous ? 'account.dangerDescAnon' : 'account.dangerDesc')}
         </Text>
         <Pressable
           onPress={handleDelete}

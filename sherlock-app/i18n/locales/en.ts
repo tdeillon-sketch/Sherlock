@@ -350,6 +350,8 @@ export const en = {
     continueWithout: 'Continue without an account',
     errorNoNetwork: 'No connection right now. Try again in a moment.',
     reauthSubtitle: 'To delete your account, sign in again with the same Apple or Google account.',
+    reauthSubtitleApple: 'To delete your account, confirm one last time with your Apple account. The deletion will then finish.',
+    reauthSubtitleGoogle: 'To delete your account, confirm one last time with your Google account. The deletion will then finish.',
     errorReauthMismatch: 'This is not the account currently signed in. Use the same Apple or Google account.',
     close: 'Close',
     errorNoGoogleIdToken: 'No id_token received from Google',
@@ -385,6 +387,11 @@ export const en = {
     deleteConfirmAction: 'Delete permanently',
     deleteConfirm2Title: 'Are you absolutely sure?',
     deleteConfirm2Body: 'Final confirmation. Do you really want to delete your account and all your data?',
+    // Without an account ("Erase my data"): no family, no journal.
+    dangerDescAnon: 'Erasing your data permanently deletes your quiz results and progress. This action cannot be undone.',
+    eraseConfirmTitle: 'Permanently erase your data?',
+    eraseConfirmBody: 'This action cannot be undone. The following will be erased:\n\n• Quiz results and second opinions\n• Casebook progress and Sherlock XP\n\nThis cannot be reversed.',
+    eraseConfirm2Body: 'Final confirmation. Do you really want to erase all your data?',
     deleteConfirm2Action: 'Yes, delete',
     cancel: 'Cancel',
     reauthTitle: 'Re-authentication required',
@@ -392,6 +399,11 @@ export const en = {
     reauthAction: 'Sign in again',
     deleteFailedTitle: 'Deletion failed',
     deleteFailedBody: 'The deletion could not be completed. Check your connection and try again.',
+    deletedTitle: 'Account deleted',
+    deletedBody: 'Your account and your data have been deleted. You can keep using 5herlock without an account.',
+    erasedTitle: 'Data erased',
+    erasedBody: 'Your data has been erased. You are starting from scratch.',
+    deletedAppleBody: 'Your account and your data have been deleted. 5herlock may still appear in your Apple Account settings: you can remove it there, under Sign in with Apple.',
   },
 
   // Profiles list page

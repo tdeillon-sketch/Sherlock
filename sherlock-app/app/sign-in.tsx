@@ -9,6 +9,7 @@
 import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router';
 import AuthScreen from '../components/AuthScreen';
 import { consumePendingAction, clearPendingAction } from '../constants/authGate';
+import { forgetAppleRevokeCode } from '../constants/firebase';
 
 export default function SignInScreen() {
   const { mode } = useLocalSearchParams<{ mode?: string }>();
@@ -18,12 +19,12 @@ export default function SignInScreen() {
       <Stack.Screen options={{ presentation: 'modal' }} />
       <AuthScreen
         mode={mode === 'reauth' ? 'reauth' : 'modal'}
-        onClose={() => { clearPendingAction(); router.back(); }}
+        onClose={() => { clearPendingAction(); forgetAppleRevokeCode(); router.back(); }}
         onSuccess={() => {
           const action = consumePendingAction();
           // Closed meanwhile (swipe down or ✕ during the sign-in): don't pop
-          // the screen underneath, and don't resume.
-          if (!navigation.isFocused()) return;
+          // the screen underneath, and don't resume (nor keep an Apple code).
+          if (!navigation.isFocused()) { forgetAppleRevokeCode(); return; }
           router.back();
           if (action) setTimeout(action, 350);
         }}
