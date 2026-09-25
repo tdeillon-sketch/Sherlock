@@ -2,9 +2,8 @@
 //  USE ADAPTIVE QUIZ V3 — moteur par pages
 //
 //  Flow :
-//   1. select_subject   → 'enfant' (avec âge) | 'self'
-//   2. age_picker       → si enfant
-//   3. questions        → pages séquentielles :
+//   1. select_subject   → 'enfant' (un seul test, 10 ans et plus) | 'self' | proche
+//   2. questions        → pages séquentielles :
 //        a. Likert 1   (5 sliders -5..+5, types 1/3/5/7/9)
 //        b. Likert 2   (5 sliders, types 2/4/6/8 + deeper)
 //        c. Budget 3+  (5 steppers, 10 pts absolus, adaptatif)
@@ -18,7 +17,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   AgeBand, EnneaType, TypeWeights, QuizSubject, Statement, WingStatement,
-  TYPES, ageToBand, getStatements, getWings, statementsByType, findStmt, pickStatement,
+  TYPES, getStatements, getWings, statementsByType, findStmt, pickStatement,
   gridTypeWeights,
 } from '../constants/quiz_v3';
 import {
@@ -33,14 +32,15 @@ export type { AgeBand, EnneaType, QuizSubject } from '../constants/quiz_v3';
 export type AdaptivePhase =
   | 'select_subject'
   | 'proche_mode'       // sous-choix "un proche" : il répond / je le décris
-  | 'age_picker'
   | 'questions'
   | 'result'
   | 'save_profile'
   | 'history'
   | 'second_intro'      // "second avis" : passe le tél à un proche
   | 'second_questions'  // round court (pool observé, types candidats)
-  | 'second_result';    // accord / divergence
+  | 'second_result'     // accord / divergence
+  | 'cross_intro'       // "regard croisé" : l'autre parent refait le test de l'enfant
+  | 'cross_result';     // comparaison des deux regards + résultat combiné
 
 // ── Page types ────────────────────────────────────────────────────
 export interface LikertPage {
@@ -97,6 +97,59 @@ export interface AdaptiveResult {
   confidence: number;           // 0..100
   insightKind: InsightKind;
   allScores: { type: EnneaType; score: number; percent: number }[];
+  /** true when the result combines two parents' views ("regard croisé") */
+  combined?: boolean;
+}
+
+/** "Regard croisé": average the two parents' profiles (each normalised to
+ *  its own positive total, so a parent who answers "loudly" doesn't weigh
+ *  more). The wing: the one both chose, else the one of the parent whose
+ *  type matches the combined type, else the neighbour that scores higher. */
+export function combineResults(a: AdaptiveResult, b: AdaptiveResult): AdaptiveResult {
+  // Unrounded shares (0..100) of each parent's positive total.
+  const share = (r: AdaptiveResult, t: EnneaType) => {
+    const pos = r.allScores.reduce((s, x) => s + Math.max(0, x.score), 0) || 1;
+    return (100 * Math.max(0, r.allScores.find(s => s.type === t)?.score ?? 0)) / pos;
+  };
+  const types = [1, 2, 3, 4, 5, 6, 7, 8, 9] as EnneaType[];
+  const avg: Record<number, number> = {};
+  types.forEach(t => { avg[t] = (share(a, t) + share(b, t)) / 2; });
+  const agree = a.topType === b.topType;
+  // On an exact tie, the type both parents found wins.
+  const sorted = [...types].sort((x, y) =>
+    (avg[y] - avg[x]) || (agree && x === a.topType ? -1 : agree && y === a.topType ? 1 : x - y));
+  const total = types.reduce((s, t) => s + avg[t], 0) || 1;
+  const allScores = sorted.map(t => ({ type: t, score: avg[t], percent: Math.round((avg[t] / total) * 100) }));
+  const [t1, t2, t3] = sorted;
+  const wings = TYPES[t1].wing as [EnneaType, EnneaType];
+  let wingType: EnneaType;
+  let wingCertainty: number;
+  if (a.topType === t1 && b.topType === t1 && a.wingType === b.wingType) {
+    wingType = a.wingType; wingCertainty = Math.round((a.wingCertainty + b.wingCertainty) / 2);
+  } else if (a.topType === t1 && b.topType !== t1) {
+    wingType = a.wingType; wingCertainty = Math.min(a.wingCertainty, 50);
+  } else if (b.topType === t1 && a.topType !== t1) {
+    wingType = b.wingType; wingCertainty = Math.min(b.wingCertainty, 50);
+  } else {
+    wingType = avg[wings[1]] > avg[wings[0]] ? wings[1] : wings[0]; wingCertainty = 20;
+  }
+  const confidence = Math.round(((a.confidence + b.confidence) / 2) * (agree ? 1 : 0.7));
+  // Same thresholds as a single test's reading.
+  let insightKind: InsightKind;
+  if (confidence < 30) insightKind = 'composite';
+  else if (!agree || confidence < 55) {
+    insightKind = agree && t2 === wingType && wingCertainty >= WING_SURE_MIN ? 'wingMarked' : 'closeSecond';
+  } else if (confidence < 75) insightKind = 'clear';
+  else insightKind = 'veryMarked';
+  return {
+    topType: t1, topPercent: allScores[0].percent,
+    secondType: t2, secondPercent: allScores[1].percent,
+    thirdType: t3, thirdPercent: allScores[2].percent,
+    wingType, wingCertainty, confidence,
+    insightKind,
+    allScores,
+    combined: true,
+  };
 }
 
 // ── Second avis (regard d'un proche sur le résultat "self") ────────
@@ -128,10 +181,12 @@ const EARLY_STOP_PCT = 85;
 const LIKERT_MULT = 0.3;
 const BUDGET_WEIGHT = 0.3;
 const FINAL_WEIGHT = 0.4;
-// The grid counts like one strong (+5) Likert answer spread over the cell
-// under the point and its neighbours: it confirms or breaks a near tie, it
-// cannot overturn a clear lead.
-const GRID_WEIGHT = 1.5;
+// The grid counts a bit more than one strong (+5) Likert answer, spread over
+// the cell under the point and its neighbours: about 20% of the winner's
+// score in simulation. It can break a near tie, not overturn a clear lead.
+// (Simulated best value: 1.5 was too discreet, 3.5 hurts when the point is
+// placed approximately.)
+const GRID_WEIGHT = 2.5;
 
 const EMPTY_SCORES = (): Record<EnneaType, number> => ({
   1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
@@ -572,7 +627,6 @@ export function useAdaptiveQuiz() {
   const [phase, setPhase] = useState<AdaptivePhase>('select_subject');
   const [subject, setSubject] = useState<QuizSubject | null>(null);
   const [ageBand, setAgeBand] = useState<AgeBand | null>(null);
-  const [childAge, setChildAge] = useState<number | null>(null);
 
   const [pages, setPages] = useState<Page[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -586,6 +640,14 @@ export function useAdaptiveQuiz() {
   const [secondPageIndex, setSecondPageIndex] = useState(0);
   const [secondResult, setSecondResult] = useState<SecondOpinionResult | null>(null);
   const [secondSeed, setSecondSeed] = useState<SecondSeed | null>(null);
+
+  // "Regard croisé" (child): the first parent's result, the other parent's
+  // test runs next, then both are compared and combined.
+  const [crossBase, setCrossBase] = useState<AdaptiveResult | null>(null);
+  const [crossOther, setCrossOther] = useState<AdaptiveResult | null>(null);
+  const [crossCombined, setCrossCombined] = useState<AdaptiveResult | null>(null);
+  // Scores to show / save instead of the live page scores (combined result).
+  const [scoresOverride, setScoresOverride] = useState<Record<number, number> | null>(null);
   // Guards against saving the same round twice (double tap on the last page).
   const secondSavedRef = useRef<SecondSeed | null>(null);
 
@@ -605,15 +667,15 @@ export function useAdaptiveQuiz() {
     return recomputeScoresFromPages(pages, ageBand);
   }, [pages, ageBand]);
 
-  // What the radar shows: during the questions the grid point is left out,
-  // otherwise moving it would reveal which type each area stands for.
-  // (On the wing page the full scores are shown, so the radar's leader is the
-  // type the wing page names.)
+  // What the radar shows: everything, except the grid point WHILE it is being
+  // placed (moving it would otherwise reveal which type each area stands
+  // for). As soon as the grid page is left, the radar includes it.
   const radarScores = useMemo(() => {
     if (!ageBand) return EMPTY_SCORES();
-    const onWing = pages[pageIndex]?.kind === 'wing';
-    return phase === 'questions' && !onWing ? recomputeScoresFromPages(pages, ageBand, false) : scores;
-  }, [pages, pageIndex, ageBand, phase, scores]);
+    if (scoresOverride && phase !== 'questions') return scoresOverride as Record<EnneaType, number>;
+    const onGrid = phase === 'questions' && pages[pageIndex]?.kind === 'grid';
+    return onGrid ? recomputeScoresFromPages(pages, ageBand, false) : scores;
+  }, [pages, pageIndex, ageBand, phase, scores, scoresOverride]);
 
   const currentPage = pages[pageIndex] ?? null;
   // Statement pages stop at MAX_PAGES - 1, then the grid and the wing.
@@ -622,23 +684,16 @@ export function useAdaptiveQuiz() {
   // ── Transitions ──
   const selectSubject = useCallback((s: QuizSubject) => {
     setSubject(s);
-    if (s === 'enfant') {
-      setPhase('age_picker');
-      return;
-    }
-    // self / proche-self → pool adulte (1re pers.) ; proche-obs → pool observé
-    setAgeBand(s === 'proche-obs' ? 'adulte-obs' : 'adulte');
+    // enfant → one child pool (10+) ; self / proche-self → adult pool (1st
+    // person) ; proche-obs → observed pool. The child's exact age is asked
+    // only when the profile is saved.
+    setAgeBand(s === 'enfant' ? 'enfant' : s === 'proche-obs' ? 'adulte-obs' : 'adulte');
     setPhase('questions');
   }, []);
 
   // "Un proche" → sous-choix (il répond / je le décris)
   const goToProcheMode = useCallback(() => { setSubject(null); setPhase('proche_mode'); }, []);
 
-  const selectAge = useCallback((age: number) => {
-    setChildAge(age);
-    setAgeBand(ageToBand(age));
-    setPhase('questions');
-  }, []);
 
   // Init first page when entering 'questions'
   useEffect(() => {
@@ -712,21 +767,32 @@ export function useAdaptiveQuiz() {
         setPages(prev => prev.map((p, i) => (i === pageIndex ? rebuilt : p)));
         return;
       }
-      setResult(computeResult(scores, pages, ageBand));
-      setPhase('result');
+      finish(computeResult(scores, pages, ageBand));
       return;
     }
 
     // Build next page based on updated scores
     const nextPage = buildNextPage(pages, ageBand, scores);
     if (!nextPage) {
-      setResult(computeResult(scores, pages, ageBand));
-      setPhase('result');
+      finish(computeResult(scores, pages, ageBand));
       return;
     }
     setPages(prev => [...prev, nextPage]);
     setPageIndex(prev => prev + 1);
-  }, [ageBand, currentPage, pages, pageIndex, scores]);
+
+    // End of a test: normal result, or the other parent's view to compare.
+    function finish(r: AdaptiveResult) {
+      if (crossBase) {
+        setCrossOther(r);
+        setCrossCombined(combineResults(crossBase, r));
+        setResult(r);
+        setPhase('cross_result');
+        return;
+      }
+      setResult(r);
+      setPhase('result');
+    }
+  }, [ageBand, currentPage, pages, pageIndex, scores, crossBase]);
 
   // ── Go back one page ──
   const goToPrevPage = useCallback(() => {
@@ -761,7 +827,6 @@ export function useAdaptiveQuiz() {
     setPhase('select_subject');
     setSubject(null);
     setAgeBand(null);
-    setChildAge(null);
     setPages([]);
     setPageIndex(0);
     setResult(null);
@@ -769,12 +834,63 @@ export function useAdaptiveQuiz() {
     setSecondPageIndex(0);
     setSecondResult(null);
     setSecondSeed(null);
+    setCrossBase(null);
+    setCrossOther(null);
+    setCrossCombined(null);
+    setScoresOverride(null);
   }, []);
+
+  // ── Regard croisé (child): the other parent takes the same test ──
+  const startCross = useCallback(() => {
+    if (!result || result.combined) return;
+    setCrossBase(result);
+    setPhase('cross_intro');
+  }, [result]);
+  const beginCross = useCallback(() => {
+    setPages([]);
+    setPageIndex(0);
+    setResult(null);
+    setScoresOverride(null);
+    setPhase('questions');
+  }, []);
+  const cancelCross = useCallback(() => {
+    setCrossBase(null);
+    setPhase('result');
+  }, []);
+  // Leaving the other parent's test halfway: back to the first parent's
+  // result (same object, so it is not auto-saved a second time).
+  const abortCross = useCallback(() => {
+    if (!crossBase) return;
+    const sc: Record<number, number> = {};
+    crossBase.allScores.forEach(s => { sc[s.type] = s.score; });
+    setScoresOverride(sc);
+    setResult(crossBase);
+    setCrossBase(null);
+    setCrossOther(null);
+    setCrossCombined(null);
+    setPages([]);
+    setPageIndex(0);
+    setPhase('result');
+  }, [crossBase]);
+  // Keep the combined view: it becomes the result shown and saved.
+  const keepCombined = useCallback(() => {
+    if (!crossCombined) return;
+    const sc: Record<number, number> = {};
+    crossCombined.allScores.forEach(s => { sc[s.type] = s.score; });
+    setScoresOverride(sc);
+    setResult(crossCombined);
+    setCrossBase(null);
+    setPhase('save_profile');
+  }, [crossCombined]);
 
   const restartSameSubject = useCallback(() => {
     setPages([]);
     setPageIndex(0);
     setResult(null);
+    setCrossBase(null);
+    setCrossOther(null);
+    setCrossCombined(null);
+    setScoresOverride(null);
     setPhase('questions');
   }, []);
 
@@ -919,7 +1035,8 @@ export function useAdaptiveQuiz() {
       secondPercent: result.secondPercent,
       wingType: result.wingType,
       wingCertainty: result.wingCertainty,
-      scores,
+      scores: scoresOverride ?? scores,
+      ...(result.combined ? { raters: 2 } : {}),
     };
     let updated: ChildProfile[];
     if (existingProfileId) {
@@ -945,7 +1062,7 @@ export function useAdaptiveQuiz() {
     }
     setChildProfiles(updated);
     await saveChildProfiles(uid, updated).catch(() => {});
-  }, [subject, ageBand, result, scores, childProfiles]);
+  }, [subject, ageBand, result, scores, scoresOverride, childProfiles]);
 
   // Delete a saved child profile (from the history screen).
   const deleteChildProfile = useCallback(async (id: string) => {
@@ -963,7 +1080,6 @@ export function useAdaptiveQuiz() {
     phase,
     subject,
     ageBand,
-    childAge,
     currentPage,
     scores,
     pageIndex,
@@ -977,7 +1093,6 @@ export function useAdaptiveQuiz() {
 
     // Transitions
     selectSubject,
-    selectAge,
     goToProcheMode,
 
     // Page actions
@@ -995,6 +1110,10 @@ export function useAdaptiveQuiz() {
     backToResult,
     saveChildResult,
     deleteChildProfile,
+
+    // Regard croisé (enfant)
+    crossBase, crossOther, crossCombined,
+    startCross, beginCross, cancelCross, abortCross, keepCombined,
 
     // Second avis (regard d'un proche)
     startSecondOpinion,

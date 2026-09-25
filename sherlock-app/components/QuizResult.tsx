@@ -26,6 +26,8 @@ export interface QuizResultData {
   isAmbiguous: boolean;
   ambiguousPair: [number, number] | null;
   insightKind: InsightKind;
+  /** true when the result combines two parents' views */
+  combined?: boolean;
 }
 
 interface QuizResultProps {
@@ -37,6 +39,10 @@ interface QuizResultProps {
   onReset: () => void;
   /** Result about a close adult (partner, parent…): titled and saved as theirs. */
   forProche?: boolean;
+  /** The user's own type, when this result is THEIR view of someone else
+   *  (a child, or a loved one they described): shown as a caution when it
+   *  comes out first or second (one tends to see oneself in others). */
+  raterType?: number | null;
 }
 
 /** Single source of truth for type colors (data.ts) — so the same type never
@@ -53,7 +59,7 @@ function localizedTypeName(typeNum: number, locale: 'fr' | 'en'): string {
 }
 
 export default function QuizResult({
-  result, mode, onViewProfile, onSaveProfile, onNewChild, onReset, forProche = false,
+  result, mode, onViewProfile, onSaveProfile, onNewChild, onReset, forProche = false, raterType = null,
 }: QuizResultProps) {
   const { t, locale } = useT();
   const top = TYPES[result.topType - 1];
@@ -129,6 +135,18 @@ export default function QuizResult({
       {/* Responsible framing: a child's type is a hypothesis, not a label. */}
       {mode === 'enfant' && (
         <Text style={styles.childCaveat}>{t('result.childCaveat')}</Text>
+      )}
+
+      {/* ── Your own lens: your type among the first two ── */}
+      {raterType != null && !result.combined && (raterType === result.topType || raterType === result.secondType) && (
+        <View style={styles.biasCard}>
+          <Text style={styles.biasLabel}>{t('result.biasLabel')}</Text>
+          <Text style={styles.biasText}>
+            {raterType === result.topType
+              ? t(forProche ? 'result.biasSameProche' : 'result.biasSameChild', { t: raterType, second: result.secondType })
+              : t(forProche ? 'result.biasSecondProche' : 'result.biasSecondChild', { t: raterType })}
+          </Text>
+        </View>
       )}
 
       {/* ── "Our reading" ── */}
@@ -311,6 +329,16 @@ const styles = StyleSheet.create({
   },
 
   // Insight
+  biasCard: {
+    marginHorizontal: spacing.md, marginBottom: spacing.md,
+    padding: spacing.md, borderRadius: radius.md,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accentMedium,
+  },
+  biasLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', letterSpacing: 1,
+    textTransform: 'uppercase', color: colors.accentText, marginBottom: 4,
+  },
+  biasText: { fontFamily: fonts.sans, fontSize: 13.5, lineHeight: 20, color: colors.textSoft },
   insightCard: {
     backgroundColor: '#d4a03c1a',
     borderWidth: 1, borderColor: '#d4a03c66',

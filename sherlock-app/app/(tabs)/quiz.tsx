@@ -14,7 +14,8 @@ import RadarChart from '../../components/RadarChart';
 import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
-import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
+import { auth, saveQuizResult, getUserData, type ChildProfile } from '../../constants/firebase';
+import type { AdaptiveResult } from '../../hooks/useAdaptiveQuiz';
 import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
 import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
 import { useT, getTypeText } from '../../i18n';
@@ -25,12 +26,6 @@ import { deName } from '../../utils/frenchName';
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
   { key: 'self',   emoji: '🪞', titleKey: 'subject.selfTitle',  descKey: 'subject.selfDesc' },
-];
-
-const AGE_BANDS: { min: number; emoji: string; titleKey: string; descKey: string }[] = [
-  { min: 5,  emoji: '🧸', titleKey: 'age.band58',   descKey: 'age.band58Desc' },
-  { min: 9,  emoji: '🎒', titleKey: 'age.band912',  descKey: 'age.band912Desc' },
-  { min: 13, emoji: '🎧', titleKey: 'age.band1317', descKey: 'age.band1317Desc' },
 ];
 
 const TYPE_COLORS: Record<number, string> = {
@@ -45,14 +40,15 @@ export default function QuizScreen() {
   useEffect(() => { trackScreen('quiz').catch(() => {}); }, []);
 
   const {
-    phase, subject, ageBand, childAge, currentPage, scores,
+    phase, subject, ageBand, currentPage, scores,
     stepIndex, estimatedTotal, result, radarScores, childProfiles, canAdvance, pageIndex,
-    selectSubject, selectAge, goToProcheMode,
+    selectSubject, goToProcheMode,
     updateResponse, updateGridPoint, skipGrid, advancePage, goToPrevPage,
     reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
     saveChildResult, deleteChildProfile,
     startSecondOpinion, startSecondOpinionFromSaved, exitSecondOpinion,
+    crossBase, crossOther, crossCombined, startCross, beginCross, cancelCross, abortCross, keepCombined,
     beginSecondQuestions, updateSecondResponse,
     advanceSecondPage, secondCurrentPage, secondPageIndex, secondTotal, secondResult,
   } = useAdaptiveQuiz();
@@ -79,6 +75,7 @@ export default function QuizScreen() {
       // result is saved automatically).
       const p = phaseRef.current;
       const hasUnsaved = p === 'questions' || p === 'save_profile'
+        || p === 'cross_intro' || p === 'cross_result'
         || (p === 'result' && subjectRef.current !== 'self' && profileSavedFor.current !== resultRef.current);
       if (hasUnsaved) {
         Alert.alert(t('quiz.quitTitle'), t('quiz.quitBody'), [
@@ -106,7 +103,7 @@ export default function QuizScreen() {
   useEffect(() => {
     // On n'enregistre dans l'historique perso que SES propres tests (soi / enfant).
     // Un proche se sauvegarde explicitement comme profil nommé (pas d'auto-save).
-    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && savedResultRef.current !== result) {
+    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && !result.combined && savedResultRef.current !== result) {
       savedResultRef.current = result;
       const uid = auth.currentUser?.uid;
       if (uid) {
@@ -121,6 +118,23 @@ export default function QuizScreen() {
       }
     }
   }, [phase, subject, ageBand, result, scores]);
+
+  // Your own type, to flag your lens on a result about someone else
+  // (your child, or a loved one you described).
+  const [raterType, setRaterType] = useState<number | null>(null);
+  useEffect(() => {
+    if (phase !== 'result' || (subject !== 'enfant' && subject !== 'proche-obs')) return;
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    let alive = true;
+    getUserData(uid)
+      .then((d) => {
+        const self = (d?.quizResults ?? []).filter((r) => r.mode === 'adulte');
+        if (alive) setRaterType(self.length ? self[self.length - 1].topType : null);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [phase, subject]);
 
   // ── Entrance animations: fade the radar in, reveal the result card ──
   const radarAnim = useRef(new Animated.Value(0)).current;
@@ -189,37 +203,6 @@ export default function QuizScreen() {
               </Text>
             </Pressable>
           )}
-        </View>
-      </View>
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  //  PHASE: age_picker (mode enfant uniquement)
-  // ─────────────────────────────────────────────
-  if (phase === 'age_picker') {
-    return (
-      <View style={styles.selectContainer}>
-        <View style={styles.selectInner}>
-          <Pressable onPress={reset} style={styles.backLink}>
-            <Text style={styles.backLinkText}>‹ {t('common.back')}</Text>
-          </Pressable>
-          <Text style={styles.selectTitle}>{t('age.title')}</Text>
-          <Text style={styles.selectSub}>{t('age.subtitle')}</Text>
-
-          {AGE_BANDS.map((b) => (
-            <Pressable
-              key={b.min}
-              style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
-              onPress={() => selectAge(b.min)}
-            >
-              <Text style={styles.modeEmoji}>{b.emoji}</Text>
-              <View style={styles.modeText}>
-                <Text style={styles.modeTitle}>{t(b.titleKey)}</Text>
-                <Text style={styles.modeDesc}>{t(b.descKey)}</Text>
-              </View>
-            </Pressable>
-          ))}
         </View>
       </View>
     );
@@ -365,6 +348,41 @@ export default function QuizScreen() {
   // ─────────────────────────────────────────────
   //  PHASE: second_result (accord / divergence)
   // ─────────────────────────────────────────────
+  // ─────────────────────────────────────────────
+  //  PHASE: cross_intro / cross_result (regard croisé sur l'enfant)
+  // ─────────────────────────────────────────────
+  if (phase === 'cross_intro') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Text style={styles.modeEmoji}>👥</Text>
+          <Text style={styles.selectTitle}>{t('cross.introTitle')}</Text>
+          <Text style={styles.selectSub}>{t('cross.introBody')}</Text>
+          <Pressable
+            onPress={() => { hapticLight(); beginCross(); }}
+            style={({ pressed }) => [styles.saveBtn, { width: '100%' }, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.saveBtnText}>{t('cross.introStart')}</Text>
+          </Pressable>
+          <Pressable onPress={cancelCross} style={styles.skipBtn}>
+            <Text style={styles.skipBtnText}>{t('cross.introCancel')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+  if (phase === 'cross_result' && crossBase && crossOther && crossCombined) {
+    return (
+      <CrossResultScreen
+        first={crossBase}
+        other={crossOther}
+        combined={crossCombined}
+        onSave={keepCombined}
+        onDone={reset}
+      />
+    );
+  }
+
   if (phase === 'second_result' && secondResult) {
     return <SecondResultScreen sr={secondResult} onDone={leaveSecondOpinion} />;
   }
@@ -374,12 +392,14 @@ export default function QuizScreen() {
   // all answers). On result/other phases, just reset.
   const handleBack = () => {
     if (phase === 'questions') {
+      // During the other parent's test, leaving goes back to the first
+      // parent's result instead of discarding it.
       Alert.alert(
         t('quiz.quitTitle'),
-        t('quiz.quitBody'),
+        crossBase ? t('cross.quitBody') : t('quiz.quitBody'),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: reset },
+          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: crossBase ? abortCross : reset },
         ],
       );
     } else {
@@ -392,9 +412,7 @@ export default function QuizScreen() {
       ? t('subject.headerSelf')
       : (subject === 'proche-self' || subject === 'proche-obs')
         ? t('subject.headerProche')
-        : childAge != null
-          ? t('subject.headerChildAge', { age: childAge })
-          : t('subject.headerChild');
+        : t('subject.headerChild');
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
@@ -459,6 +477,12 @@ export default function QuizScreen() {
   if (phase === 'questions' && currentPage && ageBand) {
     mainContent = (
       <View>
+        {/* One child test, written for 10 and over: say so before starting. */}
+        {subject === 'enfant' && pageIndex === 0 && (
+          <View style={styles.childNotice}>
+            <Text style={styles.childNoticeText}>{crossBase ? t('cross.notice') : t('quiz.childNotice')}</Text>
+          </View>
+        )}
         <AdaptiveQuestion
           page={currentPage}
           pageIndex={pageIndex}
@@ -517,6 +541,7 @@ export default function QuizScreen() {
       isAmbiguous: result.confidence < 60,
       ambiguousPair: null as [number, number] | null,
       insightKind: result.insightKind,
+      combined: result.combined,
     };
     // mode pour QuizResult : 'enfant' si subject=enfant, 'adulte' si self
     const legacyMode = subject === 'enfant' ? 'enfant' : 'adulte';
@@ -534,15 +559,29 @@ export default function QuizScreen() {
           onViewProfile={() => {
             // The profile page adapts to who the result is about.
             const who = subject === 'enfant' ? 'child' : subject === 'self' ? 'self' : 'adult';
-            const extra = (result.wingType ? `&wing=${result.wingType}` : '')
-              + (subject === 'enfant' && ageBand ? `&band=${ageBand}` : '');
+            const extra = result.wingType ? `&wing=${result.wingType}` : '';
             router.push(`/profiles/${result.topType}?who=${who}${extra}` as never);
           }}
           onSaveProfile={goToSaveProfile}
           onNewChild={restartSameSubject}
           onReset={reset}
           forProche={subject === 'proche-self' || subject === 'proche-obs'}
+          raterType={subject === 'enfant' || subject === 'proche-obs' ? raterType : null}
         />
+
+        {/* Regard croisé : l'autre parent refait le test de l'enfant */}
+        {subject === 'enfant' && !result.combined && (
+          <Pressable
+            onPress={() => { hapticLight(); startCross(); }}
+            style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.secondCtaText}>{t('cross.cta')}</Text>
+              <Text style={styles.secondCtaHint}>{t('cross.ctaHint')}</Text>
+            </View>
+            <Text style={styles.secondCtaArrow}>›</Text>
+          </Pressable>
+        )}
 
         {/* Second avis : proposé seulement pour l'auto-évaluation */}
         {subject === 'self' && (
@@ -691,7 +730,7 @@ function SaveProfileScreen({
           {existingProfiles.map(p => (
             <Pressable
               key={p.id}
-              onPress={() => { setSelectedExisting(p.id); setName(''); }}
+              onPress={() => { setSelectedExisting(p.id); setName(''); setAgeStr(p.age != null ? String(p.age) : ''); }}
               style={[
                 styles.saveProfileCard,
                 selectedExisting === p.id && styles.saveProfileCardActive,
@@ -710,7 +749,7 @@ function SaveProfileScreen({
 
       <TextInput
         value={name}
-        onChangeText={(tt) => { setName(tt); setSelectedExisting(null); }}
+        onChangeText={(tt) => { if (selectedExisting) setAgeStr(''); setName(tt); setSelectedExisting(null); }}
         placeholder={t('saveProfile.namePlaceholder')}
         placeholderTextColor={colors.textMuted}
         style={styles.saveInput}
@@ -834,6 +873,76 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
 // ─────────────────────────────────────────────
 //  Second opinion result (you vs a close person)
 // ─────────────────────────────────────────────
+
+// Two parents' views of the same child, side by side, and the combined view.
+function CrossResultScreen({ first, other, combined, onSave, onDone }: {
+  first: AdaptiveResult; other: AdaptiveResult; combined: AdaptiveResult;
+  onSave: () => void; onDone: () => void;
+}) {
+  const { t, locale } = useT();
+  const agree = first.topType === other.topType;
+  const pct = (r: AdaptiveResult, ty: number) => r.allScores.find((s) => s.type === ty)?.percent ?? 0;
+  // The types that matter: the first three of the combined view.
+  const shown = combined.allScores.slice(0, 3).map((s) => s.type);
+  const nameOf = (ty: number) => {
+    const v3 = TYPES_V3[ty as EnneaType];
+    return v3 ? getTypeText(v3, 'name', locale) : (TYPES[ty - 1]?.name ?? '');
+  };
+  return (
+    <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
+      <View style={styles.quizTopBar}>
+        <Pressable onPress={onDone} style={styles.quizBackBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <Text style={styles.quizBackBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.quizTopBarTitle}>{t('cross.resultTitle')}</Text>
+        <View style={styles.quizBackBtn} />
+      </View>
+
+      <Text style={styles.saveTitle}>{agree ? t('cross.agreeTitle') : t('cross.divergeTitle')}</Text>
+      <Text style={styles.saveSub}>
+        {agree
+          ? t('cross.agreeBody', { t: first.topType })
+          : t('cross.divergeBody', { a: first.topType, b: other.topType })}
+      </Text>
+
+      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
+        {shown.map((ty) => (
+          <View key={ty} style={styles.cmpRow}>
+            <Text style={styles.cmpType}>{t('result.type')} {ty} · {nameOf(ty)}</Text>
+            <View style={styles.cmpBarLine}>
+              <Text style={styles.cmpBarLabel}>{t('cross.firstLabel')}</Text>
+              <View style={styles.cmpTrack}>
+                <View style={[styles.cmpFill, { width: `${pct(first, ty)}%` as any, backgroundColor: colors.accent }]} />
+              </View>
+              <Text style={styles.cmpPct}>{pct(first, ty)}%</Text>
+            </View>
+            <View style={styles.cmpBarLine}>
+              <Text style={styles.cmpBarLabel}>{t('cross.secondLabel')}</Text>
+              <View style={styles.cmpTrack}>
+                <View style={[styles.cmpFill, { width: `${pct(other, ty)}%` as any, backgroundColor: TYPE_COLORS[ty] }]} />
+              </View>
+              <Text style={styles.cmpPct}>{pct(other, ty)}%</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.crossCombined}>
+        <Text style={styles.crossCombinedLabel}>{t('cross.combinedLabel')}</Text>
+        <Text style={styles.crossCombinedValue}>
+          {t('cross.combinedValue', { t: combined.topType, w: combined.wingType, name: nameOf(combined.topType) })}
+        </Text>
+      </View>
+
+      <Pressable onPress={onSave} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.85 }]}>
+        <Text style={styles.saveBtnText}>{t('cross.save')}</Text>
+      </Pressable>
+      <Pressable onPress={onDone} style={styles.skipBtn}>
+        <Text style={styles.skipBtnText}>{t('cross.done')}</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
 
 function SecondResultScreen({ sr, onDone }: { sr: SecondOpinionResult; onDone: () => void }) {
   const { t, locale } = useT();
@@ -974,6 +1083,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     textAlign: 'center', marginTop: 4, letterSpacing: 0.3,
   },
+  crossCombined: {
+    marginHorizontal: spacing.lg, marginTop: spacing.lg, padding: spacing.md,
+    borderRadius: radius.md, backgroundColor: colors.accentSoft,
+    borderWidth: 1, borderColor: colors.accentMedium, alignItems: 'center',
+  },
+  crossCombinedLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', letterSpacing: 1,
+    textTransform: 'uppercase', color: colors.accentText,
+  },
+  crossCombinedValue: { fontFamily: fonts.serif, fontSize: 20, color: colors.text, marginTop: 4, textAlign: 'center' },
+  childNotice: {
+    marginHorizontal: spacing.md, marginTop: spacing.sm,
+    padding: spacing.md, borderRadius: radius.md,
+    backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accentMedium,
+  },
+  childNoticeText: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textSoft },
   navHint: {
     fontFamily: fonts.sans, fontSize: 12, color: colors.accentText, fontWeight: '600',
     textAlign: 'center', paddingHorizontal: spacing.md, marginBottom: spacing.xs,

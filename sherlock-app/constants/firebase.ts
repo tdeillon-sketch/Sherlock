@@ -410,6 +410,8 @@ export interface ChildProfileEntry {
   wingType: number | null;
   wingCertainty?: number;      // 0..100 (results since the wing is always asked)
   scores: Record<number, number>;
+  /** 2 when the result combines two parents' views ("regard croisé") */
+  raters?: number;
   /** Optional open-ended note from the parent */
   note?: string;
 }
@@ -452,7 +454,7 @@ export interface FamilyMember {
   age?: number;
   testCount: number;
   lastDate: string | null;
-  /** Child/adult: mode of the last quiz (child: its age band '5-8'|'9-12'|'13-17') */
+  /** Child/adult: mode of the last quiz (child: 'enfant' since 4.1, before that its age band '5-8'|'9-12'|'13-17') */
   lastMode?: string | null;
   /** Self only: the latest "second avis" (how someone close sees you). */
   secondOpinion?: { observerTop: number; agree: boolean; date: string; count: number } | null;

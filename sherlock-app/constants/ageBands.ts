@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  Age bands: the quiz uses 5-8 / 9-12 / 13-17 (quiz_v3 AgeBand), while the
+//  Age bands: the profile pages show the ranges 5-8 / 9-12 / 13-17, while the
 //  profile texts are stored under the keys '5-8' / '8-12' / '13-16'
 //  (data.ts, wings.ts and their EN files). The keys stay as they are; this
 //  maps a child's age or quiz band to the matching text, and the page shows
@@ -19,7 +19,9 @@ export const AGE_LABEL_KEYS: Record<ContentAgeKey, string> = {
   '13-16': 'profile.age1317',
 };
 
-/** Quiz band ('5-8' | '9-12' | '13-17', legacy 'enfant' / 'ado') → content key. */
+/** Saved band ('5-8' | '9-12' | '13-17' from quizzes before 4.1, legacy
+ *  'ado') → content key. Newer child quizzes save 'enfant': the saved age
+ *  then gives the band (see contentKeyForAge). */
 export function contentKeyForBand(band?: string | null): ContentAgeKey | null {
   if (band === '5-8') return '5-8';
   if (band === '9-12') return '8-12';

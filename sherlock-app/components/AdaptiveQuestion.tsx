@@ -36,8 +36,11 @@ export default function AdaptiveQuestion({
 
   if (page.kind === 'likert') {
     const n = pageIndex + 1;
-    const subtitle = n === 1 ? t('quiz.likertSubtitle1') : t('quiz.likertSubtitleN');
-    const hint = t('quiz.likertHint');
+    // The statements have no pronoun: the instructions say who they describe
+    // (you, your child, your loved one) on every page.
+    const who = ageBand === 'enfant' ? 'Child' : ageBand === 'adulte-obs' ? 'Proche' : '';
+    const subtitle = n === 1 ? t(`quiz.likertSubtitle1${who}`) : t(`quiz.likertSubtitleN${who}`);
+    const hint = t(`quiz.likertHint${who}`);
     return (
       <View style={styles.wrap}>
         <Text style={styles.phaseLabel}>PAGE {n} · {t('quiz.likertPhase')}</Text>
