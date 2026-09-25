@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import { useT } from '../i18n';
-import { auth } from '../constants/firebase';
+import { auth, isAnonymousUser } from '../constants/firebase';
+import { requireAccount } from '../constants/authGate';
 import { getDailyQuestion, formatRitualDate, isSameQuestion } from '../constants/ritualQuestions';
 import {
   loadJournal, saveAnswer, syncJournal, todayKey, daysAgo, type RitualEntry,
@@ -50,6 +51,31 @@ export default function JournalCard() {
   useFocusEffect(refresh);
 
   const close = () => { setOpen(false); setNote(''); };
+
+  // Open the editor with today's answer of the account signed in NOW (after a
+  // sign-in, it may be another account that already answered today).
+  const opening = useRef(false);
+  const openEditor = async () => {
+    if (opening.current || open) return; // a second tap must not wipe typing
+    opening.current = true;
+    try {
+    const uid = auth.currentUser?.uid;
+    let existing = todayEntry;
+    if (uid) {
+      // An answer given today on another phone must be here before editing.
+      await Promise.race([syncJournal(uid), new Promise((r) => setTimeout(r, 3000))]);
+      const list = await loadJournal(uid).catch(() => null);
+      if (list) {
+        setEntries(list);
+        existing = list.find((e) => e.date === todayKey()) ?? null;
+      }
+    }
+    setNote(existing?.answer ?? '');
+    setOpen(true);
+    } finally {
+      opening.current = false;
+    }
+  };
 
   const save = async () => {
     const uid = auth.currentUser?.uid;
@@ -119,7 +145,7 @@ export default function JournalCard() {
         <View style={styles.doneRow}>
           <Text style={styles.doneText}>{t('journal.cardDone')}</Text>
           <Pressable
-            onPress={() => { setNote(todayEntry.answer); setOpen(true); }}
+            onPress={() => requireAccount(() => { void openEditor(); })}
             accessibilityRole="button"
             style={({ pressed }) => [styles.editBtn, pressed && { opacity: 0.6 }]}
           >
@@ -129,13 +155,16 @@ export default function JournalCard() {
       ) : (
         <View style={styles.ctaRow}>
           <Pressable
-            onPress={() => setOpen(true)}
+            onPress={() => requireAccount(() => { void openEditor(); })}
             accessibilityRole="button"
             style={({ pressed }) => [styles.ctaPrimary, pressed && { opacity: 0.85 }]}
           >
             <Text style={styles.ctaPrimaryText}>{t('journal.cardAnswer')}</Text>
           </Pressable>
         </View>
+      )}
+      {!open && !todayEntry && isAnonymousUser() && (
+        <Text style={styles.anonHint}>{t('journal.anonHint')}</Text>
       )}
 
       <Pressable
@@ -217,6 +246,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
     padding: spacing.sm, minHeight: 80, textAlignVertical: 'top',
   },
+  anonHint: { fontFamily: fonts.sans, fontSize: 12, lineHeight: 17, color: colors.textMuted, marginTop: spacing.sm },
   journalLink: { marginTop: spacing.xs, minHeight: 44, justifyContent: 'center', alignItems: 'flex-end' },
   journalLinkText: { fontFamily: fonts.sans, fontSize: 13, color: colors.accentText, fontWeight: '600' },
 });

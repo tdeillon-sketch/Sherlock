@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   auth, isAdmin,
-  listAllUsers, deleteUserDocAsAdmin,
+  listAllUsers, countAnonymousSessions, deleteUserDocAsAdmin,
   type AdminUserRow,
 } from '../constants/firebase';
 
@@ -69,6 +69,7 @@ export default function AdminScreen() {
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [tab, setTab] = useState<'overview' | 'users'>('overview');
+  const [anonCount, setAnonCount] = useState(0);
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -83,7 +84,10 @@ export default function AdminScreen() {
     }
     if (!isRefresh) setLoading(true);
     try {
+      // Sessions without an account (one per install) are counted apart, so
+      // the lists and stats stay about real accounts.
       setUsers(await listAllUsers());
+      setAnonCount(await countAnonymousSessions().catch(() => 0));
       setError(null);
     } catch (e: any) {
       setError(e?.message || 'Erreur de chargement');
@@ -346,6 +350,11 @@ export default function AdminScreen() {
                 {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </Text>
             </View>
+            {anonCount > 0 && (
+              <Text style={styles.heroDelta}>
+                + {anonCount} session{anonCount > 1 ? 's' : ''} sans compte (non comptées ci-dessous)
+              </Text>
+            )}
             <View style={styles.heroMetrics}>
               <View style={styles.heroMetric}>
                 <Text style={styles.heroMetricValue}>+{newToday}</Text>

@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { DOSSIERS, RANKS, type DossierCase, type Dossier } from '../constants/dossiers';
 import { auth } from '../constants/firebase';
 import { saveDossierProgress, loadDossierProgress } from '../constants/firebase';
@@ -145,29 +146,84 @@ export function useDossier() {
   // Rank-up celebration: set to the new rank when XP crosses a threshold.
   const [rankUp, setRankUp] = useState<RankInfo['current'] | null>(null);
 
-  // ── Load progress from Firebase ──
-  useEffect(() => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) { setLoading(false); return; }
+  // ── Progress follows the signed-in account ──
+  // Loaded for the current uid when the tab gains focus (e.g. after the
+  // sign-in modal closes on another account); writes go only to the uid the
+  // progress was loaded for, never to another account. If the load fails
+  // (offline), play goes on locally and what was gained is merged into the
+  // saved progress as soon as a later load succeeds.
+  const loadedUid = useRef<string | null>(null);  // saved progress known for this uid
+  const stateUid = useRef<string | null>(null);   // uid the on-screen progress belongs to
+  const firstLoad = useRef(true);
+  const loadingRef = useRef(false);
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+
+  // Local play started from DEFAULT_PROGRESS: its XP and cases are exactly
+  // what was gained, so they add to the saved progress.
+  const mergeGained = (saved: DossierProgress, gained: DossierProgress): DossierProgress => {
+    const union = (x: string[], y: string[]) => Array.from(new Set([...(x ?? []), ...(y ?? [])]));
+    const completedCases = union(saved.completedCases, gained.completedCases);
+    const done = new Set(completedCases);
+    return {
+      ...saved,
+      completedCases,
+      unlockedFiches: union(saved.unlockedFiches, gained.unlockedFiches),
+      wrongCases: union(saved.wrongCases, gained.wrongCases).filter(id => !done.has(id)),
+      totalXP: (saved.totalXP ?? 0) + (gained.totalXP ?? 0),
+      bestCombo: Math.max(saved.bestCombo ?? 0, gained.bestCombo ?? 0),
+    };
+  };
+
+  const load = useCallback((uid: string, keepLocal: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     loadDossierProgress(uid)
       .then(p => {
-        if (p) {
-          setProgress({
-            ...DEFAULT_PROGRESS,
-            ...p,
-            bestCombo: p.bestCombo ?? 0,
-            wrongCases: p.wrongCases ?? [],
-          });
-        }
+        if (auth.currentUser?.uid !== uid) return;
+        const saved: DossierProgress = p
+          ? { ...DEFAULT_PROGRESS, ...p, bestCombo: p.bestCombo ?? 0, wrongCases: p.wrongCases ?? [] }
+          : DEFAULT_PROGRESS;
+        const next = keepLocal ? mergeGained(saved, progressRef.current) : saved;
+        setProgress(next);
+        loadedUid.current = uid;
+        if (keepLocal) saveDossierProgress(uid, next).catch(() => {});
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => { loadingRef.current = false; firstLoad.current = false; setLoading(false); });
   }, []);
+
+  const syncUser = useCallback(() => {
+    const uid = auth.currentUser?.uid ?? null;
+    if (uid && uid === loadedUid.current) return;
+    if (uid && uid === stateUid.current) {
+      // Same account, saved progress still unknown (a load failed): retry,
+      // keeping what was played meanwhile.
+      load(uid, true);
+      return;
+    }
+    // Another account (or none): start from its own progress.
+    stateUid.current = uid;
+    loadedUid.current = null;
+    setProgress(DEFAULT_PROGRESS);
+    setPlayState(null);
+    setScreen('hub');
+    setSessionPlayedIds([]);
+    if (!uid) { setLoading(false); return; }
+    // Loading view only the first time: later reloads (account switch) keep
+    // the hub on screen, so an action resumed after sign-in still finds it.
+    if (firstLoad.current) setLoading(true);
+    load(uid, false);
+  }, [load]);
+  useFocusEffect(syncUser);
 
   const persistProgress = useCallback((p: DossierProgress) => {
     const uid = auth.currentUser?.uid;
-    if (uid) saveDossierProgress(uid, p).catch(() => {});
-  }, []);
+    if (!uid) return;
+    if (uid === loadedUid.current) { saveDossierProgress(uid, p).catch(() => {}); return; }
+    // Saved progress not known yet for this account: try again (merging).
+    if (uid === stateUid.current) load(uid, true);
+  }, [load]);
 
   // ── Navigation ──
   const openCollection = useCallback(() => setScreen('collection'), []);

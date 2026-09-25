@@ -5,6 +5,17 @@ Only the email(s) listed in `ADMIN_EMAILS` (in `constants/firebase.ts`) get acce
 Currently:
 - `tdeillon@gmail.com`
 
+## Prerequisite: anonymous sign-in
+
+Since 4.1 the app can be used without an account: it starts an anonymous
+Firebase session. In the Firebase console, **Authentication > Sign-in method >
+Anonymous** must be **enabled** (and "Enable create (sign-up)" left on in
+Authentication > Settings). If it is disabled, the app falls back to the
+sign-in screen, with a "Continuer sans compte" retry.
+
+Anonymous sessions (one per install) appear in the admin as a separate count
+("sessions sans compte"), not in the account lists.
+
 ## Required Firestore security rules
 
 For the admin to be able to read the full `/users` collection, and for

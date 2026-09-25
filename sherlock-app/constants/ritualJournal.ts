@@ -12,7 +12,8 @@
 //  - If the Firestore rule is missing ("permission-denied"), the journal
 //    keeps working on the phone and sync is retried at the next launch.
 //  - Answers saved by older versions (one shared key for the whole phone)
-//    are moved once into the account that opens the journal first.
+//    are moved once into the first real account (not an anonymous session)
+//    that opens the journal.
 // ═══════════════════════════════════════════════════════════════
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -100,10 +101,13 @@ async function readCache(uid: string): Promise<Cache> {
     }
   } catch {}
 
-  // One-time move of the answers saved by older versions (shared key).
+  // One-time move of the answers saved by older versions (shared key), only
+  // into a real account (not an anonymous session, whose copy would be
+  // stranded if the user then signs in to an existing account).
   // Old versions keyed answers by the UTC date; re-key them by the local day
   // (the one the question belonged to), never dropping an answer on a clash.
-  try {
+  const u = auth.currentUser;
+  if (u && u.uid === uid && !u.isAnonymous) try {
     const legacyRaw = await AsyncStorage.getItem(LEGACY_KEY);
     if (legacyRaw) {
       const byDate = new Map(cache.entries.map((e) => [e.date, e]));

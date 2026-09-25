@@ -21,7 +21,7 @@ import {
   gridTypeWeights,
 } from '../constants/quiz_v3';
 import {
-  auth, loadChildProfiles, saveChildProfiles, getUserData, saveSecondOpinion,
+  auth, loadChildProfiles, updateChildProfiles, getUserData, saveSecondOpinion, onAuthChange,
   type ChildProfile, type ChildProfileEntry,
 } from '../constants/firebase';
 
@@ -651,15 +651,16 @@ export function useAdaptiveQuiz() {
   // Guards against saving the same round twice (double tap on the last page).
   const secondSavedRef = useRef<SecondSeed | null>(null);
 
-  // Load profiles on mount
-  useEffect(() => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) { setProfilesLoaded(true); return; }
+  // The family follows the signed-in account: reloaded whenever the uid
+  // changes (sign-in to an existing account, sign-out, deletion).
+  useEffect(() => onAuthChange((user) => {
+    const uid = user?.uid;
+    if (!uid) { setChildProfiles([]); setProfilesLoaded(true); return; }
     loadChildProfiles(uid)
-      .then(list => setChildProfiles(list))
+      .then(list => { if (auth.currentUser?.uid === uid) setChildProfiles(list); })
       .catch(() => {})
       .finally(() => setProfilesLoaded(true));
-  }, []);
+  }), []);
 
   // Compute scores from all pages
   const scores = useMemo(() => {
@@ -894,7 +895,16 @@ export function useAdaptiveQuiz() {
     setPhase('questions');
   }, []);
 
+  // The save screen lists the family saved on the account: reload it (the
+  // user may just have signed in to an existing account).
   const goToSaveProfile = useCallback(() => setPhase('save_profile'), []);
+  // Every way into the save screen (result, combined view) reloads the family
+  // saved on the account (the user may just have signed in to it).
+  useEffect(() => {
+    if (phase !== 'save_profile') return;
+    const uid = auth.currentUser?.uid;
+    if (uid) loadChildProfiles(uid).then(setChildProfiles).catch(() => {});
+  }, [phase]);
   const goToHistory = useCallback(() => setPhase('history'), []);
   const backToResult = useCallback(() => { if (result) setPhase('result'); }, [result]);
 
@@ -1038,39 +1048,48 @@ export function useAdaptiveQuiz() {
       scores: scoresOverride ?? scores,
       ...(result.combined ? { raters: 2 } : {}),
     };
-    let updated: ChildProfile[];
-    if (existingProfileId) {
-      updated = childProfiles.map(p =>
-        p.id === existingProfileId
-          ? {
-              ...p,
-              // A newly typed age keeps the profile current.
-              ...(age !== undefined && Number.isFinite(age) ? { age } : {}),
-              history: [...p.history, entry],
-            }
-          : p
-      );
-    } else {
-      const newProfile: ChildProfile = {
-        id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        name: childName.trim() || 'Sans nom',
-        age,
-        kind: subject === 'enfant' ? 'child' : 'adult',
-        history: [entry],
-      };
-      updated = [...childProfiles, newProfile];
-    }
+    const newProfile: ChildProfile = {
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      name: childName.trim() || 'Sans nom',
+      age: age !== undefined && Number.isFinite(age) ? age : undefined,
+      kind: subject === 'enfant' ? 'child' : 'adult',
+      history: [entry],
+    };
+    // Built on what is saved on the account right now, in a transaction
+    // (never on a stale list; fails offline instead of overwriting). Errors
+    // go up to the save screen.
+    // Safe to replay (transaction retries): the same profile or history
+    // entry is never added twice. On failure the family list is reloaded so
+    // the save screen shows what is really on the account.
+    const reload = () => loadChildProfiles(uid).then(setChildProfiles).catch(() => {});
+    const updated = await updateChildProfiles(uid, (current) => {
+      if (existingProfileId) {
+        if (!current.some(p => p.id === existingProfileId)) {
+          // Deleted meanwhile (e.g. on another phone): say so, don't pretend.
+          throw Object.assign(new Error('profile-missing'), { code: 'profile-missing' });
+        }
+        return current.map(p =>
+          p.id === existingProfileId
+            ? {
+                ...p,
+                // A newly typed age keeps the profile current.
+                ...(age !== undefined && Number.isFinite(age) ? { age } : {}),
+                history: p.history.some(h => h.date === entry.date) ? p.history : [...p.history, entry],
+              }
+            : p);
+      }
+      return current.some(p => p.id === newProfile.id) ? current : [...current, newProfile];
+    }).catch((e) => { reload(); throw e; });
     setChildProfiles(updated);
-    await saveChildProfiles(uid, updated).catch(() => {});
-  }, [subject, ageBand, result, scores, scoresOverride, childProfiles]);
+  }, [subject, ageBand, result, scores, scoresOverride]);
 
   // Delete a saved child profile (from the history screen).
   const deleteChildProfile = useCallback(async (id: string) => {
     const uid = auth.currentUser?.uid;
-    const updated = childProfiles.filter(p => p.id !== id);
-    setChildProfiles(updated);
-    if (uid) await saveChildProfiles(uid, updated).catch(() => {});
-  }, [childProfiles]);
+    if (!uid) return;
+    const updated = await updateChildProfiles(uid, (current) => current.filter(p => p.id !== id)).catch(() => null);
+    if (updated) setChildProfiles(updated);
+  }, []);
 
   // stepIndex for the progress bar: count of answered pages (roughly)
   const stepIndex = pageIndex + 1;

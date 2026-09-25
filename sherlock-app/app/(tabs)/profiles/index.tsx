@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { auth, trackScreen, loadFamily, type Family } from '../../../constants/firebase';
+import { auth, trackScreen, loadFamily, isAnonymousUser, type Family } from '../../../constants/firebase';
+import { openSignIn } from '../../../constants/authGate';
 import {
   View,
   Text,
@@ -68,6 +69,16 @@ export default function ProfilesScreen() {
   const familySection = !familyLoaded ? null : (
     <View style={styles.section}>
       <Text style={styles.sectionLabel}>{t('family.title')}</Text>
+      {isAnonymousUser() && (
+        <Pressable
+          onPress={openSignIn}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.familyEmpty, pressed && { opacity: 0.85 }]}
+        >
+          <Text style={styles.familyEmptyText}>{t('family.anonHint')}</Text>
+          <Text style={styles.familyCtaText}>{t('family.anonCta')}  →</Text>
+        </Pressable>
+      )}
       {familyMembers.length > 0 ? (
         <>
           <View style={styles.familyList}>

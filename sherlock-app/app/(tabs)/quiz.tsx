@@ -14,7 +14,8 @@ import RadarChart from '../../components/RadarChart';
 import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
-import { auth, saveQuizResult, getUserData, type ChildProfile } from '../../constants/firebase';
+import { auth, saveQuizResult, getUserData, isAnonymousUser, type ChildProfile } from '../../constants/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AdaptiveResult } from '../../hooks/useAdaptiveQuiz';
 import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
 import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
@@ -22,6 +23,7 @@ import { useT, getTypeText } from '../../i18n';
 import { hapticLight } from '../../utils/haptics';
 import { consumeSecondOpinion } from '../../constants/quizIntent';
 import { deName } from '../../utils/frenchName';
+import { requireAccount, openSignIn } from '../../constants/authGate';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
@@ -136,6 +138,23 @@ export default function QuizScreen() {
     return () => { alive = false; };
   }, [phase, subject]);
 
+  // Gentle reminder without an account: after the 2nd (then the 4th) person
+  // typed, suggest creating an account to keep them. Never a wall.
+  const [nudgeCount, setNudgeCount] = useState<number | null>(null);
+  const countedResultRef = useRef<typeof result>(null);
+  useEffect(() => {
+    if (phase !== 'result' || !result || result.combined || countedResultRef.current === result) return;
+    countedResultRef.current = result;
+    if (!isAnonymousUser()) { setNudgeCount(null); return; }
+    AsyncStorage.getItem('nudge:typed')
+      .then((v) => {
+        const n = (parseInt(v ?? '0', 10) || 0) + 1;
+        AsyncStorage.setItem('nudge:typed', String(n)).catch(() => {});
+        setNudgeCount(n === 2 || n === 4 ? n : null);
+      })
+      .catch(() => {});
+  }, [phase, result]);
+
   // ── Entrance animations: fade the radar in, reveal the result card ──
   const radarAnim = useRef(new Animated.Value(0)).current;
   // Scroll position of the questions (drives the collapsing radar header).
@@ -228,7 +247,14 @@ export default function QuizScreen() {
         isAdult={subject !== 'enfant'}
         onCancel={backToResult}
         onSave={async (name, age, existingId) => {
-          await saveChildResult(name, age, existingId);
+          try {
+            await saveChildResult(name, age, existingId);
+          } catch {
+            // Nothing was written (offline, or the chosen profile was deleted
+            // meanwhile): keep the form; the family list is reloaded.
+            Alert.alert(t('saveProfile.errorTitle'), t('saveProfile.errorBody'));
+            return;
+          }
           profileSavedFor.current = result;
           backToResult();
         }}
@@ -377,7 +403,7 @@ export default function QuizScreen() {
         first={crossBase}
         other={crossOther}
         combined={crossCombined}
-        onSave={keepCombined}
+        onSave={() => requireAccount(keepCombined)}
         onDone={reset}
       />
     );
@@ -562,12 +588,39 @@ export default function QuizScreen() {
             const extra = result.wingType ? `&wing=${result.wingType}` : '';
             router.push(`/profiles/${result.topType}?who=${who}${extra}` as never);
           }}
-          onSaveProfile={goToSaveProfile}
+          onSaveProfile={() => requireAccount(goToSaveProfile)}
           onNewChild={restartSameSubject}
           onReset={reset}
           forProche={subject === 'proche-self' || subject === 'proche-obs'}
           raterType={subject === 'enfant' || subject === 'proche-obs' ? raterType : null}
         />
+
+        {/* Gentle reminder to create an account (anonymous users only) */}
+        {nudgeCount != null && isAnonymousUser() && (
+          <View style={styles.nudgeCard}>
+            <Text style={styles.nudgeText}>{t('quiz.nudgeText', { n: nudgeCount })}</Text>
+            <View style={styles.nudgeRow}>
+              <Pressable
+                onPress={() => {
+                  setNudgeCount(null);
+                  if (subject === 'self') openSignIn();
+                  else requireAccount(goToSaveProfile);
+                }}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.nudgeCta, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.nudgeCtaText}>{t('quiz.nudgeCta')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setNudgeCount(null)}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.nudgeLater, pressed && { opacity: 0.6 }]}
+              >
+                <Text style={styles.nudgeLaterText}>{t('quiz.nudgeLater')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* Regard croisé : l'autre parent refait le test de l'enfant */}
         {subject === 'enfant' && !result.combined && (
@@ -702,14 +755,19 @@ function SaveProfileScreen({
   existingProfiles: ChildProfile[];
   isAdult?: boolean;
   onCancel: () => void;
-  onSave: (name: string, age: number | undefined, existingId: string | undefined) => void;
+  onSave: (name: string, age: number | undefined, existingId: string | undefined) => Promise<void>;
 }) {
   const [name, setName] = useState('');
   const [ageStr, setAgeStr] = useState('');
   const [selectedExisting, setSelectedExisting] = useState<string | null>(null);
   const { t } = useT();
 
-  const canSave = selectedExisting || name.trim().length > 0;
+  const [saving, setSaving] = useState(false);
+  // A profile deleted meanwhile disappears from the list: forget it.
+  useEffect(() => {
+    if (selectedExisting && !existingProfiles.some(p => p.id === selectedExisting)) setSelectedExisting(null);
+  }, [existingProfiles, selectedExisting]);
+  const canSave = (selectedExisting || name.trim().length > 0) && !saving;
 
   return (
     <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
@@ -766,9 +824,16 @@ function SaveProfileScreen({
       )}
 
       <Pressable
-        onPress={() => {
-          const age = isAdult ? undefined : (ageStr ? parseInt(ageStr, 10) : undefined);
-          onSave(name, age, selectedExisting ?? undefined);
+        onPress={async () => {
+          // One save at a time (a double tap must not add the profile twice).
+          if (saving) return;
+          setSaving(true);
+          try {
+            const age = isAdult ? undefined : (ageStr ? parseInt(ageStr, 10) : undefined);
+            await onSave(name, age, selectedExisting ?? undefined);
+          } finally {
+            setSaving(false);
+          }
         }}
         disabled={!canSave}
         style={({ pressed }) => [
@@ -1083,6 +1148,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     textAlign: 'center', marginTop: 4, letterSpacing: 0.3,
   },
+  nudgeCard: {
+    marginHorizontal: spacing.md, marginTop: spacing.md, padding: spacing.md,
+    borderRadius: radius.md, backgroundColor: colors.accentSoft,
+    borderWidth: 1, borderColor: colors.accentMedium,
+  },
+  nudgeText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.text },
+  nudgeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  nudgeCta: {
+    minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.lg,
+    backgroundColor: colors.accentStrong, borderRadius: radius.full,
+  },
+  nudgeCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.white },
+  nudgeLater: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md },
+  nudgeLaterText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
   crossCombined: {
     marginHorizontal: spacing.lg, marginTop: spacing.lg, padding: spacing.md,
     borderRadius: radius.md, backgroundColor: colors.accentSoft,

@@ -6,15 +6,17 @@
 //  the entry point for that.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { onIdTokenChanged } from 'firebase/auth';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, trackScreen,
+  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, isAnonymousUser, trackScreen,
 } from '../constants/firebase';
+import { openSignIn, requireReauth } from '../constants/authGate';
 import { useT } from '../i18n';
 import { prepareJournalSignOut, clearLocalJournal, stopJournalSync } from '../constants/ritualJournal';
 import { FEEDBACK_EMAIL, openFeedbackEmail } from '../utils/feedback';
@@ -23,8 +25,14 @@ export default function AccountScreen() {
   const [busy, setBusy] = useState<null | 'signout' | 'delete'>(null);
   const { t, locale, setLocale } = useT();
   useEffect(() => { trackScreen('account').catch(() => {}); }, []);
+  // Re-read the account after a sign-in / link (a link keeps the same user
+  // object, so nothing else would redraw this screen).
+  const [, redraw] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => onIdTokenChanged(auth, () => redraw()), []);
+  useFocusEffect(useCallback(() => { redraw(); }, []));
 
   const user = auth.currentUser;
+  const anonymous = isAnonymousUser(user);
   const provider = isAppleSignedIn(user) ? 'Apple'
                  : isGoogleSignedIn(user) ? 'Google'
                  : '';
@@ -36,10 +44,9 @@ export default function AccountScreen() {
       // Send pending journal answers first, then drop the phone copy.
       const uid = auth.currentUser?.uid;
       if (uid) await prepareJournalSignOut(uid);
+      // The root layout then starts a fresh session without an account and
+      // remounts every screen (nothing of this account stays in memory).
       await signOut();
-      // Reset the navigation stack — root layout will detect signed-out
-      // state and render the AuthScreen.
-      router.replace('/');
     } catch (e: any) {
       Alert.alert(t('account.signOutErrorTitle'), e?.message ?? t('account.signOutErrorBody'));
     } finally {
@@ -47,7 +54,22 @@ export default function AccountScreen() {
     }
   };
 
-  const performDelete = async () => {
+  const performDelete = async (afterReauth = false) => {
+    // With an account signed in a while ago, Firebase will refuse the final
+    // step: confirm the identity FIRST, before anything is deleted. (Skipped
+    // right after that confirmation, so a phone clock ahead can't loop it.)
+    const current = auth.currentUser;
+    if (current && !current.isAnonymous && !afterReauth) {
+      const info = await current.getIdTokenResult().catch(() => null);
+      const age = info ? Date.now() - Date.parse(info.authTime) : Infinity;
+      if (!(age < 4 * 60 * 1000)) {
+        Alert.alert(t('account.reauthTitle'), t('account.reauthBody'), [
+          { text: t('account.reauthAction'), onPress: () => requireReauth(() => { performDelete(true); }) },
+          { text: t('account.cancel'), style: 'cancel' },
+        ]);
+        return;
+      }
+    }
     setBusy('delete');
     const uid = auth.currentUser?.uid;
     // No journal upload may land after the online copy has been listed.
@@ -55,25 +77,23 @@ export default function AccountScreen() {
     try {
       await deleteAccount();
       if (uid) await clearLocalJournal(uid);
-      // Auth listener in _layout will pick up the signed-out state
-      // and render the AuthScreen.
-      router.replace('/');
+      // The root layout starts a fresh session without an account and
+      // remounts every screen.
     } catch (e: any) {
       const code = e?.code as string | undefined;
       if (code === 'auth/requires-recent-login') {
-        // The data was already deleted online before this error.
+        // The data was already deleted online before this error. Firebase
+        // wants a recent sign-in to delete the account itself: confirm the
+        // identity with the same Apple / Google account, then finish.
         if (uid) await clearLocalJournal(uid);
+        // Without an account there is nothing to confirm: the data is gone,
+        // start a fresh session.
+        if (isAnonymousUser(auth.currentUser)) { await signOut().catch(() => {}); return; }
         Alert.alert(
           t('account.reauthTitle'),
           t('account.reauthBody'),
           [
-            {
-              text: t('account.reauthAction'),
-              onPress: async () => {
-                try { await signOut(); } catch {}
-                router.replace('/');
-              },
-            },
+            { text: t('account.reauthAction'), onPress: () => requireReauth(() => { performDelete(true); }) },
             { text: t('account.cancel'), style: 'cancel' },
           ],
         );
@@ -106,7 +126,7 @@ export default function AccountScreen() {
                 {
                   text: t('account.deleteConfirm2Action'),
                   style: 'destructive',
-                  onPress: performDelete,
+                  onPress: () => { performDelete(); },
                 },
               ],
             );
@@ -127,6 +147,18 @@ export default function AccountScreen() {
       </View>
 
       {/* ── Identity card ── */}
+      {anonymous ? (
+        <View style={styles.card}>
+          <Text style={styles.feedbackBody}>{t('account.noAccount')}</Text>
+          <Pressable
+            onPress={openSignIn}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.feedbackBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.feedbackBtnText}>{t('account.createAccount')}</Text>
+          </Pressable>
+        </View>
+      ) : (
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t('account.connectedWith')}</Text>
         <Text style={styles.cardValue}>{provider}</Text>
@@ -137,6 +169,7 @@ export default function AccountScreen() {
           </>
         )}
       </View>
+      )}
 
       {/* ── Language selector ── */}
       <View style={styles.card}>
@@ -182,7 +215,8 @@ export default function AccountScreen() {
         </Pressable>
       </View>
 
-      {/* ── Sign out ── */}
+      {/* ── Sign out (only with an account: without one, it would lose the data) ── */}
+      {!anonymous && (
       <Pressable
         onPress={handleSignOut}
         disabled={busy !== null}
@@ -197,6 +231,7 @@ export default function AccountScreen() {
           <Text style={styles.actionBtnText}>{t('account.signOut')}</Text>
         )}
       </Pressable>
+      )}
 
       {/* ── Danger zone ── */}
       <View style={styles.dangerZone}>
@@ -215,7 +250,7 @@ export default function AccountScreen() {
           {busy === 'delete' ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.deleteBtnText}>{t('account.deleteBtn')}</Text>
+            <Text style={styles.deleteBtnText}>{anonymous ? t('account.deleteAnonBtn') : t('account.deleteBtn')}</Text>
           )}
         </Pressable>
       </View>
