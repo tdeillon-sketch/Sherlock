@@ -4,7 +4,7 @@
 //  (11 positions discrètes). Valeur par défaut : 0 (sans avis).
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, PanResponder } from 'react-native';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import type { AgeBand } from '../constants/quiz_v3';
@@ -26,13 +26,15 @@ const MAX = 5;
 const STEPS = MAX - MIN; // 10
 
 /** Une ligne = un slider pour un statement.
- *  Drag handled by a PanResponder so the thumb can be grabbed and slid:
- *   - claims only HORIZONTAL gestures → the surrounding ScrollView still scrolls
- *     vertically, and won't steal the drag once it starts;
- *   - tracks the finger in absolute pageX against the measured track, so the
- *     value follows smoothly even if the finger drifts off the bar;
- *   - reads value/onChange/geometry via refs so the once-created responder
- *     always uses fresh data (no stale closure). */
+ *  DRAG ONLY: the value changes only when the thumb itself is grabbed and
+ *  slid. Taps on the track do nothing (they used to jump the value, a very
+ *  frequent mis-touch while scrolling).
+ *   - the pan handlers live on a 44×44 grab zone centred on the thumb;
+ *   - a gesture is claimed only once it moves mostly HORIZONTALLY, so a
+ *     vertical swipe starting anywhere (even on the thumb) scrolls the page;
+ *   - the drag is relative (start value + dx), so grabbing the zone off-centre
+ *     never makes the value jump;
+ *   - screen readers get an "adjustable" control (swipe up/down = ±1). */
 function SliderRow({
   label,
   value,
@@ -42,47 +44,42 @@ function SliderRow({
   value: number;
   onChange: (v: number) => void;
 }) {
-  const trackRef = useRef<View>(null);
-  // Track geometry in window coords. X is stable across vertical scroll.
-  const geom = useRef({ left: 0, width: 0 });
+  const [trackW, setTrackW] = useState(0);
+  const [active, setActive] = useState(false);
+  const trackWRef = useRef(0);
   const valueRef = useRef(value);
   valueRef.current = value;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const startValue = useRef(value);
 
-  const measure = () => {
-    trackRef.current?.measureInWindow((x, _y, w) => {
-      if (w > 0) geom.current = { left: x, width: w };
-    });
-  };
-
-  const setFromPageX = (pageX: number) => {
-    const { left, width } = geom.current;
-    if (width <= 0) return;
-    const ratio = Math.max(0, Math.min(1, (pageX - left) / width));
-    const bounded = Math.max(MIN, Math.min(MAX, Math.round(MIN + ratio * STEPS)));
+  const commit = (v: number) => {
+    const bounded = Math.max(MIN, Math.min(MAX, Math.round(v)));
     if (bounded !== valueRef.current) {
       hapticSelection();
+      valueRef.current = bounded;
       onChangeRef.current(bounded);
     }
   };
 
   const pan = useRef(
     PanResponder.create({
-      // A tap grants immediately (tap-to-position still works)…
-      onStartShouldSetPanResponder: () => true,
-      // …but a drag is only claimed when it's mostly horizontal, so vertical
-      // scrolling of the page is preserved.
-      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 2,
+      // A tap does nothing: only a real drag of the thumb moves the value.
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 3 && Math.abs(g.dx) > Math.abs(g.dy),
       // Once we own the gesture, don't let the ScrollView reclaim it.
       onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: (e) => { measure(); setFromPageX(e.nativeEvent.pageX); },
-      onPanResponderMove: (e) => setFromPageX(e.nativeEvent.pageX),
+      onPanResponderGrant: () => { startValue.current = valueRef.current; setActive(true); },
+      onPanResponderMove: (_e, g) => {
+        const w = trackWRef.current;
+        if (w > 0) commit(startValue.current + (g.dx / w) * STEPS);
+      },
+      onPanResponderRelease: () => setActive(false),
+      onPanResponderTerminate: () => setActive(false),
     }),
   ).current;
 
-  // Thumb position as percentage
-  const thumbPct = ((value - MIN) / STEPS) * 100;
+  const ratio = (value - MIN) / STEPS;
 
   return (
     <View style={styles.row}>
@@ -92,14 +89,27 @@ function SliderRow({
         <Text style={[styles.polarity, styles.polarityLeft]}>−</Text>
 
         <View
-          ref={trackRef}
-          onLayout={measure}
-          hitSlop={{ top: 12, bottom: 12 }}
-          style={styles.track}
-          {...pan.panHandlers}
+          style={styles.rail}
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel={label}
+          accessibilityValue={{ min: MIN, max: MAX, now: value, text: String(value) }}
+          accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+          onAccessibilityAction={(e) => {
+            if (e.nativeEvent.actionName === 'increment') commit(valueRef.current + 1);
+            if (e.nativeEvent.actionName === 'decrement') commit(valueRef.current - 1);
+          }}
         >
-          {/* Tick marks */}
-          <View style={styles.ticks} pointerEvents="none">
+          {/* Tick marks (passive: touching the track does nothing) */}
+          <View
+            style={styles.ticks}
+            pointerEvents="none"
+            onLayout={(e) => {
+              const w = e.nativeEvent.layout.width;
+              trackWRef.current = w;
+              setTrackW(w);
+            }}
+          >
             {Array.from({ length: STEPS + 1 }).map((_, i) => (
               <View
                 key={i}
@@ -111,16 +121,23 @@ function SliderRow({
             ))}
           </View>
 
-          {/* Thumb */}
-          <View
-            pointerEvents="none"
-            style={[
-              styles.thumb,
-              { left: `${thumbPct}%` },
-              value > 0 && styles.thumbPos,
-              value < 0 && styles.thumbNeg,
-            ]}
-          />
+          {/* Grab zone 44×44, centred on the thumb: the only draggable part */}
+          {trackW > 0 && (
+            <View
+              style={[styles.grab, { left: ratio * trackW }]}
+              {...pan.panHandlers}
+            >
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.thumb,
+                  value > 0 && styles.thumbPos,
+                  value < 0 && styles.thumbNeg,
+                  active && styles.thumbActive,
+                ]}
+              />
+            </View>
+          )}
         </View>
 
         <Text style={[styles.polarity, styles.polarityRight]}>+</Text>
@@ -197,12 +214,12 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.serif, fontSize: 14,
     color: colors.text, lineHeight: 18,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   sliderWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: 4,
   },
   polarity: {
     fontFamily: fonts.serif, fontSize: 22, fontWeight: '700',
@@ -211,9 +228,11 @@ const styles = StyleSheet.create({
   polarityLeft: { color: colors.error },
   polarityRight: { color: colors.success },
 
-  track: {
+  // 44pt tall rail; the tick bar is inset by half the grab zone so the thumb
+  // (and its 44pt zone) stays inside the rail even at -5 / +5.
+  rail: {
     flex: 1,
-    height: 32,
+    height: 44,
     justifyContent: 'center',
     position: 'relative',
   },
@@ -222,6 +241,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     height: 6,
+    marginHorizontal: 22,
     borderRadius: 3,
     backgroundColor: colors.subtle12,
   },
@@ -231,13 +251,20 @@ const styles = StyleSheet.create({
   tickCenter: {
     width: 3, height: 10, backgroundColor: colors.subtle55,
   },
-  thumb: {
+  grab: {
     position: 'absolute',
-    width: 22, height: 22, borderRadius: 11,
+    top: 0,
+    width: 44, height: 44,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  thumb: {
+    width: 26, height: 26, borderRadius: 13,
     backgroundColor: colors.accent,
     borderWidth: 2, borderColor: colors.bg,
-    marginLeft: -11, // center on position
-    top: 5,
+  },
+  thumbActive: {
+    transform: [{ scale: 1.2 }],
+    borderColor: colors.white,
   },
   thumbPos: { backgroundColor: colors.success },
   thumbNeg: { backgroundColor: colors.error },

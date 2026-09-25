@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
   useWindowDimensions, TextInput, Alert, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { TYPES } from '../../constants/data';
 import { useAdaptiveQuiz } from '../../hooks/useAdaptiveQuiz';
@@ -19,6 +19,8 @@ import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
 import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
 import { useT, getTypeText } from '../../i18n';
 import { hapticLight } from '../../utils/haptics';
+import { consumeSecondOpinion } from '../../constants/quizIntent';
+import { deName } from '../../utils/frenchName';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
@@ -44,39 +46,94 @@ export default function QuizScreen() {
 
   const {
     phase, subject, ageBand, childAge, currentPage, scores,
-    stepIndex, estimatedTotal, result, childProfiles, canAdvance, pageIndex,
+    stepIndex, estimatedTotal, result, radarScores, childProfiles, canAdvance, pageIndex,
     selectSubject, selectAge, goToProcheMode,
-    updateResponse, advancePage, goToPrevPage,
+    updateResponse, updateGridPoint, skipGrid, advancePage, goToPrevPage,
     reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
     saveChildResult, deleteChildProfile,
-    startSecondOpinion, beginSecondQuestions, updateSecondResponse,
+    startSecondOpinion, startSecondOpinionFromSaved, exitSecondOpinion,
+    beginSecondQuestions, updateSecondResponse,
     advanceSecondPage, secondCurrentPage, secondPageIndex, secondTotal, secondResult,
   } = useAdaptiveQuiz();
 
-  // Save quiz result to Firebase au passage en 'result'
-  const savedRef = useRef(false);
+  // "Ma famille" can ask for the second opinion (Profils → Quiz tab).
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const subjectRef = useRef(subject);
+  subjectRef.current = subject;
+  const resultRef = useRef(result);
+  resultRef.current = result;
+  // The child / close-adult result already saved as a profile (nothing to lose).
+  const profileSavedFor = useRef<typeof result>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (!consumeSecondOpinion()) return;
+      const open = async () => {
+        const r = await startSecondOpinionFromSaved();
+        if (r === 'none') Alert.alert(t('second.introTitle'), t('second.needSelf'));
+        else if (r === 'error') Alert.alert(t('second.introTitle'), t('second.loadError'));
+      };
+      // Don't silently discard unsaved work: a quiz in progress, the save
+      // screen, or a child / close-adult result not saved yet (your own
+      // result is saved automatically).
+      const p = phaseRef.current;
+      const hasUnsaved = p === 'questions' || p === 'save_profile'
+        || (p === 'result' && subjectRef.current !== 'self' && profileSavedFor.current !== resultRef.current);
+      if (hasUnsaved) {
+        Alert.alert(t('quiz.quitTitle'), t('quiz.quitBody'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: () => { open(); } },
+        ]);
+      } else {
+        open();
+      }
+    }, [startSecondOpinionFromSaved, t]),
+  );
+
+  // "Terminé" / back from the second opinion: if it was opened from
+  // Ma famille (no result on screen), go back there.
+  const leaveSecondOpinion = () => {
+    if (result) { exitSecondOpinion(); return; }
+    exitSecondOpinion();
+    router.navigate('/profiles' as never);
+  };
+
+  // Save quiz result to Firebase au passage en 'result' — once per result
+  // (coming back from the second opinion or the save screen must not save
+  // the same quiz again).
+  const savedResultRef = useRef<typeof result>(null);
   useEffect(() => {
     // On n'enregistre dans l'historique perso que SES propres tests (soi / enfant).
     // Un proche se sauvegarde explicitement comme profil nommé (pas d'auto-save).
-    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && !savedRef.current) {
-      savedRef.current = true;
+    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && savedResultRef.current !== result) {
+      savedResultRef.current = result;
       const uid = auth.currentUser?.uid;
       if (uid) {
         saveQuizResult(uid, {
           mode: subject === 'self' ? 'adulte' : (ageBand ?? 'enfant'),
           topType: result.topType,
           wingType: result.wingType,
+          wingCertainty: result.wingCertainty,
           scores,
           completedAt: new Date().toISOString(),
         }).catch(() => {});
       }
     }
-    if (phase !== 'result') savedRef.current = false;
   }, [phase, subject, ageBand, result, scores]);
 
   // ── Entrance animations: fade the radar in, reveal the result card ──
   const radarAnim = useRef(new Animated.Value(0)).current;
+  // Scroll position of the questions (drives the collapsing radar header).
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const questionsScrollRef = useRef<ScrollView>(null);
+  // The page must not scroll while the grid point is being dragged.
+  const [gridDragging, setGridDragging] = useState(false);
+  // Each new page starts at the top, radar fully open (shows the new shape).
+  useEffect(() => {
+    scrollY.setValue(0);
+    questionsScrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [pageIndex, phase, scrollY]);
   const resultAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (phase === 'questions') {
@@ -181,11 +238,15 @@ export default function QuizScreen() {
   if (phase === 'save_profile') {
     return (
       <SaveProfileScreen
-        existingProfiles={childProfiles}
+        // Only offer to add to someone of the same kind (a child's result
+        // never lands in an adult's history, and vice versa).
+        existingProfiles={childProfiles.filter((p) =>
+          subject === 'enfant' ? p.kind !== 'adult' : p.kind === 'adult')}
         isAdult={subject !== 'enfant'}
         onCancel={backToResult}
         onSave={async (name, age, existingId) => {
           await saveChildResult(name, age, existingId);
+          profileSavedFor.current = result;
           backToResult();
         }}
       />
@@ -247,7 +308,7 @@ export default function QuizScreen() {
           >
             <Text style={styles.saveBtnText}>{t('second.introStart')}</Text>
           </Pressable>
-          <Pressable onPress={backToResult} style={styles.skipBtn}>
+          <Pressable onPress={leaveSecondOpinion} style={styles.skipBtn}>
             <Text style={styles.skipBtnText}>{t('second.introCancel')}</Text>
           </Pressable>
         </View>
@@ -263,7 +324,7 @@ export default function QuizScreen() {
     return (
       <View style={styles.narrowContainer}>
         <View style={styles.quizTopBar}>
-          <Pressable onPress={backToResult} style={styles.quizBackBtn}>
+          <Pressable onPress={leaveSecondOpinion} style={styles.quizBackBtn}>
             <Text style={styles.quizBackBtnText}>‹</Text>
           </Pressable>
           <Text style={styles.quizTopBarTitle}>{t('subject.headerProche')}</Text>
@@ -305,7 +366,7 @@ export default function QuizScreen() {
   //  PHASE: second_result (accord / divergence)
   // ─────────────────────────────────────────────
   if (phase === 'second_result' && secondResult) {
-    return <SecondResultScreen sr={secondResult} onDone={backToResult} />;
+    return <SecondResultScreen sr={secondResult} onDone={leaveSecondOpinion} />;
   }
 
   // ── Common header pour le flow actif ──
@@ -338,7 +399,7 @@ export default function QuizScreen() {
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
     <Animated.View style={[styles.radarSection, isWide && styles.radarSectionWide, { opacity: radarAnim }]}>
-      <RadarChart scores={scores as unknown as Record<number, number>} size={radarSize} />
+      <RadarChart scores={radarScores as unknown as Record<number, number>} size={radarSize} />
       <Text style={styles.radarCaption}>{t('quiz.radarCaption')}</Text>
       {phase === 'result' && (
         <View style={styles.legendRow}>
@@ -403,9 +464,18 @@ export default function QuizScreen() {
           pageIndex={pageIndex}
           ageBand={ageBand}
           onChange={updateResponse}
+          onGridChange={updateGridPoint}
+          onGridSkip={skipGrid}
+          onGridDragChange={setGridDragging}
         />
         {(currentPage.kind === 'budget' || currentPage.kind === 'final') && !canAdvance && (
           <Text style={styles.navHint}>{t('quiz.distributeToContinue')}</Text>
+        )}
+        {currentPage.kind === 'grid' && !canAdvance && (
+          <Text style={styles.navHint}>{t('quizGrid.dragToContinue')}</Text>
+        )}
+        {currentPage.kind === 'wing' && !canAdvance && (
+          <Text style={styles.navHint}>{t('quiz.wingMustDiffer')}</Text>
         )}
         <View style={styles.navRow}>
           {pageIndex > 0 ? (
@@ -443,6 +513,7 @@ export default function QuizScreen() {
       thirdType: result.thirdType,
       thirdPercent: result.thirdPercent,
       wingType: result.wingType,
+      wingCertainty: result.wingCertainty,
       isAmbiguous: result.confidence < 60,
       ambiguousPair: null as [number, number] | null,
       insightKind: result.insightKind,
@@ -460,10 +531,17 @@ export default function QuizScreen() {
         <QuizResult
           result={adaptedResult}
           mode={legacyMode}
-          onViewProfile={() => router.push(`/profiles/${result.topType}` as never)}
+          onViewProfile={() => {
+            // The profile page adapts to who the result is about.
+            const who = subject === 'enfant' ? 'child' : subject === 'self' ? 'self' : 'adult';
+            const extra = (result.wingType ? `&wing=${result.wingType}` : '')
+              + (subject === 'enfant' && ageBand ? `&band=${ageBand}` : '');
+            router.push(`/profiles/${result.topType}?who=${who}${extra}` as never);
+          }}
           onSaveProfile={goToSaveProfile}
           onNewChild={restartSameSubject}
           onReset={reset}
+          forProche={subject === 'proche-self' || subject === 'proche-obs'}
         />
 
         {/* Second avis : proposé seulement pour l'auto-évaluation */}
@@ -500,10 +578,61 @@ export default function QuizScreen() {
             style={styles.scrollFlex}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            scrollEnabled={!gridDragging}
           >
             {mainContent}
           </ScrollView>
         </View>
+      </View>
+    );
+  }
+
+  // Phone, during the questions: the radar stays pinned at the top and
+  // shrinks to half its size as the questions scroll under it.
+  //  - the sticky box is H/2 tall (the collapsed radar); the full radar
+  //    (height H) overflows it at rest, onto a spacer of H/2;
+  //  - scale = 1 → 0.5 over the first H/2 of scroll, so the radar's bottom
+  //    edge always sits exactly on top of the content (no gap, no overlap);
+  //  - native-driven transform/opacity only: no layout work while scrolling.
+  if (phase === 'questions') {
+    const H = radarSize + 38;
+    const D = H / 2;
+    const radarScale = scrollY.interpolate({ inputRange: [0, D], outputRange: [1, 0.5], extrapolate: 'clamp' });
+    const captionOpacity = scrollY.interpolate({ inputRange: [0, D / 2], outputRange: [1, 0], extrapolate: 'clamp' });
+    return (
+      <View style={styles.narrowContainer}>
+        {topBar}
+        {progressBar}
+        <Animated.ScrollView
+          ref={questionsScrollRef as any}
+          style={styles.scrollFlex}
+          contentContainerStyle={styles.narrowScroll}
+          showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[0]}
+          scrollEnabled={!gridDragging}
+          scrollEventThrottle={16}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        >
+          <View style={[styles.radarSticky, { height: D }]}>
+            <Animated.View
+              style={[
+                styles.radarCollapsing,
+                { height: H, opacity: radarAnim, transformOrigin: 'top', transform: [{ scale: radarScale }] },
+              ]}
+            >
+              <RadarChart scores={radarScores as unknown as Record<number, number>} size={radarSize} />
+              <Animated.Text
+                style={[styles.radarCaption, { opacity: captionOpacity }]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}
+              >
+                {t('quiz.radarCaption')}
+              </Animated.Text>
+            </Animated.View>
+          </View>
+          <View style={{ height: D }} />
+          <View style={styles.questionArea}>{mainContent}</View>
+        </Animated.ScrollView>
       </View>
     );
   }
@@ -583,7 +712,7 @@ function SaveProfileScreen({
         value={name}
         onChangeText={(tt) => { setName(tt); setSelectedExisting(null); }}
         placeholder={t('saveProfile.namePlaceholder')}
-        placeholderTextColor={colors.textDim}
+        placeholderTextColor={colors.textMuted}
         style={styles.saveInput}
       />
       {!isAdult && (
@@ -591,7 +720,7 @@ function SaveProfileScreen({
           value={ageStr}
           onChangeText={setAgeStr}
           placeholder={t('saveProfile.agePlaceholder')}
-          placeholderTextColor={colors.textDim}
+          placeholderTextColor={colors.textMuted}
           keyboardType="numeric"
           style={styles.saveInput}
         />
@@ -651,7 +780,7 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
                   hitSlop={10}
                   onPress={() => Alert.alert(
                     t('history.deleteTitle'),
-                    t('history.deleteBody', { name: p.name }),
+                    t('history.deleteBody', { name: p.name, deName: deName(p.name) }),
                     [
                       { text: t('common.cancel'), style: 'cancel' },
                       { text: t('history.deleteAction'), style: 'destructive', onPress: () => onDelete(p.id) },
@@ -692,7 +821,7 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
               <Text style={styles.historyEvolution}>
                 {p.history[0].topType === p.history[p.history.length - 1].topType
                   ? t('history.stable', { n: p.history.length })
-                  : t('history.evolution', { from: p.history[0].topType, to: p.history[p.history.length - 1].topType })}
+                  : t(p.kind === 'adult' ? 'history.evolutionAdult' : 'history.evolution', { from: p.history[0].topType, to: p.history[p.history.length - 1].topType })}
               </Text>
             )}
           </View>
@@ -719,11 +848,15 @@ function SecondResultScreen({ sr, onDone }: { sr: SecondOpinionResult; onDone: (
         <View style={styles.quizBackBtn} />
       </View>
 
-      <Text style={styles.saveTitle}>{agree ? t('second.agreeTitle') : t('second.divergeTitle')}</Text>
+      <Text style={styles.saveTitle}>
+        {!sr.observerAnswered ? t('second.noAnswerTitle') : agree ? t('second.agreeTitle') : t('second.divergeTitle')}
+      </Text>
       <Text style={styles.saveSub}>
-        {agree
-          ? t('second.agreeBody', { self: sr.selfTop })
-          : t('second.divergeBody', { self: sr.selfTop, obs: sr.observerTop })}
+        {!sr.observerAnswered
+          ? t('second.noAnswer')
+          : agree
+            ? t('second.agreeBody', { self: sr.selfTop })
+            : t('second.divergeBody', { self: sr.selfTop, obs: sr.observerTop })}
       </Text>
 
       <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
@@ -792,14 +925,14 @@ const styles = StyleSheet.create({
   backLink: {
     alignSelf: 'flex-start', marginBottom: spacing.md, padding: spacing.xs,
   },
-  backLinkText: { fontFamily: fonts.sans, fontSize: 14, color: colors.accent },
+  backLinkText: { fontFamily: fonts.sans, fontSize: 14, color: colors.accentText },
 
   historyBtn: {
     marginTop: spacing.lg, padding: spacing.md,
     backgroundColor: colors.surface, borderRadius: radius.md,
     borderWidth: 1, borderColor: colors.border, width: '100%', alignItems: 'center',
   },
-  historyBtnText: { fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '600' },
+  historyBtnText: { fontFamily: fonts.sans, fontSize: 13, color: colors.accentText, fontWeight: '600' },
 
   // Wide layout
   wideContainer: { flex: 1, flexDirection: 'row', backgroundColor: colors.bg },
@@ -814,13 +947,16 @@ const styles = StyleSheet.create({
   // Radar
   radarSection: { alignItems: 'center', paddingTop: spacing.md, paddingBottom: spacing.xs },
   radarSectionWide: { paddingVertical: spacing.xxl },
+  // Collapsing header (phone, questions): opaque so the questions slide under it.
+  radarSticky: { backgroundColor: colors.bg, zIndex: 1 },
+  radarCollapsing: { alignItems: 'center', paddingTop: spacing.md },
   radarCaption: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.textDim,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     textAlign: 'center', marginTop: spacing.xs,
   },
   legendRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs },
-  legendText: { fontFamily: fonts.sans, fontSize: 12, color: colors.textDim },
+  legendText: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted },
 
   // Top bar
   quizTopBar: {
@@ -839,7 +975,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', marginTop: 4, letterSpacing: 0.3,
   },
   navHint: {
-    fontFamily: fonts.sans, fontSize: 12, color: colors.accent, fontWeight: '600',
+    fontFamily: fonts.sans, fontSize: 12, color: colors.accentText, fontWeight: '600',
     textAlign: 'center', paddingHorizontal: spacing.md, marginBottom: spacing.xs,
   },
   scrollFlex: { flex: 1 },
@@ -892,7 +1028,7 @@ const styles = StyleSheet.create({
   },
   saveSectionLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 0.8, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 0.8, textTransform: 'uppercase',
     paddingHorizontal: spacing.lg, marginBottom: spacing.sm,
   },
   saveProfileCard: {
@@ -948,7 +1084,7 @@ const styles = StyleSheet.create({
   historyEntryPercent: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginTop: 2 },
   historyEntryNote: { fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textSoft, marginTop: 4 },
   historyEvolution: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.accent,
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accentText,
     fontWeight: '600', marginTop: spacing.sm, textAlign: 'center',
   },
 
@@ -959,9 +1095,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accent, borderLeftWidth: 4,
     borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
   },
-  secondCtaText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accent },
+  secondCtaText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accentText },
   secondCtaHint: { fontFamily: fonts.sans, fontSize: 12.5, color: colors.textMuted, marginTop: 3 },
-  secondCtaArrow: { fontFamily: fonts.sans, fontSize: 26, color: colors.accent, lineHeight: 28 },
+  secondCtaArrow: { fontFamily: fonts.sans, fontSize: 26, color: colors.accentText, lineHeight: 28 },
   cmpRow: {
     backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1,
     borderColor: colors.border, padding: spacing.md, gap: 6,

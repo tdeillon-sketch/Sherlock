@@ -6,7 +6,7 @@ import { colors, fonts, spacing, radius } from '../constants/theme';
 import { TYPES, QuizMode } from '../constants/data';
 import { TYPES as TYPES_V3 } from '../constants/quiz_v3';
 import type { EnneaType } from '../constants/quiz_v3';
-import type { InsightKind } from '../hooks/useAdaptiveQuiz';
+import { WING_SURE_MIN, type InsightKind } from '../hooks/useAdaptiveQuiz';
 import { TYPES_EN } from '../i18n/types_en';
 import { useT, getTypeText } from '../i18n';
 
@@ -21,6 +21,8 @@ export interface QuizResultData {
   thirdType: number;
   thirdPercent: number;
   wingType: number | null;
+  /** 0..100: how clearly the answers point to that wing (new results) */
+  wingCertainty?: number;
   isAmbiguous: boolean;
   ambiguousPair: [number, number] | null;
   insightKind: InsightKind;
@@ -33,6 +35,8 @@ interface QuizResultProps {
   onSaveProfile: () => void;
   onNewChild: () => void;
   onReset: () => void;
+  /** Result about a close adult (partner, parent…): titled and saved as theirs. */
+  forProche?: boolean;
 }
 
 /** Single source of truth for type colors (data.ts) — so the same type never
@@ -49,7 +53,7 @@ function localizedTypeName(typeNum: number, locale: 'fr' | 'en'): string {
 }
 
 export default function QuizResult({
-  result, mode, onViewProfile, onSaveProfile, onNewChild, onReset,
+  result, mode, onViewProfile, onSaveProfile, onNewChild, onReset, forProche = false,
 }: QuizResultProps) {
   const { t, locale } = useT();
   const top = TYPES[result.topType - 1];
@@ -68,12 +72,20 @@ export default function QuizResult({
     a: result.topType, b: result.secondType, c: result.thirdType,
     top: result.topType, second: result.secondType, nick: topNick,
   });
-  const insightText = result.wingType
-    ? `${insightBody} ${t('result.insightWing', { top: result.topType, wing: result.wingType })}`
+  // The wing is always known on new results; "probable" when the answers
+  // barely separate the two possible wings.
+  const wingSure = (result.wingCertainty ?? 100) >= WING_SURE_MIN;
+  const insightText = result.wingType && result.insightKind !== 'wingMarked'
+    ? `${insightBody} ${t(wingSure ? 'result.insightWing' : 'result.insightWingSoft', { top: result.topType, wing: result.wingType })}`
     : insightBody;
 
   const subjectLabel =
-    mode === 'enfant' ? t('result.subjectChild') : t('result.subjectAdult');
+    mode === 'enfant' ? t('result.subjectChild')
+      : forProche ? t('result.subjectProche')
+      : t('result.subjectAdult');
+  // Children and close adults are saved to "Ma famille"; your own result is
+  // saved automatically.
+  const canSave = mode === 'enfant' || forProche;
 
   // "How to support them" — preview of the 3 parenting keys for this type
   // (child mode only; the keys are framed as supporting a child of this type).
@@ -152,19 +164,20 @@ export default function QuizResult({
           name={thirdName}
           percent={result.thirdPercent}
           color={typeColor(result.thirdType)}
+          isWing={result.wingType === result.thirdType}
           wingTag={t('result.wingTagShort')}
         />
       </View>
 
-      {/* ── Wing card if detected ── */}
+      {/* ── Wing card (always, on new results) ── */}
       {wing && (
         <View style={styles.wingCard}>
-          <Text style={styles.wingLabel}>🪶 {t('result.wingDetected')}</Text>
+          <Text style={styles.wingLabel}>🪶 {wingSure ? t('result.wingDetected') : t('result.wingLikely')}</Text>
           <Text style={styles.wingTitle}>
             {result.topType}w{result.wingType}
           </Text>
           <Text style={styles.wingDesc}>
-            {t('result.wingDescription', { top: topName.toLowerCase(), wing: wingName.toLowerCase() })}
+            {t(wingSure ? 'result.wingDescription' : 'result.wingDescriptionSoft', { top: topName.toLowerCase(), wing: wingName.toLowerCase() })}
           </Text>
         </View>
       )}
@@ -203,20 +216,20 @@ export default function QuizResult({
           </Pressable>
         )}
 
-        {mode === 'enfant' && (
+        {canSave && (
           <>
-            <Text style={styles.saveHint}>{t('result.saveHint')}</Text>
+            <Text style={styles.saveHint}>{forProche ? t('result.saveHintProche') : t('result.saveHint')}</Text>
             <Pressable
               onPress={onSaveProfile}
               style={({ pressed }) => [styles.btnPrimary, pressed && { opacity: 0.85 }]}
             >
-              <Text style={styles.btnPrimaryText}>{t('result.actionsSave')}</Text>
+              <Text style={styles.btnPrimaryText}>{forProche ? t('result.actionsSaveProche') : t('result.actionsSave')}</Text>
             </Pressable>
             <Pressable
               onPress={onNewChild}
               style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnSecondaryPressed]}
             >
-              <Text style={styles.btnSecondaryText}>{t('result.actionsNew')}</Text>
+              <Text style={styles.btnSecondaryText}>{forProche ? t('result.actionsNewProche') : t('result.actionsNew')}</Text>
             </Pressable>
           </>
         )}
@@ -278,14 +291,14 @@ const styles = StyleSheet.create({
   },
   heroSubject: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4,
+    color: colors.accentText, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4,
   },
   heroType: { fontFamily: fonts.serif, fontSize: 22, color: colors.text },
   heroTypeName: {
     fontFamily: fonts.serifItalic, fontSize: 16, color: colors.textSoft, marginBottom: spacing.sm,
   },
   heroPercentBox: { alignItems: 'center', marginTop: spacing.xs },
-  heroPercent: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '700' as any, color: colors.accent },
+  heroPercent: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '700' as any, color: colors.accentText },
   heroPercentLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted },
   heroBrand: {
     fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
@@ -338,7 +351,7 @@ const styles = StyleSheet.create({
   typeRowName: { fontFamily: fonts.sans, fontSize: 13, color: colors.text },
   wingTag: {
     fontFamily: fonts.sans, fontSize: 10, fontWeight: '600',
-    color: colors.accent,
+    color: colors.accentText,
     backgroundColor: colors.accentFill,
     paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8,
   },
@@ -359,7 +372,7 @@ const styles = StyleSheet.create({
   },
   wingLabel: {
     fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
-    color: colors.accent, letterSpacing: 0.5, marginBottom: spacing.xs,
+    color: colors.accentText, letterSpacing: 0.5, marginBottom: spacing.xs,
   },
   wingTitle: {
     fontFamily: fonts.serif, fontSize: 24, color: colors.text, marginBottom: spacing.xs,
@@ -375,7 +388,7 @@ const styles = StyleSheet.create({
   },
   keysLabel: {
     fontFamily: fonts.sans, fontSize: 12, fontWeight: '700',
-    color: colors.accent, letterSpacing: 0.5, marginBottom: spacing.xs,
+    color: colors.accentText, letterSpacing: 0.5, marginBottom: spacing.xs,
   },
   keyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   keyNumBox: {
@@ -383,7 +396,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentFill, borderWidth: 1, borderColor: colors.accent,
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  keyNum: { fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accent },
+  keyNum: { fontFamily: fonts.sans, fontSize: 12, fontWeight: '700', color: colors.accentText },
   keyTitle: { flex: 1, fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: colors.text },
   keysMore: {
     fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,

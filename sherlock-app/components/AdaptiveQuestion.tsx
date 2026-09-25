@@ -4,6 +4,7 @@
 //   - likert → LikertSliderPage
 //   - budget / final → BudgetStepperPage
 //   - wing   → WingPage
+//   - grid   → GridPage (2D compass)
 // ═══════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -14,6 +15,7 @@ import type { Page } from '../hooks/useAdaptiveQuiz';
 import LikertSliderPage from './LikertSliderPage';
 import BudgetStepperPage from './BudgetStepperPage';
 import WingPage from './WingPage';
+import GridPage from './GridPage';
 import { useT } from '../i18n';
 
 interface Props {
@@ -21,9 +23,15 @@ interface Props {
   pageIndex: number;
   ageBand: AgeBand;
   onChange: (stmtId: string, value: number) => void;
+  // Grid page only (the second opinion never shows one)
+  onGridChange?: (x: number, y: number) => void;
+  onGridSkip?: () => void;
+  onGridDragChange?: (dragging: boolean) => void;
 }
 
-export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }: Props) {
+export default function AdaptiveQuestion({
+  page, pageIndex, ageBand, onChange, onGridChange, onGridSkip, onGridDragChange,
+}: Props) {
   const { t } = useT();
 
   if (page.kind === 'likert') {
@@ -80,6 +88,23 @@ export default function AdaptiveQuestion({ page, pageIndex, ageBand, onChange }:
     );
   }
 
+  if (page.kind === 'grid') {
+    return (
+      <View style={styles.wrap}>
+        <Text style={styles.phaseLabel}>PAGE {pageIndex + 1} · {t('quizGrid.phase')}</Text>
+        <GridPage
+          key={pageIndex}
+          ageBand={ageBand}
+          point={page.point}
+          skipped={page.skipped}
+          onChange={(x, y) => onGridChange?.(x, y)}
+          onSkip={() => onGridSkip?.()}
+          onDragChange={onGridDragChange}
+        />
+      </View>
+    );
+  }
+
   if (page.kind === 'wing') {
     return (
       <WingPage
@@ -100,7 +125,7 @@ const styles = StyleSheet.create({
   wrap: { paddingVertical: spacing.sm },
   phaseLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 1.5, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 1.5, textTransform: 'uppercase',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.xs,
   },
