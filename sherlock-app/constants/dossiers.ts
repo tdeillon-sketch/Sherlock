@@ -116,7 +116,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'gandhi', name: 'Gandhi', type: 1, category: 'leaders',
     quote: "Sois le changement que tu veux voir dans le monde.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Être impur, hypocrite ou irresponsable",
     coreDesire: "Vivre en accord parfait avec ses valeurs",
     whyThisType: "Gandhi incarnait la rigueur éthique poussée à l'extrême. Son ascétisme, ses jeûnes de protestation et son obsession de la vérité (satyagraha) sont des marqueurs classiques du Type 1.",
@@ -174,7 +174,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'elvis', name: 'Elvis Presley', type: 2, category: 'icones',
     quote: "Je ne me souviens pas de vous avoir demandé votre avis.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Ne pas être apprécié à sa juste valeur",
     coreDesire: "Être adoré et aimé inconditionnellement",
     whyThisType: "Elvis avait un besoin intense d'approbation qui le poussait à donner sans compter à ses proches. Sa générosité excessive, sa sensibilité aux critiques et sa dépendance affective révèlent un Type 2 non intégré.",
@@ -292,7 +292,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'tesla', name: 'Nikola Tesla', type: 5, category: 'visionnaires',
     quote: "Si vous voulez trouver les secrets de l'univers, pensez en termes d'énergie, de fréquence et de vibration.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "L'incompréhension, le manque de ressources intellectuelles",
     coreDesire: "Percer les mystères de la nature",
     whyThisType: "Tesla était un Type 5 en surcharge : il vivait presque entièrement dans sa tête, visualisait ses inventions complètes avant de les construire, évitait les relations sociales et accumulait les connaissances comme protection.",
@@ -300,7 +300,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'gates', name: 'Bill Gates', type: 5, category: 'visionnaires',
     quote: "Je choisis un homme paresseux pour faire un travail difficile, car un homme paresseux trouvera un moyen facile de le faire.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Être dépassé, manquer d'information",
     coreDesire: "Maîtriser les systèmes complexes",
     whyThisType: "Gates est un Type 5 intégré : sa passion pour les systèmes, son approche analytique de la philanthropie, sa tendance à lire massivement pour accumuler des connaissances et son introversion sont des marqueurs clairs.",
@@ -308,7 +308,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'sherlock_h', name: 'Sherlock Holmes', type: 5, category: 'fictifs',
     quote: "Quand on a éliminé l'impossible, ce qui reste, si improbable soit-il, est nécessairement la vérité.",
-    quoteSource: 'Le Signe des Quatre — Conan Doyle',
+    quoteSource: 'Le Signe des Quatre, Conan Doyle',
     coreFear: "Se tromper, manquer un détail",
     coreDesire: "Voir ce que les autres ne voient pas",
     whyThisType: "Sherlock Holmes est le Type 5 fictif par excellence : intelligence comme armure, détachement émotionnel, accumulation de connaissances encyclopédiques, retrait social et observation distante du monde humain.",
@@ -321,7 +321,7 @@ export const FICHES: Fiche[] = [
     quoteSource: 'Introduction à la Psychanalyse',
     coreFear: "Manquer de sécurité, être trahi",
     coreDesire: "Avoir un soutien fiable, des certitudes",
-    whyThisType: "Freud a construit sa théorie autour de l'anxiété — ce n'est pas un hasard pour un Type 6. Sa paranoïa des dissidences (Jung, Adler), son besoin de contrôler son entourage et sa vision du monde comme fondamentalement menaçant sont caractéristiques.",
+    whyThisType: "Freud a construit sa théorie autour de l'anxiété : ce n'est pas un hasard pour un Type 6. Sa paranoïa des dissidences (Jung, Adler), son besoin de contrôler son entourage et sa vision du monde comme fondamentalement menaçant sont caractéristiques.",
   },
   {
     id: 'tom_hanks', name: 'Tom Hanks', type: 6, category: 'icones',
@@ -342,7 +342,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'katniss', name: 'Katniss Everdeen', type: 6, category: 'fictifs',
     quote: "Je ne peux pas les laisser briser quelqu'un dont j'ai besoin.",
-    quoteSource: 'Hunger Games — Suzanne Collins',
+    quoteSource: 'Hunger Games, Suzanne Collins',
     coreFear: "Perdre ceux qu'elle protège",
     coreDesire: "Protéger sa famille coûte que coûte",
     whyThisType: "Katniss est un Type 6 contre-phobique : elle fonce vers le danger pour protéger les siens. Sa loyauté absolue, son scepticisme envers le pouvoir, son courage face à la peur et son questionnement permanent des autorités sont des traits Type 6.",
@@ -350,7 +350,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'twain', name: 'Mark Twain', type: 6, category: 'artistes',
     quote: "Ils ne savaient pas que c'était impossible, alors ils l'ont fait.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "L'hypocrisie et la trahison sociale",
     coreDesire: "Un monde plus honnête et juste",
     whyThisType: "Twain était un Type 6 sceptique et contre-phobique. Son humour servait à dénoncer les hypocrisies de la société américaine. Sa méfiance du conformisme, son antiautoritarisme et ses angoisses financières sont des marqueurs Type 6.",
@@ -394,7 +394,7 @@ export const FICHES: Fiche[] = [
     quote: "Je suis Iron Man.",
     quoteSource: 'Avengers: Endgame (Marvel)',
     coreFear: "Perdre le contrôle, être vulnérable",
-    coreDesire: "Tout avoir — le génie, la fête, la gloire",
+    coreDesire: "Tout avoir : le génie, la fête, la gloire",
     whyThisType: "Tony Stark est un Type 7 classique : fuite en avant, blagues pour éviter les conversations profondes, multiples projets en simultané et transformation de la peur (la mort) en armure littérale. Son intégration vers le 5 lui donne aussi la profondeur.",
   },
 
@@ -402,7 +402,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'churchill', name: 'Winston Churchill', type: 8, category: 'leaders',
     quote: "Le succès, c'est aller d'échec en échec sans perdre son enthousiasme.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Être contrôlé ou trahi",
     coreDesire: "Protéger ce qui lui appartient, dominer son destin",
     whyThisType: "Churchill est un Type 8 pur : son refus catégorique de se soumettre à Hitler, sa brutalité dans ses décisions, sa vitalité et son énergie indomptable, et sa façon de transformer la peur des autres en force collective.",
@@ -452,7 +452,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'audrey', name: 'Audrey Hepburn', type: 9, category: 'icones',
     quote: "Rien n'est impossible. Le mot lui-même dit 'Je suis possible'.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Le conflit et la discorde",
     coreDesire: "L'harmonie, être aimée de tous",
     whyThisType: "Audrey Hepburn était un Type 9 : sa douceur légendaire, son travail humanitaire discret pour l'UNICEF, son aversion pour le scandale hollywoodien et sa façon de pacifier les tensions sur les plateaux en sont les signes.",
@@ -468,7 +468,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'lincoln', name: 'Abraham Lincoln', type: 9, category: 'leaders',
     quote: "Je ne détruirai pas mon ennemi en en faisant mon ami.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "La guerre civile permanente, la division",
     coreDesire: "Réunifier, pacifier",
     whyThisType: "Lincoln est un Type 9 remarquable. Sa politique du 'Team of Rivals' (nommer ses ennemis à son cabinet), sa tolérance envers les opposants et sa recherche constante d'un compromis préservant l'union nationale sont du Type 9 pur.",
@@ -476,7 +476,7 @@ export const FICHES: Fiche[] = [
   {
     id: 'walt', name: 'Walt Disney', type: 9, category: 'visionnaires',
     quote: "Tout commence par un rêve.",
-    quoteSource: 'Attributed',
+    quoteSource: 'Citation attribuée',
     coreFear: "Un monde hostile et sans magie",
     coreDesire: "Créer un espace de paix et d'émerveillement pour tous",
     whyThisType: "Walt Disney est un Type 9 créatif : sa vision d'un monde idéal et harmonieux, sa capacité à rassembler des gens très différents autour d'un rêve collectif et sa création d'espaces physiques dédiés à la fuite du monde réel.",
@@ -515,7 +515,7 @@ export const DOSSIERS: Dossier[] = [
           "Il a reformulé notre compréhension du temps et de l'espace avec E=mc².",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Einstein est l'archétype du Type 5. Son détachement du monde physique au profit de l'abstraction intellectuelle, son économie d'énergie sociale et sa façon de tout observer sans participer sont des marqueurs du Observateur.",
+        explanation: "Einstein est l'archétype du Type 5. Son détachement du monde physique au profit de l'abstraction intellectuelle, son économie d'énergie sociale et sa façon de tout observer sans participer sont des marqueurs de l'Observateur.",
       },
       {
         id: 'v2', format: 'citation', ficheId: 'tesla', quote: "Si vous voulez trouver les secrets de l'univers, pensez en termes d'énergie, de fréquence et de vibration.", author: 'Nikola Tesla', answer: 5,
@@ -531,12 +531,12 @@ export const DOSSIERS: Dossier[] = [
           "Il a mené l'Inde vers l'indépendance par la non-violence absolue.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Gandhi est le Type 1 par excellence. Ses principes moraux guidaient chaque décision et il attendait de lui-même la même rigueur qu'il demandait aux autres — la définition du Perfectionniste.",
+        explanation: "Gandhi est le Type 1 par excellence. Ses principes moraux guidaient chaque décision et il attendait de lui-même la même rigueur qu'il demandait aux autres : la définition du Perfectionniste.",
       },
       {
         id: 'v4', format: 'detail',
-        scene: "Chaque matin, il refaisait ses calculs de la veille depuis le début — pas parce qu'il doutait du résultat, mais pour être sûr que la méthode était irréprochable. Ses cahiers ne contenaient aucune rature. Les erreurs étaient réécrites sur une nouvelle page.",
-        keyDetail: "Recommencer les calculs pour la méthode, pas le résultat — aucune rature, perfection de forme.",
+        scene: "Chaque matin, il refaisait ses calculs de la veille depuis le début, pas parce qu'il doutait du résultat, mais pour être sûr que la méthode était irréprochable. Ses cahiers ne contenaient aucune rature. Les erreurs étaient réécrites sur une nouvelle page.",
+        keyDetail: "Recommencer les calculs pour la méthode, pas le résultat : aucune rature, perfection de forme.",
         answer: 1,
         explanation: "Le rejet de la rature et la vérification de la méthode plutôt que du résultat révèlent un Type 1 : ce n'est pas juste le bon résultat qui compte, c'est le processus parfait.",
         xp: 300,
@@ -573,7 +573,7 @@ export const DOSSIERS: Dossier[] = [
           "Il a fondé la psychanalyse en explorant les angoisses et les mécanismes de défense.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Freud est un Type 6 fascinant : il a construit une théorie entière autour de l'anxiété — le sujet central du Type 6. Sa paranoïa des dissidences (Jung, Adler) et sa vision du monde comme fondamentalement menaçant en témoignent.",
+        explanation: "Freud est un Type 6 fascinant : il a construit une théorie entière autour de l'anxiété, le sujet central du Type 6. Sa paranoïa des dissidences (Jung, Adler) et sa vision du monde comme fondamentalement menaçant en témoignent.",
       },
     ],
   },
@@ -602,13 +602,13 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'a2', format: 'citation', ficheId: 'dylan', quote: "Je suis un artiste, pas une industrie.", author: 'Bob Dylan', answer: 4,
         wrongOptions: [3, 8],
-        explanation: "Cette citation révèle le rejet Type 4 de toute récupération commerciale. Pour Dylan, trahir son authenticité serait perdre son identité — la peur centrale du Romantique.",
+        explanation: "Cette citation révèle le rejet Type 4 de toute récupération commerciale. Pour Dylan, trahir son authenticité serait perdre son identité : la peur centrale du Romantique.",
       },
       {
         id: 'a3', format: 'enquete', ficheId: 'robin', answer: 7,
         indices: [
           "Cette personne utilisait l'humour comme bouclier pour cacher une profonde souffrance intérieure.",
-          "Son énergie sur scène était débordante — il était incapable de rester assis ou de finir une seule idée.",
+          "Son énergie sur scène était débordante : il était incapable de rester assis ou de finir une seule idée.",
           "Ses proches décrivaient une personne adorable mais impossible à vraiment saisir.",
           "Comédien légendaire, il souffrait en secret d'une dépression intense et d'addictions.",
         ],
@@ -626,7 +626,7 @@ export const DOSSIERS: Dossier[] = [
         id: 'a5', format: 'enquete', ficheId: 'mozart', answer: 7,
         indices: [
           "Enfant prodige, cette personne n'était jamais aussi heureuse que lorsqu'elle créait.",
-          "Son humour était enfantin et souvent déplacé — il faisait des blagues scatologiques à la cour de l'Impératrice.",
+          "Son humour était enfantin et souvent déplacé : il faisait des blagues scatologiques à la cour de l'Impératrice.",
           "Il composait plusieurs œuvres en même temps, incapable de se fixer sur une seule.",
           "Prodige viennois, il composa plus de 600 œuvres avant de mourir à 35 ans.",
         ],
@@ -635,8 +635,8 @@ export const DOSSIERS: Dossier[] = [
       },
       {
         id: 'a6', format: 'detail',
-        scene: "Elle refusait de quitter son appartement pendant des jours. Elle remplissait des carnets entiers, pas pour les publier, mais pour capturer quelque chose d'insaisissable. Ses amis la trouvaient parfois pleurant devant un coucher de soleil — trop beau pour ne pas faire mal.",
-        keyDetail: "Pleurer devant un coucher de soleil — la beauté fait souffrir parce qu'elle révèle ce qui manque.",
+        scene: "Elle refusait de quitter son appartement pendant des jours. Elle remplissait des carnets entiers, pas pour les publier, mais pour capturer quelque chose d'insaisissable. Ses amis la trouvaient parfois pleurant devant un coucher de soleil : trop beau pour ne pas faire mal.",
+        keyDetail: "Pleurer devant un coucher de soleil : la beauté fait souffrir parce qu'elle révèle ce qui manque.",
         answer: 4,
         explanation: "Ce trait est quintessentiel du Type 4 : la beauté intensifie le sentiment de manque plutôt que de le combler. Le Romantique ressent les choses avec une intensité qui peut se retourner contre lui.",
         xp: 300,
@@ -644,14 +644,14 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'a7', format: 'citation', ficheId: 'adele', quote: "Je chante pour les gens qui ressentent les choses profondément.", author: 'Adèle', answer: 4,
         wrongOptions: [2, 9],
-        explanation: "Cette citation révèle l'essence du Type 4 : la profondeur émotionnelle comme valeur centrale. Adèle ne chante pas pour divertir — elle chante pour être reconnue dans sa souffrance.",
+        explanation: "Cette citation révèle l'essence du Type 4 : la profondeur émotionnelle comme valeur centrale. Adèle ne chante pas pour divertir : elle chante pour être reconnue dans sa souffrance.",
       },
       {
         id: 'a8', format: 'enquete', ficheId: 'virginia', answer: 4,
         indices: [
           "Cette écrivaine décrivait la conscience humaine comme un flux impossible à interrompre.",
           "Elle souffrait d'épisodes dépressifs intenses qu'elle transformait en matériau littéraire.",
-          "Ses romans ne racontent pas une histoire — ils capturent l'espace entre les mots.",
+          "Ses romans ne racontent pas une histoire : ils capturent l'espace entre les mots.",
           "Auteure de Mrs Dalloway et de La Promenade au phare, figure du modernisme littéraire.",
         ],
         xpValues: [500, 350, 200, 50],
@@ -708,18 +708,18 @@ export const DOSSIERS: Dossier[] = [
         id: 'l5', format: 'enquete', ficheId: 'mandela', answer: 1,
         indices: [
           "Cette personne a passé 27 ans en prison sans abandonner ses principes.",
-          "En sortant, il a refusé la vengeance et choisi la réconciliation — par principe, pas par faiblesse.",
+          "En sortant, il a refusé la vengeance et choisi la réconciliation : par principe, pas par faiblesse.",
           "Ses proches décrivaient une discipline intérieure d'une rigueur effrayante.",
           "Père de la nation arc-en-ciel, il a mis fin à l'apartheid en Afrique du Sud.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Mandela est le Type 1 dans sa dimension la plus héroïque : l'idéal moral prime sur tout, même la liberté personnelle. Sa réconciliation post-apartheid est le Type 1 intégré vers le 7 — la joie dans la justice accomplie.",
+        explanation: "Mandela est le Type 1 dans sa dimension la plus héroïque : l'idéal moral prime sur tout, même la liberté personnelle. Sa réconciliation post-apartheid est le Type 1 intégré vers le 7 : la joie dans la justice accomplie.",
       },
       {
         id: 'l6', format: 'detail',
         ficheId: 'steve_jobs',
         scene: "Lors d'une réunion, il a regardé une présentation pendant 10 minutes en silence. Puis il a dit : 'C'est de la merde.' Il n'a donné aucune autre explication. L'équipe a refait le travail entièrement. La version suivante a été acceptée en 30 secondes.",
-        keyDetail: "Verdict sans explication, pouvoir absolu, aucun compromis — et l'équipe refait tout sans question.",
+        keyDetail: "Verdict sans explication, pouvoir absolu, aucun compromis, et l'équipe refait tout sans question.",
         answer: 8,
         explanation: "Ce comportement est caractéristique du Type 8 en position d'autorité : décision immédiate, économie de justification et attente implicite que sa volonté soit exécutée. La force s'impose d'elle-même.",
         xp: 300,
@@ -727,7 +727,7 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'l7', format: 'citation', ficheId: 'elon', quote: "When something is important enough, you do it even if the odds are not in your favor.", author: 'Elon Musk', answer: 3,
         wrongOptions: [8, 1],
-        explanation: "Cette phrase sonne comme de la pure volonté (Type 8) ou du devoir (Type 1) — c'est le piège. Le tell du Type 3, c'est l'enjeu : l'importance se mesure à l'impact sur l'image, la réputation, l'héritage. Le 3 prend des risques par ambition, pas par courage.",
+        explanation: "Cette phrase sonne comme de la pure volonté (Type 8) ou du devoir (Type 1) : c'est le piège. Le tell du Type 3, c'est l'enjeu : l'importance se mesure à l'impact sur l'image, la réputation, l'héritage. Le 3 prend des risques par ambition, pas par courage.",
       },
       {
         id: 'l8', format: 'enquete', ficheId: 'lincoln', answer: 9,
@@ -762,18 +762,18 @@ export const DOSSIERS: Dossier[] = [
           "Reine de la pop, icône des années 80-2000, elle a vendu plus de 300 millions d'albums.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Madonna est le manuel du Type 3 : reinvention permanente non par désir d'authenticité (ce serait le 4) mais par calcul de ce qui marche. Son identité EST sa marque — elle ne sait pas vraiment qui elle est sans succès.",
+        explanation: "Madonna est le manuel du Type 3 : reinvention permanente non par désir d'authenticité (ce serait le 4) mais par calcul de ce qui marche. Son identité EST sa marque : elle ne sait pas vraiment qui elle est sans succès.",
       },
       {
         id: 'i2', format: 'citation', ficheId: 'diana', quote: "Je veux être la reine des cœurs des gens.", author: 'Princesse Diana', answer: 2,
         wrongOptions: [3, 9],
-        explanation: "Cette citation révèle le Type 2 dans toute sa complexité : le besoin d'être aimée se déguise en désir de donner. Diana cherchait l'amour à travers le service — la dynamique centrale du Altruiste.",
+        explanation: "Cette citation révèle le Type 2 dans toute sa complexité : le besoin d'être aimée se déguise en désir de donner. Diana cherchait l'amour à travers le service : la dynamique centrale de l'Altruiste.",
       },
       {
         id: 'i3', format: 'enquete', ficheId: 'robin', answer: 7,
         indices: [
-          "Cette personnalité était décrite comme impossible à suivre en conversation — il passait d'une idée à l'autre à la vitesse de l'éclair.",
-          "Ses proches disaient qu'il était toujours 'on' — comme si s'arrêter l'aurait détruit.",
+          "Cette personnalité était décrite comme impossible à suivre en conversation : il passait d'une idée à l'autre à la vitesse de l'éclair.",
+          "Ses proches disaient qu'il était toujours 'on', comme si s'arrêter l'aurait détruit.",
           "Il utilisait l'humour pour dévier toute conversation qui se rapprochait de sa vraie douleur.",
           "Comédien légendaire de Good Will Hunting et Good Morning Vietnam, il cachait une profonde dépression.",
         ],
@@ -791,7 +791,7 @@ export const DOSSIERS: Dossier[] = [
         id: 'i5', format: 'enquete', ficheId: 'serena', answer: 8,
         indices: [
           "Cette sportive a contesté publiquement des décisions d'arbitrage qu'elle jugeait injustes, même au risque de perdre le match.",
-          "Elle revenait plus forte à chaque blessure ou défaite — comme si l'obstacle l'énergisait.",
+          "Elle revenait plus forte à chaque blessure ou défaite, comme si l'obstacle l'énergisait.",
           "Son regard sur l'adversaire n'était pas hostile, c'était un signal : 'je ne reculerai pas'.",
           "Plus grande joueuse de tennis de l'histoire, 23 titres du Grand Chelem.",
         ],
@@ -802,9 +802,9 @@ export const DOSSIERS: Dossier[] = [
         id: 'i6', format: 'detail',
         ficheId: 'tom_hanks',
         scene: "Dans une interview, on lui demande s'il pense être un grand acteur. Il hésite longuement. 'Je ne sais pas vraiment. Chaque film, j'ai peur de ne pas être à la hauteur.' Il a remporté deux Oscars consécutifs la même semaine.",
-        keyDetail: "Deux Oscars et encore hanté par le doute — la réussite ne calme pas l'anxiété.",
+        keyDetail: "Deux Oscars et encore hanté par le doute : la réussite ne calme pas l'anxiété.",
         answer: 6,
-        explanation: "Tom Hanks illustre parfaitement le Type 6 : l'anxiété ne diminue pas avec le succès. Le Loyaliste cherche la sécurité — mais même au sommet, le doute persiste.",
+        explanation: "Tom Hanks illustre parfaitement le Type 6 : l'anxiété ne diminue pas avec le succès. Le Loyaliste cherche la sécurité, mais même au sommet, le doute persiste.",
         xp: 300,
       },
       {
@@ -840,7 +840,7 @@ export const DOSSIERS: Dossier[] = [
         id: 'f1', format: 'enquete', ficheId: 'sherlock_h', answer: 5,
         indices: [
           "Ce personnage préfère observer les gens depuis sa fenêtre plutôt que de les fréquenter.",
-          "Il accumule des connaissances dans des domaines précis et parfaitement inutiles — le type de boue selon les quartiers de Londres.",
+          "Il accumule des connaissances dans des domaines précis et parfaitement inutiles : le type de boue selon les quartiers de Londres.",
           "Les émotions lui semblent des 'données parasites' qui brouillent l'analyse.",
           "Détective au 221B Baker Street, il résout les affaires que Scotland Yard ne comprend pas.",
         ],
@@ -848,7 +848,7 @@ export const DOSSIERS: Dossier[] = [
         explanation: "Sherlock Holmes est le Type 5 fictif par excellence. Son détachement émotionnel, son intellect comme seule armure, son observation distante du monde humain et sa collection encyclopédique de savoirs inutiles sont la définition de l'Observateur.",
       },
       {
-        id: 'f2', format: 'citation', ficheId: 'darth_vader', quote: "Vous ne mesurez pas la puissance du Côté Obscur.", author: 'Dark Vador — Star Wars', answer: 8,
+        id: 'f2', format: 'citation', ficheId: 'darth_vader', quote: "Vous ne mesurez pas la puissance du Côté Obscur.", author: 'Dark Vador, Star Wars', answer: 8,
         wrongOptions: [1, 6],
         explanation: "Cette citation est la révélation du Type 8 sous le masque. Toute la tragédie de Vador vient d'un Type 8 qui a laissé la peur le corrompre : la peur de la vulnérabilité (perdre Padmé) l'a transformé en tyran.",
       },
@@ -856,7 +856,7 @@ export const DOSSIERS: Dossier[] = [
         id: 'f3', format: 'enquete', ficheId: 'katniss', answer: 6,
         indices: [
           "Ce personnage fait tout pour protéger sa famille, même se sacrifier.",
-          "Elle n'est pas naturellement courageuse — elle est terrifiée, mais elle agit quand même.",
+          "Elle n'est pas naturellement courageuse : elle est terrifiée, mais elle agit quand même.",
           "Sa méfiance des autorités et des institutions est totale et justifiée.",
           "Héroïne des Hunger Games, elle devient le symbole de la rébellion malgré elle.",
         ],
@@ -876,17 +876,17 @@ export const DOSSIERS: Dossier[] = [
           "Ce personnage utilise l'humour sarcastique pour éviter toute conversation sincère.",
           "Il lance plusieurs projets simultanément, incapable de s'ennuyer une seule seconde.",
           "Sous l'arrogance se cache une peur profonde : celle de ne pas avoir de valeur sans ses inventions.",
-          "Génie milliardaire, playboy philanthrope — Iron Man.",
+          "Génie milliardaire, playboy philanthrope : Iron Man.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Tony Stark est un Type 7 classique. Sa fuite en avant, son humour comme armure, ses projets multiples et compulsifs et sa transformation de la peur de la mort en armure littérale sont les marqueurs du Épicurien.",
+        explanation: "Tony Stark est un Type 7 classique. Sa fuite en avant, son humour comme armure, ses projets multiples et compulsifs et sa transformation de la peur de la mort en armure littérale sont les marqueurs de l'Épicurien.",
       },
       {
         id: 'f6', format: 'detail',
-        scene: "Il vivait seul depuis des années. Son appartement était rempli de livres sur des sujets sans rapport apparent. Quand on lui demandait comment il allait, il répondait avec des faits. Quand quelqu'un pleurait devant lui, il quittait discrètement la pièce — non par cruauté, mais parce qu'il ne savait pas quoi faire des émotions.",
-        keyDetail: "Partir quand quelqu'un pleure — pas de cruauté, juste une incompétence émotionnelle sincère.",
+        scene: "Il vivait seul depuis des années. Son appartement était rempli de livres sur des sujets sans rapport apparent. Quand on lui demandait comment il allait, il répondait avec des faits. Quand quelqu'un pleurait devant lui, il quittait discrètement la pièce, non par cruauté, mais parce qu'il ne savait pas quoi faire des émotions.",
+        keyDetail: "Partir quand quelqu'un pleure : pas de cruauté, juste une incompétence émotionnelle sincère.",
         answer: 5,
-        explanation: "Le retrait face aux émotions est un trait Type 5 fondamental. L'Observateur ne fuit pas par malveillance — les émotions sont simplement un domaine où il ne dispose pas des ressources pour répondre.",
+        explanation: "Le retrait face aux émotions est un trait Type 5 fondamental. L'Observateur ne fuit pas par malveillance : les émotions sont simplement un domaine où il ne dispose pas des ressources pour répondre.",
         xp: 300,
       },
       {
@@ -922,7 +922,7 @@ export const DOSSIERS: Dossier[] = [
         id: 's1', format: 'enquete', ficheId: 'oprah', answer: 2,
         indices: [
           "Cette personne se sent vraiment elle-même quand elle peut transformer la vie des autres.",
-          "Elle pleure régulièrement à l'écran avec ses invités — son empathie semble physique.",
+          "Elle pleure régulièrement à l'écran avec ses invités : son empathie semble physique.",
           "Un jour, elle a offert une voiture à chaque personne dans son public, parce qu'elle « voulait qu'elles vivent leur meilleure vie ».",
           "Première femme afro-américaine milliardaire grâce à son talk-show empathique de plus de 25 ans.",
         ],
@@ -932,9 +932,9 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 's2', format: 'enquete', ficheId: 'elvis', answer: 2,
         indices: [
-          "Cette personne avait un besoin compulsif d'être aimée — chaque applaudissement la nourrissait comme une drogue.",
+          "Cette personne avait un besoin compulsif d'être aimée : chaque applaudissement la nourrissait comme une drogue.",
           "Elle achetait des voitures, des maisons et des bijoux à des inconnus rencontrés dans la rue.",
-          "Sa mère était la personne la plus importante de sa vie — il a fait peindre sa maison en rose pour elle.",
+          "Sa mère était la personne la plus importante de sa vie : il a fait peindre sa maison en rose pour elle.",
           "Le « King » du rock 'n' roll, mort à 42 ans dans sa résidence de Graceland.",
         ],
         xpValues: [500, 350, 200, 50],
@@ -943,12 +943,12 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 's3', format: 'citation', ficheId: 'taylor_swift', quote: "Long story short, I survived.", author: 'Taylor Swift', answer: 3,
         wrongOptions: [4, 6],
-        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Battant, l'échec n'existe pas — il n'y a que des chapitres préparatoires au triomphe.",
+        explanation: "Cette phrase courte révèle le Type 3 : transformer chaque épreuve en récit de victoire. Pour le Battant, l'échec n'existe pas : il n'y a que des chapitres préparatoires au triomphe.",
       },
       {
         id: 's4', format: 'citation', ficheId: 'federer', quote: "Je joue pour gagner. C'est tout.", author: 'Roger Federer', answer: 3,
         wrongOptions: [8, 1],
-        explanation: "Cette phrase épurée illustre le Type 3 dans sa version la plus élégante. Federer a maintenu son statut au sommet pendant deux décennies par cette focalisation totale sur le résultat — sans drame, sans excuse.",
+        explanation: "Cette phrase épurée illustre le Type 3 dans sa version la plus élégante. Federer a maintenu son statut au sommet pendant deux décennies par cette focalisation totale sur le résultat, sans drame, sans excuse.",
       },
       {
         id: 's5', format: 'enquete', ficheId: 'jennifer', answer: 6,
@@ -963,8 +963,8 @@ export const DOSSIERS: Dossier[] = [
       },
       {
         id: 's6', format: 'detail', ficheId: 'morgan',
-        scene: "Quand on lui demande son avis sur les sujets brûlants, il répond souvent par une phrase qui désamorce le conflit. À la question « Comment se débarrasser du racisme ? », sa réponse a fait scandale par sa simplicité : arrêtons d'en parler. Sur les plateaux, sa présence calme et sa voix grave apaisent toute tension. Il accepte des rôles très divers — Dieu, un président, un évadé de prison — sans jamais se laisser enfermer dans une image.",
-        keyDetail: "Désamorcer le conflit par la simplicité plutôt que d'en débattre — préserver l'harmonie avant la victoire d'un argument.",
+        scene: "Quand on lui demande son avis sur les sujets brûlants, il répond souvent par une phrase qui désamorce le conflit. À la question « Comment se débarrasser du racisme ? », sa réponse a fait scandale par sa simplicité : arrêtons d'en parler. Sur les plateaux, sa présence calme et sa voix grave apaisent toute tension. Il accepte des rôles très divers (Dieu, un président, un évadé de prison) sans jamais se laisser enfermer dans une image.",
+        keyDetail: "Désamorcer le conflit par la simplicité plutôt que d'en débattre : préserver l'harmonie avant la victoire d'un argument.",
         answer: 9,
         explanation: "Morgan Freeman incarne le Type 9 : éviter les divisions inutiles, chercher l'unité plutôt que la confrontation et incarner une présence apaisante. Le Médiateur préserve la paix avant de trancher.",
         xp: 300,
@@ -983,9 +983,9 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 's8', format: 'enquete', ficheId: 'twain', answer: 6,
         indices: [
-          "Cet écrivain a passé sa vie à anticiper des catastrophes qui ne sont jamais arrivées — et l'a écrit lui-même.",
+          "Cet écrivain a passé sa vie à anticiper des catastrophes qui ne sont jamais arrivées, et l'a écrit lui-même.",
           "Son humour mordant servait à dénoncer les hypocrisies des autorités et des institutions.",
-          "Il a perdu et reconstruit sa fortune plusieurs fois — l'argent était une obsession anxieuse.",
+          "Il a perdu et reconstruit sa fortune plusieurs fois : l'argent était une obsession anxieuse.",
           "Auteur américain des Aventures de Tom Sawyer et de Huckleberry Finn.",
         ],
         xpValues: [500, 350, 200, 50],
@@ -1007,7 +1007,7 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'm1', format: 'enquete', ficheId: 'obama_michelle', answer: 1,
         indices: [
-          "Cette personne relit ses discours dix fois avant de les prononcer — la perfection du message est un devoir.",
+          "Cette personne relit ses discours dix fois avant de les prononcer : la perfection du message est un devoir.",
           "Sa philosophie publique se résume à une formule : « Quand ils descendent, nous montons. »",
           "Elle a mené un projet national contre l'obésité infantile par discipline et conviction morale.",
           "Première dame des États-Unis de 2009 à 2017, ex-avocate diplômée de Princeton et Harvard.",
@@ -1018,32 +1018,32 @@ export const DOSSIERS: Dossier[] = [
       {
         id: 'm2', format: 'citation', ficheId: 'teresa', quote: "Si tu juges les gens, tu n'as plus le temps de les aimer.", author: 'Mère Teresa', answer: 2,
         wrongOptions: [9, 1],
-        explanation: "Cette citation révèle l'essence du Type 2 : choisir l'amour comme posture première, refuser la distance critique. Mère Teresa a fait de cette phrase une règle de vie — typique d'un 2 qui écarte le jugement comme obstacle au don.",
+        explanation: "Cette citation révèle l'essence du Type 2 : choisir l'amour comme posture première, refuser la distance critique. Mère Teresa a fait de cette phrase une règle de vie, typique d'un 2 qui écarte le jugement comme obstacle au don.",
       },
       {
         id: 'm3', format: 'enquete', ficheId: 'pope_francis', answer: 2,
         indices: [
           "Ce chef religieux a refusé d'habiter le palais traditionnel pour rester dans une chambre d'hôte modeste.",
-          "Chaque Jeudi Saint, il lave et embrasse les pieds de prisonniers — y compris des femmes et des musulmans.",
+          "Chaque Jeudi Saint, il lave et embrasse les pieds de prisonniers, y compris des femmes et des musulmans.",
           "Sa réponse célèbre à une question sur l'homosexualité dans l'Église : « Qui suis-je pour juger ? »",
           "Premier pape jésuite et premier pape latino-américain, élu en 2013.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Le Pape François incarne le Type 2 : refus du faste, proximité physique avec les pauvres et rejet du jugement comme barrière au don. L'Altruiste se définit par le service — pas par la position hiérarchique.",
+        explanation: "Le Pape François incarne le Type 2 : refus du faste, proximité physique avec les pauvres et rejet du jugement comme barrière au don. L'Altruiste se définit par le service, pas par la position hiérarchique.",
       },
       {
         id: 'm4', format: 'faux_amis', typeA: 1, typeB: 2,
         descA: "Vit selon des principes moraux stricts. Cherche à améliorer le monde par la rigueur. Donne par devoir, pas par besoin d'être aimé.",
         descB: "Donne aux autres avec une chaleur immédiate. Cherche à être aimé en retour, même si cela reste inconscient. Le don est aussi une stratégie d'attachement.",
-        keyDiff: "Le 1 donne par principe — il ferait la même chose même seul. Le 2 donne pour créer un lien — il a besoin que cela soit reçu.",
+        keyDiff: "Le 1 donne par principe : il ferait la même chose même seul. Le 2 donne pour créer un lien : il a besoin que cela soit reçu.",
         xp: 400,
       },
       {
         id: 'm5', format: 'enquete', ficheId: 'branson', answer: 7,
         indices: [
-          "Cette personne a lancé des dizaines d'entreprises sans aucun lien entre elles — musique, avion, train, espace, mobile.",
+          "Cette personne a lancé des dizaines d'entreprises sans aucun lien entre elles : musique, avion, train, espace, mobile.",
           "Sa philosophie est simple : « Le business doit être amusant. Sinon, change-le. »",
-          "Il a fait de chaque échec une nouvelle aventure médiatique — voler en montgolfière, en bateau, en fusée.",
+          "Il a fait de chaque échec une nouvelle aventure médiatique : voler en montgolfière, en bateau, en fusée.",
           "Fondateur du groupe Virgin, milliardaire britannique connu pour ses cascades publicitaires.",
         ],
         xpValues: [500, 350, 200, 50],
@@ -1063,7 +1063,7 @@ export const DOSSIERS: Dossier[] = [
           "Astrophysicien britannique atteint de SLA, auteur d'Une brève histoire du temps.",
         ],
         xpValues: [500, 350, 200, 50],
-        explanation: "Stephen Hawking incarnait la résilience du Type 5 : face à la disparition de son corps, il a doublé son investissement dans l'intellect. Pour l'Observateur, la pensée est le territoire le plus sûr — et parfois le dernier qui reste.",
+        explanation: "Stephen Hawking incarnait la résilience du Type 5 : face à la disparition de son corps, il a doublé son investissement dans l'intellect. Pour l'Observateur, la pensée est le territoire le plus sûr, et parfois le dernier qui reste.",
       },
       {
         id: 'm8', format: 'enquete', ficheId: 'gates', answer: 5,
@@ -1087,30 +1087,30 @@ export const DOSSIERS: Dossier[] = [
 
 export const FUN_FACTS: Record<string, string> = {
   // ── Type 1 — Le Perfectionniste ──
-  mandela:        "En prison, Nelson Mandela apprenait l'afrikaans pour pouvoir mieux argumenter avec ses geôliers — typique d'un Type 1 qui pense que la justice se gagne par la rigueur, pas par la rancœur.",
-  gandhi:         "Gandhi se pesait chaque jour et notait scrupuleusement ce qu'il mangeait. Cette discipline morale poussée à l'extrême — appliquée d'abord à soi-même — est la marque du Type 1.",
-  obama_michelle: "Michelle Obama relisait ses discours dix fois avant de les prononcer. Cette quête du « bien faire » — sans jamais se reposer sur ses acquis — est très révélatrice du Type 1.",
+  mandela:        "En prison, Nelson Mandela apprenait l'afrikaans pour pouvoir mieux argumenter avec ses geôliers, typique d'un Type 1 qui pense que la justice se gagne par la rigueur, pas par la rancœur.",
+  gandhi:         "Gandhi se pesait chaque jour et notait scrupuleusement ce qu'il mangeait. Cette discipline morale poussée à l'extrême, appliquée d'abord à soi-même, est la marque du Type 1.",
+  obama_michelle: "Michelle Obama relisait ses discours dix fois avant de les prononcer. Cette quête du « bien faire », sans jamais se reposer sur ses acquis, est très révélatrice du Type 1.",
   marie_curie:    "Marie Curie a refusé toute sa vie de breveter ses découvertes, estimant que la science devait appartenir à tous. Une intégrité morale absolue, signature du Type 1.",
-  confucius:      "Confucius répétait qu'à 70 ans, il pouvait enfin « suivre les désirs de son cœur sans transgresser les règles » — comme si toute sa vie n'avait été qu'un long entraînement à devenir juste.",
+  confucius:      "Confucius répétait qu'à 70 ans, il pouvait enfin « suivre les désirs de son cœur sans transgresser les règles », comme si toute sa vie n'avait été qu'un long entraînement à devenir juste.",
 
   // ── Type 2 — L'Altruiste ──
-  diana:          "Lady Diana serrait les mains des malades du sida à une époque où on les évitait. Sa capacité à se rapprocher de la souffrance des autres — au mépris du protocole — est l'essence du Type 2.",
+  diana:          "Lady Diana serrait les mains des malades du sida à une époque où on les évitait. Sa capacité à se rapprocher de la souffrance des autres, au mépris du protocole, est l'essence du Type 2.",
   teresa:         "Mère Teresa rappelait que « personne ne peut faire de grandes choses, seulement des petites choses avec un grand amour ». Cette focalisation sur l'attention donnée plutôt que sur l'impact mesuré est typique du Type 2.",
-  oprah:          "Oprah Winfrey a offert des voitures à toute son audience un jour — non pas comme coup de pub, mais parce qu'elle « voulait qu'elles vivent leur meilleure vie ». Générosité spectaculaire, marque du Type 2.",
-  elvis:          "Elvis Presley achetait des Cadillac à des inconnus rencontrés dans la rue. Son besoin compulsif de donner — pour être aimé en retour — est une expression intense du Type 2.",
+  oprah:          "Oprah Winfrey a offert des voitures à toute son audience un jour, non pas comme coup de pub, mais parce qu'elle « voulait qu'elles vivent leur meilleure vie ». Générosité spectaculaire, marque du Type 2.",
+  elvis:          "Elvis Presley achetait des Cadillac à des inconnus rencontrés dans la rue. Son besoin compulsif de donner, pour être aimé en retour, est une expression intense du Type 2.",
   pope_francis:   "Le Pape François lave et embrasse les pieds de prisonniers chaque Jeudi Saint, y compris des femmes et des musulmans. Ce geste de service envers les marginaux est très Type 2.",
 
   // ── Type 3 — Le Battant ──
   obama_barack:   "Barack Obama a passé deux ans à perfectionner son discours d'investiture, conscient qu'il devait être « historique ». Cette mise en scène de soi tout en restant authentique est l'art du Type 3.",
-  madonna:        "Madonna se réinvente tous les 5 ans (look, son, époque) — non pas par manque d'identité, mais parce que rester vivant socialement demande de toujours surprendre. Très Type 3.",
+  madonna:        "Madonna se réinvente tous les 5 ans (look, son, époque), non pas par manque d'identité, mais parce que rester vivant socialement demande de toujours surprendre. Très Type 3.",
   taylor_swift:   "Taylor Swift a tout réenregistré ses anciens albums pour récupérer le contrôle de ses masters. Cette capacité à transformer un échec public en victoire stratégique est typique du Type 3.",
-  federer:        "Roger Federer a perdu la finale de Wimbledon en 2008 contre Nadal — et a pleuré devant la caméra. Sa capacité à montrer sa fragilité tout en restant l'image de l'élégance est rare chez un Type 3.",
-  elon:           "Elon Musk dort souvent dans ses usines pendant les périodes critiques. Cette obsession de la performance visible — au mépris de tout équilibre personnel — est une expression intense du Type 3.",
+  federer:        "Roger Federer a perdu la finale de Wimbledon en 2008 contre Nadal, et a pleuré devant la caméra. Sa capacité à montrer sa fragilité tout en restant l'image de l'élégance est rare chez un Type 3.",
+  elon:           "Elon Musk dort souvent dans ses usines pendant les périodes critiques. Cette obsession de la performance visible, au mépris de tout équilibre personnel, est une expression intense du Type 3.",
 
   // ── Type 4 — L'Artiste ──
   frida:          "Frida Kahlo a peint plus d'autoportraits que la quasi-totalité des artistes de son siècle. « Je me peins moi-même parce que je suis le sujet que je connais le mieux. » Pure essence du Type 4.",
-  mj:             "Michael Jackson disait qu'il se sentait « le plus seul quand il était sur scène devant des millions ». Ce paradoxe — être adulé et incompris — est l'expérience profonde du Type 4.",
-  dylan:          "Bob Dylan a refusé d'aller chercher son Prix Nobel pendant des semaines. Cette posture d'artiste qui ne joue pas le jeu — par authenticité plus que par snobisme — est très Type 4.",
+  mj:             "Michael Jackson disait qu'il se sentait « le plus seul quand il était sur scène devant des millions ». Ce paradoxe, être adulé et incompris, est l'expérience profonde du Type 4.",
+  dylan:          "Bob Dylan a refusé d'aller chercher son Prix Nobel pendant des semaines. Cette posture d'artiste qui ne joue pas le jeu, par authenticité plus que par snobisme, est très Type 4.",
   adele:          "Adèle a annulé sa tournée mondiale parce qu'elle « ne se sentait pas vraiment elle-même ». Mettre la fidélité à soi avant la machine commerciale est typique du Type 4.",
   virginia:       "Virginia Woolf écrivait debout, à un pupitre, comme sa sœur peintre travaillait à un chevalet. Faire de chaque détail du quotidien une expression de soi : signature du Type 4.",
 
@@ -1118,34 +1118,34 @@ export const FUN_FACTS: Record<string, string> = {
   einstein:       "Einstein possédait plusieurs costumes identiques pour ne pas avoir à décider quoi porter. Préserver l'énergie mentale pour ce qui compte vraiment : très Type 5.",
   hawking:        "Stephen Hawking a écrit « Une brève histoire du temps » en se forçant à n'utiliser qu'une seule équation (E=mc²). Cette quête d'élégance dans la transmission du savoir est purement Type 5.",
   tesla:          "Nikola Tesla pouvait visualiser ses inventions entièrement dans sa tête, les faire « tourner » mentalement pendant des semaines avant de construire un seul prototype. Vision intérieure pure, marque du Type 5.",
-  gates:          "Bill Gates s'isolait deux fois par an dans une cabane pour lire pendant une semaine sans interruption — son fameux « Think Week ». Le besoin de retrait pour penser est central chez le Type 5.",
-  sherlock_h:     "Sherlock Holmes ignorait que la Terre tournait autour du Soleil — il refusait de stocker des informations qu'il ne jugeait pas utiles à son travail. Cette rationalisation extrême du savoir est l'archétype du Type 5.",
+  gates:          "Bill Gates s'isolait deux fois par an dans une cabane pour lire pendant une semaine sans interruption, son fameux « Think Week ». Le besoin de retrait pour penser est central chez le Type 5.",
+  sherlock_h:     "Sherlock Holmes ignorait que la Terre tournait autour du Soleil : il refusait de stocker des informations qu'il ne jugeait pas utiles à son travail. Cette rationalisation extrême du savoir est l'archétype du Type 5.",
 
   // ── Type 6 — Le Loyaliste ──
-  freud:          "Sigmund Freud refusait de se déplacer sans son fauteuil personnel. Ce besoin de repères familiers — même dans la grande aventure intellectuelle — est typique du Type 6.",
+  freud:          "Sigmund Freud refusait de se déplacer sans son fauteuil personnel. Ce besoin de repères familiers, même dans la grande aventure intellectuelle, est typique du Type 6.",
   tom_hanks:      "Tom Hanks est marié à la même femme depuis 1988 et a refusé pendant des années les rôles de « méchants ». Cette loyauté envers ses choix et son image est très Type 6.",
   jennifer:       "Jennifer Aniston est restée fidèle à la coupe « Rachel » et à ses amis de Friends pendant toute sa carrière. Son besoin de repères stables est une marque du Type 6.",
-  katniss:        "Katniss Everdeen se porte volontaire à la place de sa sœur — pas par héroïsme, mais par loyauté absolue envers les siens. Action courageuse motivée par la protection : essence du Type 6.",
+  katniss:        "Katniss Everdeen se porte volontaire à la place de sa sœur, pas par héroïsme, mais par loyauté absolue envers les siens. Action courageuse motivée par la protection : essence du Type 6.",
   twain:          "Mark Twain écrivait dans son journal qu'il avait « passé sa vie à anticiper des catastrophes qui ne sont jamais arrivées ». Cette ironie sur sa propre anxiété est très Type 6.",
 
   // ── Type 7 — L'Épicurien ──
   robin:          "Robin Williams improvisait pendant des heures, transformant chaque interview en spectacle. Cette capacité à fuir le silence par la créativité débordante est typique du Type 7.",
-  mozart:         "Mozart composait souvent en jouant aux dés ou en faisant le clown. Mélanger plaisir et génie — sans hiérarchie entre les deux — est très Type 7.",
-  branson:        "Richard Branson a lancé Virgin Galactic, Virgin Records, Virgin Atlantic, Virgin Mobile… sans aucun lien entre ces business. Le Type 7 ne choisit pas — il essaie tout.",
+  mozart:         "Mozart composait souvent en jouant aux dés ou en faisant le clown. Mélanger plaisir et génie, sans hiérarchie entre les deux, est très Type 7.",
+  branson:        "Richard Branson a lancé Virgin Galactic, Virgin Records, Virgin Atlantic, Virgin Mobile… sans aucun lien entre ces business. Le Type 7 ne choisit pas : il essaie tout.",
   jim:            "Jim Carrey s'est écrit un chèque de 10 millions de dollars en 1985 pour « services rendus en tant qu'acteur », daté de 1995. L'optimisme délirant et fertile du Type 7.",
-  tony_stark:     "Tony Stark construit son armure dans une grotte pour s'évader d'un kidnapping — et en sort en plaisantant. Transformer la souffrance en aventure : pur Type 7.",
+  tony_stark:     "Tony Stark construit son armure dans une grotte pour s'évader d'un kidnapping, et en sort en plaisantant. Transformer la souffrance en aventure : pur Type 7.",
 
   // ── Type 8 — Le Chef ──
   churchill:      "Churchill recevait ses ministres dans son bain. Cette absence totale de gêne, ce refus du protocole quand il bloque l'action : très Type 8.",
-  mlk:            "Poignardé en 1958, la lame contre l'aorte, Martin Luther King a dû rester des semaines parfaitement immobile (un simple éternuement aurait pu le tuer) — puis il a repris son combat sans jamais reculer. Refuser de se laisser intimider : essence du Type 8.",
+  mlk:            "Poignardé en 1958, la lame contre l'aorte, Martin Luther King a dû rester des semaines parfaitement immobile (un simple éternuement aurait pu le tuer), puis il a repris son combat sans jamais reculer. Refuser de se laisser intimider : essence du Type 8.",
   steve_jobs:     "Steve Jobs faisait pleurer ses ingénieurs dans les réunions, puis leur disait quelques jours plus tard qu'ils avaient produit « le meilleur travail de leur vie ». Brutalité et reconnaissance : duo classique du Type 8.",
-  serena:         "Serena Williams a gagné l'Open d'Australie 2017 enceinte de 8 semaines. Refuser que son corps lui dicte ses limites — c'est le Type 8 à l'état pur.",
-  darth_vader:    "Dark Vador étrangle un officier qui le contredit, sans même le toucher. Le Type 8 sous stress — quand le pouvoir devient le seul langage — atteint cette caricature.",
+  serena:         "Serena Williams a gagné l'Open d'Australie 2017 enceinte de 8 semaines. Refuser que son corps lui dicte ses limites, c'est le Type 8 à l'état pur.",
+  darth_vader:    "Dark Vador étrangle un officier qui le contredit, sans même le toucher. Le Type 8 sous stress, quand le pouvoir devient le seul langage, atteint cette caricature.",
 
   // ── Type 9 — Le Médiateur ──
   dalai:          "Le Dalaï-Lama rit à pleins éclats même en parlant de l'invasion de son pays. Cette capacité à tenir la souffrance sans s'y dissoudre est l'expression spirituelle du Type 9.",
   audrey:         "Audrey Hepburn refusait de regarder ses propres films. « Je ne me trouve pas si intéressante. » Cet effacement de soi sans complexe est très Type 9.",
   morgan:         "Morgan Freeman a une voix si apaisante qu'elle est utilisée pour les méditations guidées, les documentaires et même Dieu (dans Bruce tout-puissant). La présence calme du Type 9 incarnée dans une voix.",
-  lincoln:        "Lincoln gardait dans sa poche les lettres de ses adversaires politiques — pas pour se venger, mais pour mieux les comprendre. Cette empathie radicale envers tous les camps : signature du Type 9.",
-  walt:           "Walt Disney imaginait Disneyland comme « un endroit où parents et enfants peuvent s'amuser ensemble ». Créer un monde où tout le monde s'entend — l'utopie du Type 9.",
+  lincoln:        "Lincoln gardait dans sa poche les lettres de ses adversaires politiques, pas pour se venger, mais pour mieux les comprendre. Cette empathie radicale envers tous les camps : signature du Type 9.",
+  walt:           "Walt Disney imaginait Disneyland comme « un endroit où parents et enfants peuvent s'amuser ensemble ». Créer un monde où tout le monde s'entend : l'utopie du Type 9.",
 };
