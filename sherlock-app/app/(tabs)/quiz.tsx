@@ -1,33 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
   useWindowDimensions, TextInput, Alert, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
 import { TYPES } from '../../constants/data';
 import { useAdaptiveQuiz } from '../../hooks/useAdaptiveQuiz';
+import type { SecondOpinionResult } from '../../hooks/useAdaptiveQuiz';
 import { trackScreen } from '../../constants/firebase';
 import RadarChart from '../../components/RadarChart';
 import AdaptiveQuestion from '../../components/AdaptiveQuestion';
 import QuizResult from '../../components/QuizResult';
 import ConfidenceBar from '../../components/ConfidenceBar';
-import { auth, saveQuizResult, type ChildProfile } from '../../constants/firebase';
+import { auth, saveQuizResult, getUserData, isAnonymousUser, type ChildProfile } from '../../constants/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { AdaptiveResult } from '../../hooks/useAdaptiveQuiz';
 import { TYPES as TYPES_V3 } from '../../constants/quiz_v3';
 import type { QuizSubject, EnneaType } from '../../constants/quiz_v3';
 import { useT, getTypeText } from '../../i18n';
 import { hapticLight } from '../../utils/haptics';
+import { consumeSecondOpinion } from '../../constants/quizIntent';
+import { deName } from '../../utils/frenchName';
+import { requireAccount, openSignIn } from '../../constants/authGate';
 
 const SUBJECTS: { key: QuizSubject; emoji: string; titleKey: string; descKey: string }[] = [
   { key: 'enfant', emoji: '🧒', titleKey: 'subject.childTitle', descKey: 'subject.childDesc' },
   { key: 'self',   emoji: '🪞', titleKey: 'subject.selfTitle',  descKey: 'subject.selfDesc' },
-];
-
-const AGE_BANDS: { min: number; emoji: string; titleKey: string; descKey: string }[] = [
-  { min: 5,  emoji: '🧸', titleKey: 'age.band58',   descKey: 'age.band58Desc' },
-  { min: 9,  emoji: '🎒', titleKey: 'age.band912',  descKey: 'age.band912Desc' },
-  { min: 13, emoji: '🎧', titleKey: 'age.band1317', descKey: 'age.band1317Desc' },
 ];
 
 const TYPE_COLORS: Record<number, string> = {
@@ -42,36 +42,131 @@ export default function QuizScreen() {
   useEffect(() => { trackScreen('quiz').catch(() => {}); }, []);
 
   const {
-    phase, subject, ageBand, childAge, currentPage, scores,
-    stepIndex, estimatedTotal, result, childProfiles, canAdvance, pageIndex,
-    selectSubject, selectAge,
-    updateResponse, advancePage, goToPrevPage,
+    phase, subject, ageBand, currentPage, scores,
+    stepIndex, estimatedTotal, result, radarScores, childProfiles, canAdvance, pageIndex,
+    selectSubject, goToProcheMode,
+    updateResponse, updateGridPoint, skipGrid, advancePage, goToPrevPage,
     reset, restartSameSubject,
     goToSaveProfile, goToHistory, backToResult,
     saveChildResult, deleteChildProfile,
+    startSecondOpinion, startSecondOpinionFromSaved, exitSecondOpinion,
+    crossBase, crossOther, crossCombined, startCross, beginCross, cancelCross, abortCross, keepCombined,
+    beginSecondQuestions, updateSecondResponse,
+    advanceSecondPage, secondCurrentPage, secondPageIndex, secondTotal, secondResult,
   } = useAdaptiveQuiz();
 
-  // Save quiz result to Firebase au passage en 'result'
-  const savedRef = useRef(false);
+  // "Ma famille" can ask for the second opinion (Profils → Quiz tab).
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const subjectRef = useRef(subject);
+  subjectRef.current = subject;
+  const resultRef = useRef(result);
+  resultRef.current = result;
+  // The child / close-adult result already saved as a profile (nothing to lose).
+  const profileSavedFor = useRef<typeof result>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (!consumeSecondOpinion()) return;
+      const open = async () => {
+        const r = await startSecondOpinionFromSaved();
+        if (r === 'none') Alert.alert(t('second.introTitle'), t('second.needSelf'));
+        else if (r === 'error') Alert.alert(t('second.introTitle'), t('second.loadError'));
+      };
+      // Don't silently discard unsaved work: a quiz in progress, the save
+      // screen, or a child / close-adult result not saved yet (your own
+      // result is saved automatically).
+      const p = phaseRef.current;
+      const hasUnsaved = p === 'questions' || p === 'save_profile'
+        || p === 'cross_intro' || p === 'cross_result'
+        || (p === 'result' && subjectRef.current !== 'self' && profileSavedFor.current !== resultRef.current);
+      if (hasUnsaved) {
+        Alert.alert(t('quiz.quitTitle'), t('quiz.quitBody'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: () => { open(); } },
+        ]);
+      } else {
+        open();
+      }
+    }, [startSecondOpinionFromSaved, t]),
+  );
+
+  // "Terminé" / back from the second opinion: if it was opened from
+  // Ma famille (no result on screen), go back there.
+  const leaveSecondOpinion = () => {
+    if (result) { exitSecondOpinion(); return; }
+    exitSecondOpinion();
+    router.navigate('/profiles' as never);
+  };
+
+  // Save quiz result to Firebase au passage en 'result' — once per result
+  // (coming back from the second opinion or the save screen must not save
+  // the same quiz again).
+  const savedResultRef = useRef<typeof result>(null);
   useEffect(() => {
-    if (phase === 'result' && subject && result && !savedRef.current) {
-      savedRef.current = true;
+    // On n'enregistre dans l'historique perso que SES propres tests (soi / enfant).
+    // Un proche se sauvegarde explicitement comme profil nommé (pas d'auto-save).
+    if (phase === 'result' && (subject === 'self' || subject === 'enfant') && result && !result.combined && savedResultRef.current !== result) {
+      savedResultRef.current = result;
       const uid = auth.currentUser?.uid;
       if (uid) {
         saveQuizResult(uid, {
           mode: subject === 'self' ? 'adulte' : (ageBand ?? 'enfant'),
           topType: result.topType,
           wingType: result.wingType,
+          wingCertainty: result.wingCertainty,
           scores,
           completedAt: new Date().toISOString(),
         }).catch(() => {});
       }
     }
-    if (phase !== 'result') savedRef.current = false;
   }, [phase, subject, ageBand, result, scores]);
+
+  // Your own type, to flag your lens on a result about someone else
+  // (your child, or a loved one you described).
+  const [raterType, setRaterType] = useState<number | null>(null);
+  useEffect(() => {
+    if (phase !== 'result' || (subject !== 'enfant' && subject !== 'proche-obs')) return;
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    let alive = true;
+    getUserData(uid)
+      .then((d) => {
+        const self = (d?.quizResults ?? []).filter((r) => r.mode === 'adulte');
+        if (alive) setRaterType(self.length ? self[self.length - 1].topType : null);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [phase, subject]);
+
+  // Gentle reminder without an account: after the 2nd (then the 4th) person
+  // typed, suggest creating an account to keep them. Never a wall.
+  const [nudgeCount, setNudgeCount] = useState<number | null>(null);
+  const countedResultRef = useRef<typeof result>(null);
+  useEffect(() => {
+    if (phase !== 'result' || !result || result.combined || countedResultRef.current === result) return;
+    countedResultRef.current = result;
+    if (!isAnonymousUser()) { setNudgeCount(null); return; }
+    AsyncStorage.getItem('nudge:typed')
+      .then((v) => {
+        const n = (parseInt(v ?? '0', 10) || 0) + 1;
+        AsyncStorage.setItem('nudge:typed', String(n)).catch(() => {});
+        setNudgeCount(n === 2 || n === 4 ? n : null);
+      })
+      .catch(() => {});
+  }, [phase, result]);
 
   // ── Entrance animations: fade the radar in, reveal the result card ──
   const radarAnim = useRef(new Animated.Value(0)).current;
+  // Scroll position of the questions (drives the collapsing radar header).
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const questionsScrollRef = useRef<ScrollView>(null);
+  // The page must not scroll while the grid point is being dragged.
+  const [gridDragging, setGridDragging] = useState(false);
+  // Each new page starts at the top, radar fully open (shows the new shape).
+  useEffect(() => {
+    scrollY.setValue(0);
+    questionsScrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [pageIndex, phase, scrollY]);
   const resultAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (phase === 'questions') {
@@ -109,6 +204,17 @@ export default function QuizScreen() {
             </Pressable>
           ))}
 
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={goToProcheMode}
+          >
+            <Text style={styles.modeEmoji}>👥</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('subject.procheTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('subject.procheDesc')}</Text>
+            </View>
+          </Pressable>
+
           {childProfiles.length > 0 && (
             <Pressable style={styles.historyBtn} onPress={goToHistory}>
               <Text style={styles.historyBtnText}>
@@ -116,37 +222,6 @@ export default function QuizScreen() {
               </Text>
             </Pressable>
           )}
-        </View>
-      </View>
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  //  PHASE: age_picker (mode enfant uniquement)
-  // ─────────────────────────────────────────────
-  if (phase === 'age_picker') {
-    return (
-      <View style={styles.selectContainer}>
-        <View style={styles.selectInner}>
-          <Pressable onPress={reset} style={styles.backLink}>
-            <Text style={styles.backLinkText}>‹ {t('common.back')}</Text>
-          </Pressable>
-          <Text style={styles.selectTitle}>{t('age.title')}</Text>
-          <Text style={styles.selectSub}>{t('age.subtitle')}</Text>
-
-          {AGE_BANDS.map((b) => (
-            <Pressable
-              key={b.min}
-              style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
-              onPress={() => selectAge(b.min)}
-            >
-              <Text style={styles.modeEmoji}>{b.emoji}</Text>
-              <View style={styles.modeText}>
-                <Text style={styles.modeTitle}>{t(b.titleKey)}</Text>
-                <Text style={styles.modeDesc}>{t(b.descKey)}</Text>
-              </View>
-            </Pressable>
-          ))}
         </View>
       </View>
     );
@@ -165,14 +240,177 @@ export default function QuizScreen() {
   if (phase === 'save_profile') {
     return (
       <SaveProfileScreen
-        existingProfiles={childProfiles}
+        // Only offer to add to someone of the same kind (a child's result
+        // never lands in an adult's history, and vice versa).
+        existingProfiles={childProfiles.filter((p) =>
+          subject === 'enfant' ? p.kind !== 'adult' : p.kind === 'adult')}
+        isAdult={subject !== 'enfant'}
         onCancel={backToResult}
         onSave={async (name, age, existingId) => {
-          await saveChildResult(name, age, existingId);
+          try {
+            await saveChildResult(name, age, existingId);
+          } catch {
+            // Nothing was written (offline, or the chosen profile was deleted
+            // meanwhile): keep the form; the family list is reloaded.
+            Alert.alert(t('saveProfile.errorTitle'), t('saveProfile.errorBody'));
+            return;
+          }
+          profileSavedFor.current = result;
           backToResult();
         }}
       />
     );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: proche_mode (il répond / je le décris)
+  // ─────────────────────────────────────────────
+  if (phase === 'proche_mode') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Pressable onPress={reset} style={styles.backLink}>
+            <Text style={styles.backLinkText}>‹ {t('common.back')}</Text>
+          </Pressable>
+          <Text style={styles.selectTitle}>{t('proche.title')}</Text>
+          <Text style={styles.selectSub}>{t('proche.subtitle')}</Text>
+
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={() => selectSubject('proche-self')}
+          >
+            <Text style={styles.modeEmoji}>🗣️</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('proche.selfTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('proche.selfDesc')}</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.modeCard, pressed && styles.modeCardPressed]}
+            onPress={() => selectSubject('proche-obs')}
+          >
+            <Text style={styles.modeEmoji}>👀</Text>
+            <View style={styles.modeText}>
+              <Text style={styles.modeTitle}>{t('proche.obsTitle')}</Text>
+              <Text style={styles.modeDesc}>{t('proche.obsDesc')}</Text>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_intro (passe le tél à un proche)
+  // ─────────────────────────────────────────────
+  if (phase === 'second_intro') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Text style={styles.modeEmoji}>👥</Text>
+          <Text style={styles.selectTitle}>{t('second.introTitle')}</Text>
+          <Text style={styles.selectSub}>{t('second.introBody')}</Text>
+          <Pressable
+            onPress={() => { hapticLight(); beginSecondQuestions(); }}
+            style={({ pressed }) => [styles.saveBtn, { width: '100%' }, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.saveBtnText}>{t('second.introStart')}</Text>
+          </Pressable>
+          <Pressable onPress={leaveSecondOpinion} style={styles.skipBtn}>
+            <Text style={styles.skipBtnText}>{t('second.introCancel')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_questions (round court, pool observé)
+  // ─────────────────────────────────────────────
+  if (phase === 'second_questions' && secondCurrentPage) {
+    const last = secondPageIndex >= secondTotal - 1;
+    return (
+      <View style={styles.narrowContainer}>
+        <View style={styles.quizTopBar}>
+          <Pressable onPress={leaveSecondOpinion} style={styles.quizBackBtn}>
+            <Text style={styles.quizBackBtnText}>‹</Text>
+          </Pressable>
+          <Text style={styles.quizTopBarTitle}>{t('subject.headerProche')}</Text>
+          <View style={styles.quizBackBtn} />
+        </View>
+        <ScrollView
+          style={styles.scrollFlex}
+          contentContainerStyle={styles.narrowScroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[styles.progressCaption, { marginTop: spacing.md }]}>
+            {t('second.pageN', { n: secondPageIndex + 1 })}
+          </Text>
+          <View style={styles.questionArea}>
+            <AdaptiveQuestion
+              page={secondCurrentPage}
+              pageIndex={secondPageIndex}
+              ageBand={'adulte-obs'}
+              onChange={updateSecondResponse}
+            />
+            <View style={styles.navRow}>
+              <View style={{ width: 100 }} />
+              <Pressable
+                onPress={() => { hapticLight(); advanceSecondPage(); }}
+                style={({ pressed }) => [styles.navBtn, styles.navBtnPrimary, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.navBtnPrimaryText}>
+                  {last ? t('second.seeResult') : t('quiz.nextPage')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  PHASE: second_result (accord / divergence)
+  // ─────────────────────────────────────────────
+  // ─────────────────────────────────────────────
+  //  PHASE: cross_intro / cross_result (regard croisé sur l'enfant)
+  // ─────────────────────────────────────────────
+  if (phase === 'cross_intro') {
+    return (
+      <View style={styles.selectContainer}>
+        <View style={styles.selectInner}>
+          <Text style={styles.modeEmoji}>👥</Text>
+          <Text style={styles.selectTitle}>{t('cross.introTitle')}</Text>
+          <Text style={styles.selectSub}>{t('cross.introBody')}</Text>
+          <Pressable
+            onPress={() => { hapticLight(); beginCross(); }}
+            style={({ pressed }) => [styles.saveBtn, { width: '100%' }, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.saveBtnText}>{t('cross.introStart')}</Text>
+          </Pressable>
+          <Pressable onPress={cancelCross} style={styles.skipBtn}>
+            <Text style={styles.skipBtnText}>{t('cross.introCancel')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+  if (phase === 'cross_result' && crossBase && crossOther && crossCombined) {
+    return (
+      <CrossResultScreen
+        first={crossBase}
+        other={crossOther}
+        combined={crossCombined}
+        onSave={() => requireAccount(keepCombined)}
+        onDone={reset}
+      />
+    );
+  }
+
+  if (phase === 'second_result' && secondResult) {
+    return <SecondResultScreen sr={secondResult} onDone={leaveSecondOpinion} />;
   }
 
   // ── Common header pour le flow actif ──
@@ -180,12 +418,14 @@ export default function QuizScreen() {
   // all answers). On result/other phases, just reset.
   const handleBack = () => {
     if (phase === 'questions') {
+      // During the other parent's test, leaving goes back to the first
+      // parent's result instead of discarding it.
       Alert.alert(
         t('quiz.quitTitle'),
-        t('quiz.quitBody'),
+        crossBase ? t('cross.quitBody') : t('quiz.quitBody'),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: reset },
+          { text: t('quiz.quitConfirm'), style: 'destructive', onPress: crossBase ? abortCross : reset },
         ],
       );
     } else {
@@ -196,20 +436,24 @@ export default function QuizScreen() {
   const subjectLabel =
     subject === 'self'
       ? t('subject.headerSelf')
-      : childAge != null
-        ? t('subject.headerChildAge', { age: childAge })
+      : (subject === 'proche-self' || subject === 'proche-obs')
+        ? t('subject.headerProche')
         : t('subject.headerChild');
 
   const radarSize = isWide ? 320 : Math.min(width * 0.72, 300);
   const radarSection = (
     <Animated.View style={[styles.radarSection, isWide && styles.radarSectionWide, { opacity: radarAnim }]}>
-      <RadarChart scores={scores as unknown as Record<number, number>} size={radarSize} />
+      <RadarChart scores={radarScores as unknown as Record<number, number>} size={radarSize} />
       <Text style={styles.radarCaption}>{t('quiz.radarCaption')}</Text>
       {phase === 'result' && (
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
           <Text style={styles.legendText}>
-            {subject === 'self' ? t('subject.legendSelf') : t('subject.legendChild')}
+            {subject === 'self'
+              ? t('subject.legendSelf')
+              : (subject === 'proche-self' || subject === 'proche-obs')
+                ? t('subject.legendProche')
+                : t('subject.legendChild')}
           </Text>
         </View>
       )}
@@ -259,14 +503,29 @@ export default function QuizScreen() {
   if (phase === 'questions' && currentPage && ageBand) {
     mainContent = (
       <View>
+        {/* One child test, written for 10 and over: say so before starting. */}
+        {subject === 'enfant' && pageIndex === 0 && (
+          <View style={styles.childNotice}>
+            <Text style={styles.childNoticeText}>{crossBase ? t('cross.notice') : t('quiz.childNotice')}</Text>
+          </View>
+        )}
         <AdaptiveQuestion
           page={currentPage}
           pageIndex={pageIndex}
           ageBand={ageBand}
           onChange={updateResponse}
+          onGridChange={updateGridPoint}
+          onGridSkip={skipGrid}
+          onGridDragChange={setGridDragging}
         />
         {(currentPage.kind === 'budget' || currentPage.kind === 'final') && !canAdvance && (
           <Text style={styles.navHint}>{t('quiz.distributeToContinue')}</Text>
+        )}
+        {currentPage.kind === 'grid' && !canAdvance && (
+          <Text style={styles.navHint}>{t('quizGrid.dragToContinue')}</Text>
+        )}
+        {currentPage.kind === 'wing' && !canAdvance && (
+          <Text style={styles.navHint}>{t('quiz.wingMustDiffer')}</Text>
         )}
         <View style={styles.navRow}>
           {pageIndex > 0 ? (
@@ -304,12 +563,14 @@ export default function QuizScreen() {
       thirdType: result.thirdType,
       thirdPercent: result.thirdPercent,
       wingType: result.wingType,
+      wingCertainty: result.wingCertainty,
       isAmbiguous: result.confidence < 60,
       ambiguousPair: null as [number, number] | null,
       insightKind: result.insightKind,
+      combined: result.combined,
     };
     // mode pour QuizResult : 'enfant' si subject=enfant, 'adulte' si self
-    const legacyMode = subject === 'self' ? 'adulte' : 'enfant';
+    const legacyMode = subject === 'enfant' ? 'enfant' : 'adulte';
 
     mainContent = (
       <Animated.View
@@ -321,11 +582,73 @@ export default function QuizScreen() {
         <QuizResult
           result={adaptedResult}
           mode={legacyMode}
-          onViewProfile={() => router.push(`/profiles/${result.topType}` as never)}
-          onSaveProfile={goToSaveProfile}
+          onViewProfile={() => {
+            // The profile page adapts to who the result is about.
+            const who = subject === 'enfant' ? 'child' : subject === 'self' ? 'self' : 'adult';
+            const extra = result.wingType ? `&wing=${result.wingType}` : '';
+            router.push(`/profiles/${result.topType}?who=${who}${extra}` as never);
+          }}
+          onSaveProfile={() => requireAccount(goToSaveProfile)}
           onNewChild={restartSameSubject}
           onReset={reset}
+          forProche={subject === 'proche-self' || subject === 'proche-obs'}
+          raterType={subject === 'enfant' || subject === 'proche-obs' ? raterType : null}
         />
+
+        {/* Gentle reminder to create an account (anonymous users only) */}
+        {nudgeCount != null && isAnonymousUser() && (
+          <View style={styles.nudgeCard}>
+            <Text style={styles.nudgeText}>{t('quiz.nudgeText', { n: nudgeCount })}</Text>
+            <View style={styles.nudgeRow}>
+              <Pressable
+                onPress={() => {
+                  setNudgeCount(null);
+                  if (subject === 'self') openSignIn();
+                  else requireAccount(goToSaveProfile);
+                }}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.nudgeCta, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.nudgeCtaText}>{t('quiz.nudgeCta')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setNudgeCount(null)}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.nudgeLater, pressed && { opacity: 0.6 }]}
+              >
+                <Text style={styles.nudgeLaterText}>{t('quiz.nudgeLater')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Regard croisé : l'autre parent refait le test de l'enfant */}
+        {subject === 'enfant' && !result.combined && (
+          <Pressable
+            onPress={() => { hapticLight(); startCross(); }}
+            style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.secondCtaText}>{t('cross.cta')}</Text>
+              <Text style={styles.secondCtaHint}>{t('cross.ctaHint')}</Text>
+            </View>
+            <Text style={styles.secondCtaArrow}>›</Text>
+          </Pressable>
+        )}
+
+        {/* Second avis : proposé seulement pour l'auto-évaluation */}
+        {subject === 'self' && (
+          <Pressable
+            onPress={() => { hapticLight(); startSecondOpinion(); }}
+            style={({ pressed }) => [styles.secondCta, pressed && { opacity: 0.85 }]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.secondCtaText}>{t('second.cta')}</Text>
+              <Text style={styles.secondCtaHint}>{t('second.ctaHint')}</Text>
+            </View>
+            <Text style={styles.secondCtaArrow}>›</Text>
+          </Pressable>
+        )}
 
         {/* Score de confiance (sans bouton "Affiner" — retiré en v3) */}
         <ConfidenceBar confidence={result.confidence} />
@@ -347,10 +670,61 @@ export default function QuizScreen() {
             style={styles.scrollFlex}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            scrollEnabled={!gridDragging}
           >
             {mainContent}
           </ScrollView>
         </View>
+      </View>
+    );
+  }
+
+  // Phone, during the questions: the radar stays pinned at the top and
+  // shrinks to half its size as the questions scroll under it.
+  //  - the sticky box is H/2 tall (the collapsed radar); the full radar
+  //    (height H) overflows it at rest, onto a spacer of H/2;
+  //  - scale = 1 → 0.5 over the first H/2 of scroll, so the radar's bottom
+  //    edge always sits exactly on top of the content (no gap, no overlap);
+  //  - native-driven transform/opacity only: no layout work while scrolling.
+  if (phase === 'questions') {
+    const H = radarSize + 38;
+    const D = H / 2;
+    const radarScale = scrollY.interpolate({ inputRange: [0, D], outputRange: [1, 0.5], extrapolate: 'clamp' });
+    const captionOpacity = scrollY.interpolate({ inputRange: [0, D / 2], outputRange: [1, 0], extrapolate: 'clamp' });
+    return (
+      <View style={styles.narrowContainer}>
+        {topBar}
+        {progressBar}
+        <Animated.ScrollView
+          ref={questionsScrollRef as any}
+          style={styles.scrollFlex}
+          contentContainerStyle={styles.narrowScroll}
+          showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[0]}
+          scrollEnabled={!gridDragging}
+          scrollEventThrottle={16}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        >
+          <View style={[styles.radarSticky, { height: D }]}>
+            <Animated.View
+              style={[
+                styles.radarCollapsing,
+                { height: H, opacity: radarAnim, transformOrigin: 'top', transform: [{ scale: radarScale }] },
+              ]}
+            >
+              <RadarChart scores={radarScores as unknown as Record<number, number>} size={radarSize} />
+              <Animated.Text
+                style={[styles.radarCaption, { opacity: captionOpacity }]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}
+              >
+                {t('quiz.radarCaption')}
+              </Animated.Text>
+            </Animated.View>
+          </View>
+          <View style={{ height: D }} />
+          <View style={styles.questionArea}>{mainContent}</View>
+        </Animated.ScrollView>
       </View>
     );
   }
@@ -376,18 +750,24 @@ export default function QuizScreen() {
 // ─────────────────────────────────────────────
 
 function SaveProfileScreen({
-  existingProfiles, onCancel, onSave,
+  existingProfiles, isAdult, onCancel, onSave,
 }: {
   existingProfiles: ChildProfile[];
+  isAdult?: boolean;
   onCancel: () => void;
-  onSave: (name: string, age: number | undefined, existingId: string | undefined) => void;
+  onSave: (name: string, age: number | undefined, existingId: string | undefined) => Promise<void>;
 }) {
   const [name, setName] = useState('');
   const [ageStr, setAgeStr] = useState('');
   const [selectedExisting, setSelectedExisting] = useState<string | null>(null);
   const { t } = useT();
 
-  const canSave = selectedExisting || name.trim().length > 0;
+  const [saving, setSaving] = useState(false);
+  // A profile deleted meanwhile disappears from the list: forget it.
+  useEffect(() => {
+    if (selectedExisting && !existingProfiles.some(p => p.id === selectedExisting)) setSelectedExisting(null);
+  }, [existingProfiles, selectedExisting]);
+  const canSave = (selectedExisting || name.trim().length > 0) && !saving;
 
   return (
     <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
@@ -408,7 +788,7 @@ function SaveProfileScreen({
           {existingProfiles.map(p => (
             <Pressable
               key={p.id}
-              onPress={() => { setSelectedExisting(p.id); setName(''); }}
+              onPress={() => { setSelectedExisting(p.id); setName(''); setAgeStr(p.age != null ? String(p.age) : ''); }}
               style={[
                 styles.saveProfileCard,
                 selectedExisting === p.id && styles.saveProfileCardActive,
@@ -427,24 +807,33 @@ function SaveProfileScreen({
 
       <TextInput
         value={name}
-        onChangeText={(tt) => { setName(tt); setSelectedExisting(null); }}
+        onChangeText={(tt) => { if (selectedExisting) setAgeStr(''); setName(tt); setSelectedExisting(null); }}
         placeholder={t('saveProfile.namePlaceholder')}
-        placeholderTextColor={colors.textDim}
+        placeholderTextColor={colors.textMuted}
         style={styles.saveInput}
       />
-      <TextInput
-        value={ageStr}
-        onChangeText={setAgeStr}
-        placeholder={t('saveProfile.agePlaceholder')}
-        placeholderTextColor={colors.textDim}
-        keyboardType="numeric"
-        style={styles.saveInput}
-      />
+      {!isAdult && (
+        <TextInput
+          value={ageStr}
+          onChangeText={setAgeStr}
+          placeholder={t('saveProfile.agePlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          keyboardType="numeric"
+          style={styles.saveInput}
+        />
+      )}
 
       <Pressable
-        onPress={() => {
-          const age = ageStr ? parseInt(ageStr, 10) : undefined;
-          onSave(name, age, selectedExisting ?? undefined);
+        onPress={async () => {
+          // One save at a time (a double tap must not add the profile twice).
+          if (saving) return;
+          setSaving(true);
+          try {
+            const age = isAdult ? undefined : (ageStr ? parseInt(ageStr, 10) : undefined);
+            await onSave(name, age, selectedExisting ?? undefined);
+          } finally {
+            setSaving(false);
+          }
         }}
         disabled={!canSave}
         style={({ pressed }) => [
@@ -495,7 +884,7 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
                   hitSlop={10}
                   onPress={() => Alert.alert(
                     t('history.deleteTitle'),
-                    t('history.deleteBody', { name: p.name }),
+                    t('history.deleteBody', { name: p.name, deName: deName(p.name) }),
                     [
                       { text: t('common.cancel'), style: 'cancel' },
                       { text: t('history.deleteAction'), style: 'destructive', onPress: () => onDelete(p.id) },
@@ -536,12 +925,143 @@ function HistoryScreen({ profiles, onBack, onDelete }: { profiles: ChildProfile[
               <Text style={styles.historyEvolution}>
                 {p.history[0].topType === p.history[p.history.length - 1].topType
                   ? t('history.stable', { n: p.history.length })
-                  : t('history.evolution', { from: p.history[0].topType, to: p.history[p.history.length - 1].topType })}
+                  : t(p.kind === 'adult' ? 'history.evolutionAdult' : 'history.evolution', { from: p.history[0].topType, to: p.history[p.history.length - 1].topType })}
               </Text>
             )}
           </View>
         ))
       )}
+    </ScrollView>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Second opinion result (you vs a close person)
+// ─────────────────────────────────────────────
+
+// Two parents' views of the same child, side by side, and the combined view.
+function CrossResultScreen({ first, other, combined, onSave, onDone }: {
+  first: AdaptiveResult; other: AdaptiveResult; combined: AdaptiveResult;
+  onSave: () => void; onDone: () => void;
+}) {
+  const { t, locale } = useT();
+  const agree = first.topType === other.topType;
+  const pct = (r: AdaptiveResult, ty: number) => r.allScores.find((s) => s.type === ty)?.percent ?? 0;
+  // The types that matter: the first three of the combined view.
+  const shown = combined.allScores.slice(0, 3).map((s) => s.type);
+  const nameOf = (ty: number) => {
+    const v3 = TYPES_V3[ty as EnneaType];
+    return v3 ? getTypeText(v3, 'name', locale) : (TYPES[ty - 1]?.name ?? '');
+  };
+  return (
+    <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
+      <View style={styles.quizTopBar}>
+        <Pressable onPress={onDone} style={styles.quizBackBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <Text style={styles.quizBackBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.quizTopBarTitle}>{t('cross.resultTitle')}</Text>
+        <View style={styles.quizBackBtn} />
+      </View>
+
+      <Text style={styles.saveTitle}>{agree ? t('cross.agreeTitle') : t('cross.divergeTitle')}</Text>
+      <Text style={styles.saveSub}>
+        {agree
+          ? t('cross.agreeBody', { t: first.topType })
+          : t('cross.divergeBody', { a: first.topType, b: other.topType })}
+      </Text>
+
+      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
+        {shown.map((ty) => (
+          <View key={ty} style={styles.cmpRow}>
+            <Text style={styles.cmpType}>{t('result.type')} {ty} · {nameOf(ty)}</Text>
+            <View style={styles.cmpBarLine}>
+              <Text style={styles.cmpBarLabel}>{t('cross.firstLabel')}</Text>
+              <View style={styles.cmpTrack}>
+                <View style={[styles.cmpFill, { width: `${pct(first, ty)}%` as any, backgroundColor: colors.accent }]} />
+              </View>
+              <Text style={styles.cmpPct}>{pct(first, ty)}%</Text>
+            </View>
+            <View style={styles.cmpBarLine}>
+              <Text style={styles.cmpBarLabel}>{t('cross.secondLabel')}</Text>
+              <View style={styles.cmpTrack}>
+                <View style={[styles.cmpFill, { width: `${pct(other, ty)}%` as any, backgroundColor: TYPE_COLORS[ty] }]} />
+              </View>
+              <Text style={styles.cmpPct}>{pct(other, ty)}%</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.crossCombined}>
+        <Text style={styles.crossCombinedLabel}>{t('cross.combinedLabel')}</Text>
+        <Text style={styles.crossCombinedValue}>
+          {t('cross.combinedValue', { t: combined.topType, w: combined.wingType, name: nameOf(combined.topType) })}
+        </Text>
+      </View>
+
+      <Pressable onPress={onSave} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.85 }]}>
+        <Text style={styles.saveBtnText}>{t('cross.save')}</Text>
+      </Pressable>
+      <Pressable onPress={onDone} style={styles.skipBtn}>
+        <Text style={styles.skipBtnText}>{t('cross.done')}</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+function SecondResultScreen({ sr, onDone }: { sr: SecondOpinionResult; onDone: () => void }) {
+  const { t, locale } = useT();
+  const agree = sr.agree;
+  return (
+    <ScrollView style={styles.saveContainer} contentContainerStyle={styles.saveContent}>
+      <View style={styles.quizTopBar}>
+        <Pressable onPress={onDone} style={styles.quizBackBtn}>
+          <Text style={styles.quizBackBtnText}>‹</Text>
+        </Pressable>
+        <Text style={styles.quizTopBarTitle}>{t('second.resultTitle')}</Text>
+        <View style={styles.quizBackBtn} />
+      </View>
+
+      <Text style={styles.saveTitle}>
+        {!sr.observerAnswered ? t('second.noAnswerTitle') : agree ? t('second.agreeTitle') : t('second.divergeTitle')}
+      </Text>
+      <Text style={styles.saveSub}>
+        {!sr.observerAnswered
+          ? t('second.noAnswer')
+          : agree
+            ? t('second.agreeBody', { self: sr.selfTop })
+            : t('second.divergeBody', { self: sr.selfTop, obs: sr.observerTop })}
+      </Text>
+
+      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
+        {sr.candidates.map((c) => {
+          const v3 = TYPES_V3[c.type as EnneaType];
+          const name = v3 ? getTypeText(v3, 'name', locale) : (TYPES[c.type - 1]?.name ?? '');
+          return (
+            <View key={c.type} style={styles.cmpRow}>
+              <Text style={styles.cmpType}>{t('result.type')} {c.type} · {name}</Text>
+              <View style={styles.cmpBarLine}>
+                <Text style={styles.cmpBarLabel}>{t('second.youLabel')}</Text>
+                <View style={styles.cmpTrack}>
+                  <View style={[styles.cmpFill, { width: `${c.selfPercent}%` as any, backgroundColor: colors.accent }]} />
+                </View>
+                <Text style={styles.cmpPct}>{c.selfPercent}%</Text>
+              </View>
+              <View style={styles.cmpBarLine}>
+                <Text style={styles.cmpBarLabel}>{t('second.themLabel')}</Text>
+                <View style={styles.cmpTrack}>
+                  <View style={[styles.cmpFill, { width: `${c.obsPercent}%` as any, backgroundColor: TYPE_COLORS[c.type] }]} />
+                </View>
+                <Text style={styles.cmpPct}>{c.obsPercent}%</Text>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+
+      <Pressable onPress={onDone} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.85 }]}>
+        <Text style={styles.saveBtnText}>{t('second.done')}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -579,14 +1099,14 @@ const styles = StyleSheet.create({
   backLink: {
     alignSelf: 'flex-start', marginBottom: spacing.md, padding: spacing.xs,
   },
-  backLinkText: { fontFamily: fonts.sans, fontSize: 14, color: colors.accent },
+  backLinkText: { fontFamily: fonts.sans, fontSize: 14, color: colors.accentText },
 
   historyBtn: {
     marginTop: spacing.lg, padding: spacing.md,
     backgroundColor: colors.surface, borderRadius: radius.md,
     borderWidth: 1, borderColor: colors.border, width: '100%', alignItems: 'center',
   },
-  historyBtnText: { fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '600' },
+  historyBtnText: { fontFamily: fonts.sans, fontSize: 13, color: colors.accentText, fontWeight: '600' },
 
   // Wide layout
   wideContainer: { flex: 1, flexDirection: 'row', backgroundColor: colors.bg },
@@ -601,13 +1121,16 @@ const styles = StyleSheet.create({
   // Radar
   radarSection: { alignItems: 'center', paddingTop: spacing.md, paddingBottom: spacing.xs },
   radarSectionWide: { paddingVertical: spacing.xxl },
+  // Collapsing header (phone, questions): opaque so the questions slide under it.
+  radarSticky: { backgroundColor: colors.bg, zIndex: 1 },
+  radarCollapsing: { alignItems: 'center', paddingTop: spacing.md },
   radarCaption: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.textDim,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     textAlign: 'center', marginTop: spacing.xs,
   },
   legendRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs },
-  legendText: { fontFamily: fonts.sans, fontSize: 12, color: colors.textDim },
+  legendText: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted },
 
   // Top bar
   quizTopBar: {
@@ -625,8 +1148,38 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
     textAlign: 'center', marginTop: 4, letterSpacing: 0.3,
   },
+  nudgeCard: {
+    marginHorizontal: spacing.md, marginTop: spacing.md, padding: spacing.md,
+    borderRadius: radius.md, backgroundColor: colors.accentSoft,
+    borderWidth: 1, borderColor: colors.accentMedium,
+  },
+  nudgeText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.text },
+  nudgeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  nudgeCta: {
+    minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.lg,
+    backgroundColor: colors.accentStrong, borderRadius: radius.full,
+  },
+  nudgeCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: colors.white },
+  nudgeLater: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md },
+  nudgeLaterText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
+  crossCombined: {
+    marginHorizontal: spacing.lg, marginTop: spacing.lg, padding: spacing.md,
+    borderRadius: radius.md, backgroundColor: colors.accentSoft,
+    borderWidth: 1, borderColor: colors.accentMedium, alignItems: 'center',
+  },
+  crossCombinedLabel: {
+    fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', letterSpacing: 1,
+    textTransform: 'uppercase', color: colors.accentText,
+  },
+  crossCombinedValue: { fontFamily: fonts.serif, fontSize: 20, color: colors.text, marginTop: 4, textAlign: 'center' },
+  childNotice: {
+    marginHorizontal: spacing.md, marginTop: spacing.sm,
+    padding: spacing.md, borderRadius: radius.md,
+    backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accentMedium,
+  },
+  childNoticeText: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textSoft },
   navHint: {
-    fontFamily: fonts.sans, fontSize: 12, color: colors.accent, fontWeight: '600',
+    fontFamily: fonts.sans, fontSize: 12, color: colors.accentText, fontWeight: '600',
     textAlign: 'center', paddingHorizontal: spacing.md, marginBottom: spacing.xs,
   },
   scrollFlex: { flex: 1 },
@@ -679,7 +1232,7 @@ const styles = StyleSheet.create({
   },
   saveSectionLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 0.8, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 0.8, textTransform: 'uppercase',
     paddingHorizontal: spacing.lg, marginBottom: spacing.sm,
   },
   saveProfileCard: {
@@ -735,7 +1288,28 @@ const styles = StyleSheet.create({
   historyEntryPercent: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginTop: 2 },
   historyEntryNote: { fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textSoft, marginTop: 4 },
   historyEvolution: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.accent,
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accentText,
     fontWeight: '600', marginTop: spacing.sm, textAlign: 'center',
   },
+
+  // Second avis
+  secondCta: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    marginHorizontal: spacing.lg, marginTop: spacing.lg, marginBottom: spacing.sm,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accent, borderLeftWidth: 4,
+    borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
+  },
+  secondCtaText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accentText },
+  secondCtaHint: { fontFamily: fonts.sans, fontSize: 12.5, color: colors.textMuted, marginTop: 3 },
+  secondCtaArrow: { fontFamily: fonts.sans, fontSize: 26, color: colors.accentText, lineHeight: 28 },
+  cmpRow: {
+    backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1,
+    borderColor: colors.border, padding: spacing.md, gap: 6,
+  },
+  cmpType: { fontFamily: fonts.serif, fontSize: 15, color: colors.text, marginBottom: 2 },
+  cmpBarLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  cmpBarLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, width: 64 },
+  cmpTrack: { flex: 1, height: 8, backgroundColor: colors.subtle06, borderRadius: 4, overflow: 'hidden' },
+  cmpFill: { height: 8, borderRadius: 4 },
+  cmpPct: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, width: 36, textAlign: 'right' },
 });

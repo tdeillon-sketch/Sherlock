@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-//  Ritual journal — list of past answers to the daily question.
+//  Mon journal — past answers to the question of the day (per account,
+//  backed up online: see constants/ritualJournal.ts).
 // ═══════════════════════════════════════════════════════════════
 
 import { useEffect, useState, useCallback } from 'react';
@@ -7,26 +8,34 @@ import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-nati
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
-import { loadJournal, deleteAnswer, formatEntryDate, type RitualEntry } from '../constants/ritualJournal';
+import {
+  loadJournal, deleteAnswer, syncJournal, formatEntryDay,
+  type RitualEntry, type JournalSyncState,
+} from '../constants/ritualJournal';
 import { useT } from '../i18n';
-import { trackScreen } from '../constants/firebase';
+import { auth, trackScreen } from '../constants/firebase';
 
 export default function JournalScreen() {
   const { t, locale } = useT();
   const [entries, setEntries] = useState<RitualEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncState, setSyncState] = useState<JournalSyncState | null>(null);
 
+  // Phone copy first, then sync with the account and show the result.
   const refresh = useCallback(async () => {
-    setLoading(true);
+    const uid = auth.currentUser?.uid;
+    if (!uid) { setLoading(false); return; }
     try {
-      const data = await loadJournal();
-      setEntries(data);
+      setEntries(await loadJournal(uid));
     } finally {
       setLoading(false);
     }
+    const state = await syncJournal(uid);
+    setSyncState(state);
+    setEntries(await loadJournal(uid));
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { refresh().catch(() => {}); }, [refresh]);
   useEffect(() => { trackScreen('journal').catch(() => {}); }, []);
 
   const handleDelete = (entry: RitualEntry) => {
@@ -39,8 +48,10 @@ export default function JournalScreen() {
           text: t('journal.delete'),
           style: 'destructive',
           onPress: async () => {
-            await deleteAnswer(entry.ts);
-            await refresh();
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            await deleteAnswer(uid, entry.date);
+            setEntries((list) => list.filter((e) => e.date !== entry.date));
           },
         },
       ],
@@ -60,6 +71,9 @@ export default function JournalScreen() {
       <View style={styles.header}>
         <Text style={styles.heroTitle}>{t('journal.heroTitle')}</Text>
         <Text style={styles.heroSub}>{t('journal.heroSub')}</Text>
+        {(syncState === 'pending' || syncState === 'blocked') && entries.length > 0 && (
+          <Text style={styles.syncNote}>{t('journal.syncPending')}</Text>
+        )}
       </View>
 
       {loading ? (
@@ -73,11 +87,16 @@ export default function JournalScreen() {
       ) : (
         <View style={styles.list}>
           {entries.map((entry) => (
-            <View key={entry.ts} style={styles.entryCard}>
+            <View key={entry.date} style={styles.entryCard}>
               <View style={styles.entryHeader}>
-                <Text style={styles.entryDate}>{formatEntryDate(entry.ts, locale)}</Text>
-                <Pressable onPress={() => handleDelete(entry)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={colors.textMuted} />
+                <Text style={styles.entryDate}>{formatEntryDay(entry.date, locale)}</Text>
+                <Pressable
+                  onPress={() => handleDelete(entry)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('journal.delete')}
+                  style={({ pressed }) => [styles.deleteBtn, pressed && { opacity: 0.6 }]}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
                 </Pressable>
               </View>
               <Text style={styles.entryQuestion}>« {entry.question} »</Text>
@@ -116,6 +135,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
     color: colors.textMuted,
   },
+  syncNote: {
+    fontFamily: fonts.sans, fontSize: 12, lineHeight: 18,
+    color: colors.textMuted, marginTop: spacing.sm, fontStyle: 'italic',
+  },
 
   loadingText: {
     fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted,
@@ -153,8 +176,9 @@ const styles = StyleSheet.create({
   },
   entryHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginTop: -spacing.sm, marginRight: -spacing.sm,
   },
+  deleteBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   entryDate: {
     fontFamily: fonts.sans, fontSize: 11,
     color: colors.textMuted, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: '700',

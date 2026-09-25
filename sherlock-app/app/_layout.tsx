@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -7,7 +7,7 @@ import AuthScreen from '../components/AuthScreen';
 import Onboarding from '../components/Onboarding';
 import { LocaleProvider } from '../i18n';
 import {
-  onAuthChange, getUserData, updateLastSeen, isThirdPartySignedIn,
+  onAuthChange, ensureUserDoc, signInAnon, retryPendingAnonMerge, syncUserProfile,
 } from '../constants/firebase';
 
 SplashScreen.preventAutoHideAsync();
@@ -26,28 +26,44 @@ export default function RootLayout() {
     Inter: require('../assets/fonts/Inter-Regular.ttf'),
   });
 
-  // Single auth gate: Google or Apple sign-in.
-  // The previous "access code" gate was removed for App Store guideline 3.1.1
-  // (no third-party promo codes for unlocking digital content).
-  const [signedIn, setSignedIn] = useState(false);
+  // No account needed to start: without a session, an anonymous one is
+  // created (the app is usable right away). An Apple / Google account is
+  // asked only to save a family profile or the journal (constants/authGate).
+  // Fallback: if the anonymous session can't start (e.g. first launch
+  // offline), the sign-in screen is shown as before.
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [needsSignIn, setNeedsSignIn] = useState(false);
+  // Bumped when a session ends (sign-out, account deletion): every screen of
+  // the previous session is dropped, so nothing of it stays in memory or is
+  // written into the next one. (Not on an anonymous → account switch: a
+  // result waiting to be saved must survive it.)
+  const [sessionKey, setSessionKey] = useState(0);
+  const hadUser = useRef(false);
 
-  // On boot: check if user is already authenticated (returning user)
   useEffect(() => {
     const unsubscribe = onAuthChange(async (user) => {
-      if (user && isThirdPartySignedIn(user)) {
-        const data = await getUserData(user.uid).catch(() => null);
-        if (data) {
-          setSignedIn(true);
-          updateLastSeen(user.uid).catch(() => {});
-        } else {
-          // Auth user exists but no Firestore doc — treat as signed-out so the
-          // AuthScreen flow re-creates the doc on first sign-in.
-          setSignedIn(false);
+      if (!user) {
+        if (hadUser.current) setSessionKey((k) => k + 1);
+        hadUser.current = false;
+        // Hold the app until the new session exists (no screen mounts
+        // without a user).
+        setCheckingAuth(true);
+        try {
+          await signInAnon(); // fires onAuthChange again with the new user
+        } catch {
+          setNeedsSignIn(true);
+          setCheckingAuth(false);
         }
-      } else {
-        setSignedIn(false);
+        return;
       }
+      hadUser.current = true;
+      // Never block the launch on the network: the document is created in
+      // the background, and only if the server confirms it is missing.
+      ensureUserDoc(user.uid)
+        .then(() => { if (!user.isAnonymous) return syncUserProfile(user); })
+        .catch(() => {});
+      retryPendingAnonMerge().catch(() => {});
+      setNeedsSignIn(false);
       setCheckingAuth(false);
     });
     return unsubscribe;
@@ -85,11 +101,11 @@ export default function RootLayout() {
     return null;
   }
 
-  // ── Sign-in screen (Google + Apple) ──
-  if (!signedIn) {
+  // ── Fallback only: the anonymous session could not start ──
+  if (needsSignIn) {
     return (
       <LocaleProvider>
-        <AuthScreen onSuccess={() => setSignedIn(true)} />
+        <AuthScreen onSuccess={() => setNeedsSignIn(false)} />
       </LocaleProvider>
     );
   }
@@ -106,10 +122,10 @@ export default function RootLayout() {
     );
   }
 
-  // ── Authenticated + onboarded: render the app ──
+  // ── Session ready (with or without an account) + onboarded ──
   return (
     <LocaleProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack key={sessionKey} screenOptions={{ headerShown: false }} />
     </LocaleProvider>
   );
 }

@@ -1,11 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import {
-  getAuth, signInAnonymously, onAuthStateChanged, User,
+  getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, User,
   GoogleAuthProvider, OAuthProvider, signInWithCredential, signOut as fbSignOut,
-  deleteUser,
+  deleteUser, linkWithCredential, reauthenticateWithCredential, type AuthCredential,
 } from 'firebase/auth';
+// getReactNativePersistence ships in firebase's React Native build but is absent
+// from the default TS types — import it separately and suppress the type error.
+// @ts-ignore
+import { getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  getFirestore,
+  initializeFirestore,
   doc,
   getDoc,
   setDoc,
@@ -14,11 +19,18 @@ import {
   serverTimestamp,
   collection,
   getDocs,
+  getDocsFromServer,
   query,
   orderBy,
   limit,
+  where,
+  getCountFromServer,
   increment,
+  writeBatch,
+  arrayUnion,
+  runTransaction,
 } from 'firebase/firestore';
+import type { RitualEntry } from './ritualJournal';
 
 // ── Admin allowlist ──
 // Only this email gets access to the admin dashboard.
@@ -42,8 +54,23 @@ const firebaseConfig = {
 
 // ── Init ──
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Persist the auth session across app restarts. React Native has no browser
+// storage, so the default getAuth() keeps the session only in memory — the user
+// is logged out on every cold start. initializeAuth + AsyncStorage fixes that.
+// (Falls back to getAuth if auth is already initialized, e.g. on Fast Refresh.)
+export const auth = (() => {
+  try {
+    return initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
+  } catch {
+    return getAuth(app);
+  }
+})();
+
+// ignoreUndefinedProperties: drop undefined fields on write (e.g. a profile saved
+// without an age) instead of throwing "Unsupported field value: undefined", which
+// previously made age-less profile saves fail silently (caught by .catch).
+export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 
 // ── Auth helpers ──
 export async function signInAnon(): Promise<User> {
@@ -55,13 +82,306 @@ export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
+/** Using the app without an account: an anonymous Firebase session. */
+export function isAnonymousUser(user: User | null = auth.currentUser): boolean {
+  return !!user && user.isAnonymous;
+}
+
+/** After any sign-in or link: make sure the user doc exists, then backfill
+ *  email / provider / name. */
+async function afterSignIn(user: User): Promise<void> {
+  await ensureUserDoc(user.uid).catch(() => {});
+  await syncUserProfile(user).catch(() => {});
+}
+
+/** What was done without an account (results, second opinions, game…) is
+ *  added to an existing account when the user signs in to it. Runs in a
+ *  transaction: the account is read on the server, so a failed read never
+ *  makes it look empty (nothing is written then). */
+async function mergeAnonymousData(uid: string, anon: any, anonUid: string): Promise<void> {
+  const ref = userDocRef(uid);
+  const arr = (x: any): any[] => (Array.isArray(x) ? x : []);
+  const union = (x: any, y: any) => Array.from(new Set([...arr(x), ...arr(y)]));
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const target: any = snap.exists() ? snap.data() : {};
+    // Idempotent: a merge replayed (lost acknowledgement, retry at launch)
+    // never adds the same anonymous session twice.
+    const doneIds = arr(target.mergedAnon);
+    if (doneIds.includes(anonUid)) return;
+    const merged: Record<string, any> = { mergedAnon: [...doneIds, anonUid] };
+    if (!snap.exists()) merged.createdAt = serverTimestamp();
+    if (arr(anon.quizResults).length) {
+      merged.quizResults = [...arr(target.quizResults), ...arr(anon.quizResults)]
+        .sort((a, b) => String(a?.completedAt ?? '').localeCompare(String(b?.completedAt ?? '')));
+    }
+    if (arr(anon.secondOpinions).length) merged.secondOpinions = [...arr(target.secondOpinions), ...arr(anon.secondOpinions)];
+    if (arr(anon.badges).length) merged.badges = [...arr(target.badges), ...arr(anon.badges)];
+    if (arr(anon.childProfiles).length) {
+      const ids = new Set(arr(target.childProfiles).map((p) => p?.id));
+      merged.childProfiles = [...arr(target.childProfiles), ...arr(anon.childProfiles).filter((p) => !ids.has(p?.id))];
+    }
+    // Game progress: merged field by field (XP is a running total).
+    const a = anon.dossierProgress, b = target.dossierProgress;
+    if (a) {
+      if (!b) merged.dossierProgress = a;
+      else {
+        const completedCases = union(b.completedCases, a.completedCases);
+        const done = new Set(completedCases);
+        merged.dossierProgress = {
+          ...a, ...b,
+          completedCases,
+          unlockedFiches: union(b.unlockedFiches, a.unlockedFiches),
+          wrongCases: union(b.wrongCases, a.wrongCases).filter((id) => !done.has(id)),
+          totalXP: (b.totalXP ?? 0) + (a.totalXP ?? 0),
+          bestCombo: Math.max(a.bestCombo ?? 0, b.bestCombo ?? 0),
+        };
+      }
+    }
+    tx.set(ref, merged, { merge: true });
+  });
+}
+
+// A copy of what was done without an account is kept on the phone while it
+// moves into an existing account, until the move is confirmed: nothing is
+// lost if the network drops or the app is killed in the middle.
+const PENDING_PREFIX = 'pendingAnonMerge:';
+type PendingMerge = { anonUid: string; target: string | null; data: any };
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'unavailable' })), ms);
+    p.then((v) => { clearTimeout(timer); resolve(v); }, (e) => { clearTimeout(timer); reject(e); });
+  });
+}
+
+/** Put a saved copy back into a user document, keeping everything added
+ *  since (lists are united, existing values win). */
+async function restoreFromCopy(uid: string, d: any): Promise<void> {
+  const ref = userDocRef(uid);
+  const arr = (x: any): any[] => (Array.isArray(x) ? x : []);
+  const unite = (cur: any[], old: any[], k: (x: any) => string) => {
+    const seen = new Set(cur.map(k));
+    return [...old.filter((x) => !seen.has(k(x))), ...cur];
+  };
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const cur: any = snap.exists() ? snap.data() : {};
+    tx.set(ref, {
+      ...(snap.exists() ? {} : { email: d.email ?? null, displayName: d.displayName ?? null, provider: d.provider ?? 'anonymous', createdAt: serverTimestamp() }),
+      quizResults: unite(arr(cur.quizResults), arr(d.quizResults), (r) => String(r?.completedAt)),
+      secondOpinions: unite(arr(cur.secondOpinions), arr(d.secondOpinions), (o) => String(o?.date)),
+      badges: unite(arr(cur.badges), arr(d.badges), (b) => `${b?.level}|${b?.earnedAt}`),
+      childProfiles: unite(arr(cur.childProfiles), arr(d.childProfiles), (p) => String(p?.id)),
+      ...(cur.dossierProgress || !d.dossierProgress ? {} : { dossierProgress: d.dossierProgress }),
+      lastSeen: serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
+/** Account deletion: drop every copy kept on the phone for this user (as
+ *  the source or the target of a move). */
+export async function clearPendingAnonMerges(uid: string): Promise<void> {
+  const keys = (await AsyncStorage.getAllKeys().catch(() => [] as readonly string[]))
+    .filter((k) => k.startsWith(PENDING_PREFIX));
+  for (const k of keys) {
+    // A copy that can't be read is dropped too (never throws: deleteAccount
+    // calls this after the journal is already gone).
+    let p: any = null;
+    try { p = JSON.parse((await AsyncStorage.getItem(k).catch(() => null)) ?? 'null'); } catch {}
+    if (!p || p.anonUid === uid || p.target === uid) await AsyncStorage.removeItem(k).catch(() => {});
+  }
+}
+
+/** Finish any interrupted move (called at launch and after sign-in):
+ *  still in the anonymous session → put its document back; signed in to
+ *  the target account → merge into it. */
+export async function retryPendingAnonMerge(): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) return;
+  const keys = (await AsyncStorage.getAllKeys().catch(() => [] as readonly string[]))
+    .filter((k) => k.startsWith(PENDING_PREFIX));
+  for (const key of keys) {
+    try {
+      const pending: PendingMerge = JSON.parse((await AsyncStorage.getItem(key)) ?? 'null');
+      if (!pending?.anonUid) { await AsyncStorage.removeItem(key); continue; }
+      if (user.uid === pending.anonUid) {
+        // Still (or again, after a link) the session the copy came from: put
+        // the copy back WITHOUT erasing what was done since. A transaction
+        // fails offline instead of queueing a stale overwrite.
+        await restoreFromCopy(user.uid, pending.data ?? {});
+        await AsyncStorage.removeItem(key);
+      } else if (!user.isAnonymous && pending.target === user.uid) {
+        await mergeAnonymousData(user.uid, pending.data, pending.anonUid);
+        await AsyncStorage.removeItem(key);
+      }
+    } catch {}
+  }
+}
+
+/** Sign in with an Apple / Google credential. Without an account (anonymous
+ *  session), the credential is LINKED to it: same user, nothing is lost. If
+ *  that Apple / Google account already exists (another phone, a reinstall),
+ *  switch to it and move what was done without an account into it. */
+async function connectWithCredential(
+  credential: AuthCredential,
+  fromError: (e: any) => AuthCredential | null,
+): Promise<User> {
+  const current = auth.currentUser;
+  if (current && current.isAnonymous) {
+    try {
+      const res = await linkWithCredential(current, credential);
+      await afterSignIn(res.user);
+      return res.user;
+    } catch (e: any) {
+      if (e?.code !== 'auth/credential-already-in-use' && e?.code !== 'auth/email-already-in-use') throw e;
+      const anonUid = current.uid;
+      // A failed read throws here (the user stays anonymous and can retry):
+      // it must never look like "nothing to move".
+      const anonData = await getUserData(anonUid);
+      const key = PENDING_PREFIX + anonUid;
+      if (anonData) {
+        // Durable copy first; if it can't be written, stop (stay anonymous).
+        await AsyncStorage.setItem(key, JSON.stringify({ anonUid, target: null, data: anonData } as PendingMerge));
+        // Still anonymous here: only the owner may delete users/{uid}.
+        await withTimeout(deleteDoc(userDocRef(anonUid)), 15000).catch(() => {});
+      }
+      let res;
+      try {
+        res = await signInWithCredential(auth, fromError(e) ?? credential);
+      } catch (err) {
+        // Still anonymous: put the document back (the phone copy stays until
+        // this is confirmed, and is retried at next launch otherwise).
+        if (anonData) {
+          // The phone copy is removed only when the server confirms the
+          // write (even if that happens after the timeout).
+          const w = setDoc(userDocRef(anonUid), anonData);
+          w.then(() => AsyncStorage.removeItem(key)).catch(() => {});
+          await withTimeout(w, 15000).catch(() => {});
+        }
+        throw err;
+      }
+      if (anonData) {
+        await AsyncStorage.setItem(key, JSON.stringify({ anonUid, target: res.user.uid, data: anonData } as PendingMerge)).catch(() => {});
+      }
+      await afterSignIn(res.user);
+      if (anonData) {
+        await mergeAnonymousData(res.user.uid, anonData, anonUid)
+          .then(() => AsyncStorage.removeItem(key))
+          .catch(() => {}); // kept on the phone, retried at next launch
+      }
+      return res.user;
+    }
+  }
+  const res = await signInWithCredential(auth, credential);
+  await afterSignIn(res.user);
+  return res.user;
+}
+
+// ── Sign in with Apple: revoked on account deletion ──
+// Apple requires it. Firebase keeps no Apple token, so the account screen
+// always asks for Apple again right before deleting: Firebase checks the
+// identity token of that sheet, and its one-time authorization code (single
+// use, valid 5 minutes) is kept here, in memory, for this account only.
+const APPLE_CODE_MAX_AGE_MS = 4 * 60 * 1000;
+const APPLE_REVOKE_TIMEOUT_MS = 8000;
+const IOS_BUNDLE_ID = 'com.thomasdeillon.sherlock';
+let appleCode: { uid: string; code: string; at: number } | null = null;
+
+// Dropped as soon as another account (or none) is signed in: sign-out,
+// account switch, deleteUser.
+onAuthStateChanged(auth, (u) => { if (appleCode && appleCode.uid !== u?.uid) appleCode = null; });
+
+export function forgetAppleRevokeCode(): void {
+  appleCode = null;
+}
+
+/** This account's code, once: null if none, too old, or from another account. */
+function takeAppleRevokeCode(uid: string): string | null {
+  const c = appleCode;
+  appleCode = null;
+  return c && c.uid === uid && Date.now() - c.at < APPLE_CODE_MAX_AGE_MS ? c.code : null;
+}
+
+/** The Identity Toolkit request that revokes Sign in with Apple with an
+ *  authorization code: the same body and bundle header as the native iOS
+ *  SDK's revokeToken(withAuthorizationCode:). The JS SDK's revokeAccessToken
+ *  only takes an access token, which a native sign-in never gets. No
+ *  redirectUri: a native code was issued without one. */
+export function appleRevokeRequest(code: string, idToken: string): { url: string; init: RequestInit } {
+  return {
+    url: `https://identitytoolkit.googleapis.com/v2/accounts:revokeToken?key=${firebaseConfig.apiKey}`,
+    init: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Ios-Bundle-Identifier': IOS_BUNDLE_ID },
+      body: JSON.stringify({ providerId: 'apple.com', tokenType: 'CODE', token: code, idToken }),
+    },
+  };
+}
+
+/** Best effort, never throws: true only if the revocation was accepted.
+ *  Fails (false) while the Apple provider has no "OAuth code flow
+ *  configuration" in the Firebase console: see ADMIN.md. */
+async function revokeAppleSignIn(user: User, code: string): Promise<boolean> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), APPLE_REVOKE_TIMEOUT_MS);
+  try {
+    const { url, init } = appleRevokeRequest(code, await user.getIdToken());
+    const res = await fetch(url, { ...init, signal: ctrl.signal });
+    if (!res.ok && __DEV__) {
+      const body = await res.json().catch(() => null);
+      console.warn('[apple-revoke]', res.status, body?.error?.message);
+    }
+    return res.ok;
+  } catch {
+    return false; // offline, timeout
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Confirm identity again (required by Firebase before deleting an account
+ *  signed in a while ago). Does not switch or link anything. */
+export async function reauthWithGoogleIdToken(idToken: string): Promise<void> {
+  if (!auth.currentUser) throw new Error('no user');
+  await reauthenticateWithCredential(auth.currentUser, GoogleAuthProvider.credential(idToken));
+}
+export async function reauthWithAppleIdToken(
+  identityToken: string, rawNonce: string, authorizationCode?: string | null,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('no user');
+  appleCode = null;
+  const credential = new OAuthProvider('apple.com').credential({ idToken: identityToken, rawNonce });
+  await reauthenticateWithCredential(user, credential);
+  // Same account confirmed (another Apple ID throws above): keep the code of
+  // this Apple sheet for the revocation that follows.
+  if (authorizationCode) appleCode = { uid: user.uid, code: authorizationCode, at: Date.now() };
+}
+
+/** Read-modify-write of the family profiles in a transaction: never builds on
+ *  a stale or unread list (fails offline instead of overwriting). */
+export async function updateChildProfiles(
+  uid: string,
+  fn: (current: ChildProfile[]) => ChildProfile[],
+): Promise<ChildProfile[]> {
+  const ref = userDocRef(uid);
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const current: ChildProfile[] = Array.isArray((snap.data() as any)?.childProfiles) ? (snap.data() as any).childProfiles : [];
+    const next = fn(current);
+    tx.set(ref, {
+      childProfiles: next, lastSeen: serverTimestamp(),
+      ...(snap.exists() ? {} : { createdAt: serverTimestamp() }),
+    }, { merge: true });
+    return next;
+  });
+}
+
 // Sign in with a Google ID token (obtained from expo-auth-session)
 export async function signInWithGoogleIdToken(idToken: string): Promise<User> {
   const credential = GoogleAuthProvider.credential(idToken);
-  const result = await signInWithCredential(auth, credential);
-  // Best-effort backfill of email/provider on the user doc
-  syncUserProfile(result.user).catch(() => {});
-  return result.user;
+  return connectWithCredential(credential, (e) => GoogleAuthProvider.credentialFromError(e));
 }
 
 // Sign in with an Apple identity token (obtained from expo-apple-authentication)
@@ -76,9 +396,7 @@ export async function signInWithAppleIdToken(
     idToken: identityToken,
     rawNonce,
   });
-  const result = await signInWithCredential(auth, credential);
-  syncUserProfile(result.user).catch(() => {});
-  return result.user;
+  return connectWithCredential(credential, (e) => OAuthProvider.credentialFromError(e));
 }
 
 // Returns true if the current user is signed in with Google (vs anonymous)
@@ -104,17 +422,34 @@ export async function signOut(): Promise<void> {
 
 /**
  * Permanently delete the current user's account:
+ *  - Removes the journal entries /journals/{uid}/entries/*
  *  - Removes the Firestore document /users/{uid}
+ *  - Apple account: revokes Sign in with Apple (App Store rule), with the
+ *    code of the Apple confirmation shown just before (see account.tsx)
  *  - Deletes the Firebase Auth user
+ * The caller also clears the local journal copy (clearLocalJournal).
  * After this, the user will be signed out and the local state should be reset.
+ * appleRevoked: true / false for an Apple account (false: not revoked, the
+ * deletion went on anyway), null otherwise.
  *
  * NOTE: Firebase requires a recent sign-in for `deleteUser`. If the call
  * throws "auth/requires-recent-login", the caller should re-authenticate
  * the user (sign in again) before retrying.
  */
-export async function deleteAccount(): Promise<void> {
+export async function deleteAccount(): Promise<{ appleRevoked: boolean | null }> {
   const user = auth.currentUser;
   if (!user) throw new Error("Aucun utilisateur connecté");
+  // Taken now, so it is used at most once whatever happens below (a retry
+  // asks for Apple again and gets a new code).
+  const code = takeAppleRevokeCode(user.uid);
+  const apple = isAppleSignedIn(user);
+  // 0. The journal holds personal answers: if it can't be deleted (e.g.
+  //    offline), stop here so nothing personal is left behind online.
+  await deleteAllJournalEntriesRemote(user.uid);
+  // Copies kept on the phone during an account switch go too: only now,
+  // so a deletion stopped above loses nothing (and before the account
+  // goes, so none can be merged back into it at the next launch).
+  await clearPendingAnonMerges(user.uid);
   // 1. Delete Firestore data first (best-effort — if it fails the auth
   //    user remains so we don't end up with orphaned data).
   try {
@@ -123,9 +458,15 @@ export async function deleteAccount(): Promise<void> {
     // Continue anyway — the auth user must still be deleted to comply
     // with Apple's account-deletion requirement.
   }
-  // 2. Delete the auth user. If "requires-recent-login", let the caller
+  // 2. Revoke Sign in with Apple: after the step that can stop the deletion
+  //    (offline: nothing deleted, nothing revoked), before the account goes
+  //    (the request needs its ID token). Best effort, 8 s at most: the
+  //    account is deleted even if Apple can't be reached.
+  const appleRevoked = apple ? (code ? await revokeAppleSignIn(user, code) : false) : null;
+  // 3. Delete the auth user. If "requires-recent-login", let the caller
   //    handle re-auth.
   await deleteUser(user);
+  return { appleRevoked };
 }
 
 // ── User data types ──
@@ -140,6 +481,8 @@ export interface UserData {
   displayName?: string | null;
   quizResults: QuizResult[];
   badges: Badge[];
+  /** "Second avis": how someone close saw you, one entry per round */
+  secondOpinions?: SecondOpinionEntry[];
 }
 
 function detectProvider(user: User): 'google' | 'apple' | 'anonymous' {
@@ -152,8 +495,26 @@ export interface QuizResult {
   mode: string;       // 'enfant' | 'ado' | 'adulte'
   topType: number;
   wingType: number | null;
+  wingCertainty?: number;      // 0..100 (results since the wing is always asked)
   scores: Record<number, number>;
   completedAt: string; // ISO date
+}
+
+/** "Second avis": someone close answered the short quiz about you. */
+export interface SecondOpinionEntry {
+  date: string;                 // ISO
+  selfTop: number;              // your type at the time (compared against)
+  observerTop: number;          // the type the close person's answers point to
+  agree: boolean;
+  candidates: { type: number; selfPercent: number; obsPercent: number }[];
+  selfQuizAt: string | null;    // completedAt of the self quiz used as a base
+}
+
+export async function saveSecondOpinion(uid: string, e: SecondOpinionEntry): Promise<void> {
+  await updateUserDoc(uid, {
+    secondOpinions: arrayUnion(e),
+    lastSeen: serverTimestamp(),
+  });
 }
 
 export interface Badge {
@@ -171,17 +532,50 @@ export async function getUserData(uid: string): Promise<UserData | null> {
   return snap.exists() ? (snap.data() as UserData) : null;
 }
 
+/** updateDoc that creates the user document first if it is missing (e.g.
+ *  it could not be created at launch on a bad network). */
+async function updateUserDoc(uid: string, data: Record<string, any>): Promise<void> {
+  try {
+    await updateDoc(userDocRef(uid), data);
+  } catch (e: any) {
+    if (e?.code !== 'not-found') throw e;
+    await createUserData(uid);
+    await updateDoc(userDocRef(uid), data);
+  }
+}
+
+/** Create the user document, never overwriting one: a transaction reads it
+ *  on the server first (and fails offline instead of queueing a blind write).
+ *  No array fields: every reader already defaults missing arrays to []. */
 export async function createUserData(uid: string): Promise<void> {
   const user = auth.currentUser;
-  await setDoc(userDocRef(uid), {
-    createdAt: serverTimestamp(),
-    lastSeen: serverTimestamp(),
-    email: user?.email ?? null,
-    displayName: user?.displayName ?? null,
-    provider: user ? detectProvider(user) : 'anonymous',
-    quizResults: [],
-    badges: [],
+  const ref = userDocRef(uid);
+  await runTransaction(db, async (tx) => {
+    if ((await tx.get(ref)).exists()) return;
+    tx.set(ref, {
+      createdAt: serverTimestamp(),
+      lastSeen: serverTimestamp(),
+      email: user?.email ?? null,
+      displayName: user?.displayName ?? null,
+      provider: user ? detectProvider(user) : 'anonymous',
+    });
   });
+}
+
+/** Make sure the user document exists. A failed read (offline, flaky
+ *  network) means "unknown", never "missing": then nothing is written. */
+export async function ensureUserDoc(uid: string): Promise<void> {
+  let snap;
+  try {
+    snap = await getDoc(userDocRef(uid));
+  } catch {
+    return;
+  }
+  if (snap.exists()) {
+    updateLastSeen(uid).catch(() => {});
+    return;
+  }
+  await createUserData(uid);
 }
 
 /**
@@ -203,11 +597,9 @@ export async function syncUserProfile(user: User): Promise<void> {
 }
 
 export async function saveQuizResult(uid: string, result: QuizResult): Promise<void> {
-  const data = await getUserData(uid);
-  const results = data?.quizResults || [];
-  results.push(result);
-  await updateDoc(userDocRef(uid), {
-    quizResults: results,
+  // arrayUnion: appended on the server, never rebuilt from a stale read.
+  await updateUserDoc(uid, {
+    quizResults: arrayUnion(result),
     lastSeen: serverTimestamp(),
   });
 }
@@ -242,7 +634,7 @@ export async function updateLastSeen(uid: string): Promise<void> {
 // Best-effort: errors are swallowed (no throw to UI).
 export type Screen =
   | 'home' | 'quiz' | 'profiles' | 'celebrities' | 'duo'
-  | 'pilot' | 'journal' | 'account';
+  | 'journal' | 'account';
 
 export async function trackScreen(screen: Screen): Promise<void> {
   const user = auth.currentUser;
@@ -271,7 +663,7 @@ export interface DossierProgressData {
 }
 
 export async function saveDossierProgress(uid: string, progress: DossierProgressData): Promise<void> {
-  await updateDoc(userDocRef(uid), {
+  await updateUserDoc(uid, {
     dossierProgress: progress,
     lastSeen: serverTimestamp(),
   });
@@ -280,6 +672,70 @@ export async function saveDossierProgress(uid: string, progress: DossierProgress
 export async function loadDossierProgress(uid: string): Promise<DossierProgressData | null> {
   const data = await getUserData(uid);
   return (data as any)?.dossierProgress ?? null;
+}
+
+// ── Journal ("Mon journal") ──
+// Stored apart from /users/{uid}, in /journals/{uid}/entries/{YYYY-MM-DD}
+// (one document per day), with an owner-only rule and deliberately no admin
+// read: the answers are personal. See ADMIN.md for the rule.
+
+const journalEntriesCol = (uid: string) => collection(db, 'journals', uid, 'entries');
+
+export async function listJournalEntriesRemote(uid: string): Promise<RitualEntry[]> {
+  // From the server only: offline, getDocs would resolve with an EMPTY cached
+  // result, which the sync would read as "everything was deleted".
+  const snap = await getDocsFromServer(journalEntriesCol(uid));
+  return snap.docs.map((d) => {
+    const data = d.data() as any;
+    return {
+      date: d.id,
+      ts: typeof data.ts === 'number' ? data.ts : 0,
+      locale: data.locale === 'en' ? 'en' : 'fr',
+      question: typeof data.question === 'string' ? data.question : '',
+      answer: typeof data.answer === 'string' ? data.answer : '',
+    };
+  });
+}
+
+export async function putJournalEntryRemote(uid: string, e: RitualEntry): Promise<void> {
+  await setDoc(doc(db, 'journals', uid, 'entries', e.date), {
+    date: e.date, ts: e.ts, locale: e.locale, question: e.question, answer: e.answer,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteJournalEntryRemote(uid: string, date: string): Promise<void> {
+  await deleteDoc(doc(db, 'journals', uid, 'entries', date));
+}
+
+function commitWithTimeout(batch: ReturnType<typeof writeBatch>, ms: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'unavailable' })), ms);
+    batch.commit().then(
+      () => { clearTimeout(timer); resolve(); },
+      (e) => { clearTimeout(timer); reject(e); },
+    );
+  });
+}
+
+/** Delete every journal entry of this account (account deletion).
+ *  "permission-denied" means the rule was never published, so nothing could
+ *  have been stored online: treated as done. Any other error is thrown. */
+export async function deleteAllJournalEntriesRemote(uid: string): Promise<void> {
+  let snap;
+  try {
+    // Server only: offline this rejects ('unavailable'), which stops the
+    // account deletion before anything else is deleted.
+    snap = await getDocsFromServer(journalEntriesCol(uid));
+  } catch (e: any) {
+    if (e?.code === 'permission-denied') return;
+    throw e;
+  }
+  for (let i = 0; i < snap.docs.length; i += 450) {
+    const batch = writeBatch(db);
+    snap.docs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
+    await commitWithTimeout(batch, 15000);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -295,7 +751,10 @@ export interface ChildProfileEntry {
   secondType: number;
   secondPercent: number;
   wingType: number | null;
+  wingCertainty?: number;      // 0..100 (results since the wing is always asked)
   scores: Record<number, number>;
+  /** 2 when the result combines two parents' views ("regard croisé") */
+  raters?: number;
   /** Optional open-ended note from the parent */
   note?: string;
 }
@@ -306,6 +765,8 @@ export interface ChildProfile {
   name: string;
   /** Optional age at the time the profile was created */
   age?: number;
+  /** 'child' (default, legacy) or 'adult' for a typed close person (partner, friend…) */
+  kind?: 'child' | 'adult';
   history: ChildProfileEntry[];
 }
 
@@ -328,7 +789,7 @@ export async function saveChildProfiles(uid: string, profiles: ChildProfile[]): 
 // ═══════════════════════════════════════════════════════════════
 
 export interface FamilyMember {
-  kind: 'self' | 'child';
+  kind: 'self' | 'child' | 'adult';
   id: string;            // 'self' or the child profile id
   name: string;          // child name; '' for self (UI supplies the label)
   type: number | null;   // latest top type
@@ -336,14 +797,19 @@ export interface FamilyMember {
   age?: number;
   testCount: number;
   lastDate: string | null;
+  /** Child/adult: mode of the last quiz (child: 'enfant' since 4.1, before that its age band '5-8'|'9-12'|'13-17') */
+  lastMode?: string | null;
+  /** Self only: the latest "second avis" (how someone close sees you). */
+  secondOpinion?: { observerTop: number; agree: boolean; date: string; count: number } | null;
 }
 
 export interface Family {
   self: FamilyMember | null;
   children: FamilyMember[];
+  adults: FamilyMember[];   // typed close persons (partner, friend…)
 }
 
-/** Load the user's own type (latest 'adulte' quiz) + their saved child profiles. */
+/** Load the user's own type (latest 'adulte' quiz) + saved profiles (children + adults). */
 export async function loadFamily(uid: string): Promise<Family> {
   const data = await getUserData(uid);
   const selfResults = (data?.quizResults ?? []).filter(r => r.mode === 'adulte');
@@ -352,24 +818,36 @@ export async function loadFamily(uid: string): Promise<Family> {
     kind: 'self', id: 'self', name: '',
     type: lastSelf.topType, wingType: lastSelf.wingType ?? null,
     testCount: selfResults.length, lastDate: lastSelf.completedAt ?? null,
+    secondOpinion: null,
   } : null;
+  const opinions: SecondOpinionEntry[] = Array.isArray(data?.secondOpinions) ? data!.secondOpinions! : [];
+  if (self && opinions.length) {
+    const last = opinions[opinions.length - 1];
+    self.secondOpinion = {
+      // Compared with the type shown on your line (you may have retaken the quiz).
+      observerTop: last.observerTop, agree: last.observerTop === self.type, date: last.date, count: opinions.length,
+    };
+  }
   const profiles: ChildProfile[] = Array.isArray((data as any)?.childProfiles) ? (data as any).childProfiles : [];
-  const children: FamilyMember[] = profiles.map(p => {
+  const toMember = (p: ChildProfile, kind: 'child' | 'adult'): FamilyMember => {
     const hist = Array.isArray(p.history) ? p.history : [];
     const last = hist.length ? hist[hist.length - 1] : null;
     return {
-      kind: 'child' as const, id: p.id, name: p.name,
+      kind, id: p.id, name: p.name,
       type: last?.topType ?? null, wingType: last?.wingType ?? null,
       age: p.age, testCount: hist.length, lastDate: last?.date ?? null,
+      lastMode: last?.mode ?? null,
     };
-  });
-  return { self, children };
+  };
+  const children = profiles.filter(p => p.kind !== 'adult').map(p => toMember(p, 'child'));
+  const adults = profiles.filter(p => p.kind === 'adult').map(p => toMember(p, 'adult'));
+  return { self, children, adults };
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  ADMIN — list all users + launch subscribers
+//  ADMIN — list all users
 //  Requires Firestore rules that allow the admin email to read the
-//  full /users and /launch_subscribers collections.
+//  full /users collection.
 // ═══════════════════════════════════════════════════════════════
 
 export interface AdminUserRow {
@@ -383,10 +861,9 @@ export interface AdminUserRow {
   quizCount: number;          // # quizzes completed
   childProfilesCount: number; // # saved child profiles
   sherlockXp: number;         // Total XP in the Dossiers / Testez-vous game
-  unlockedFiches: number;     // Suspect files unlocked (Pokédex)
+  unlockedFiches: number;     // Suspect files unlocked (casebook)
   completedCases: number;     // Sherlock cases completed
   badges: number;             // Achievement badges earned
-  streak: number;             // Daily mission streak
   /** Aggregated engagement: 0 (none) → 100 (heavy user) */
   engagement: number;
   // Raw arrays — for the detail expand & for distribution stats
@@ -394,16 +871,6 @@ export interface AdminUserRow {
   childProfiles: ChildProfile[];
   // Screen views (incremented by trackScreen). May be undefined for legacy users.
   screenViews?: Partial<Record<Screen, number>>;
-}
-
-export interface AdminLaunchSubscriberRow {
-  deviceId: string;
-  email: string | null;
-  pushGranted: boolean;
-  pushToken: string | null;
-  locale: string;
-  platform: string;
-  subscribedAt: number | null;
 }
 
 function tsToMillis(value: any): number | null {
@@ -435,8 +902,10 @@ function computeEngagement(args: {
 
 /** Admin only — read all /users docs */
 export async function listAllUsers(): Promise<AdminUserRow[]> {
-  const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(500)));
-  return snap.docs.map(d => {
+  // Accounts only (sessions without an account are counted separately, see
+  // countAnonymousSessions). Sorted on the phone: no composite index needed.
+  const snap = await getDocs(query(collection(db, 'users'), where('provider', 'in', ['apple', 'google'])));
+  const rows = snap.docs.map(d => {
     const data = d.data() as any;
     const dossier = data.dossierProgress || {};
     const quizResults: QuizResult[] = Array.isArray(data.quizResults) ? data.quizResults : [];
@@ -445,7 +914,6 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
     const unlockedFiches = Array.isArray(dossier.unlockedFiches) ? dossier.unlockedFiches.length : 0;
     const completedCases = Array.isArray(dossier.completedCases) ? dossier.completedCases.length : 0;
     const badgesArr = Array.isArray(data.badges) ? data.badges : [];
-    const streak = typeof dossier.streak === 'number' ? dossier.streak : 0;
     const engagement = computeEngagement({
       quizCount: quizResults.length, childProfiles: childProfiles.length, sherlockXp,
       unlockedFiches, badges: badgesArr.length,
@@ -463,13 +931,19 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       unlockedFiches,
       completedCases,
       badges: badgesArr.length,
-      streak,
       engagement,
       quizResults,
       childProfiles,
       screenViews: data.screenViews && typeof data.screenViews === 'object' ? data.screenViews : {},
     };
   });
+  return rows.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+}
+
+/** Admin only — number of sessions without an account (one per install). */
+export async function countAnonymousSessions(): Promise<number> {
+  const agg = await getCountFromServer(query(collection(db, 'users'), where('provider', '==', 'anonymous')));
+  return agg.data().count;
 }
 
 /**
@@ -482,21 +956,4 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
  */
 export async function deleteUserDocAsAdmin(uid: string): Promise<void> {
   await deleteDoc(userDocRef(uid));
-}
-
-/** Admin only — read all /launch_subscribers docs */
-export async function listAllLaunchSubscribers(): Promise<AdminLaunchSubscriberRow[]> {
-  const snap = await getDocs(query(collection(db, 'launch_subscribers'), orderBy('subscribedAt', 'desc'), limit(500)));
-  return snap.docs.map(d => {
-    const data = d.data() as any;
-    return {
-      deviceId: d.id,
-      email: data.email ?? null,
-      pushGranted: !!data.pushGranted,
-      pushToken: data.pushToken ?? null,
-      locale: data.locale ?? 'unknown',
-      platform: data.platform ?? 'unknown',
-      subscribedAt: tsToMillis(data.subscribedAt),
-    };
-  });
 }

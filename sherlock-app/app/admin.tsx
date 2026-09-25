@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  Admin dashboard — only accessible to ADMIN_EMAILS in firebase.ts.
-//  Shows: total users, signed-in users with emails, launch subscribers.
+//  Shows: total users, signed-in users with emails, usage.
 // ═══════════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,12 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
   auth, isAdmin,
-  listAllUsers, listAllLaunchSubscribers, deleteUserDocAsAdmin,
-  type AdminUserRow, type AdminLaunchSubscriberRow,
+  listAllUsers, countAnonymousSessions, deleteUserDocAsAdmin,
+  type AdminUserRow,
 } from '../constants/firebase';
 
 function formatDate(ts: number | null): string {
-  if (!ts) return '—';
+  if (!ts) return '·';
   return new Date(ts).toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'short', year: '2-digit',
   });
@@ -30,7 +30,7 @@ function daysSince(ts: number | null): number | null {
 }
 
 function formatDuration(days: number | null): string {
-  if (days === null) return '—';
+  if (days === null) return '·';
   if (days === 0) return "aujourd'hui";
   if (days === 1) return 'hier';
   if (days < 30) return `il y a ${days}j`;
@@ -44,13 +44,14 @@ function formatDuration(days: number | null): string {
 
 /**
  * Display label for a user, taking the provider into account.
- * Apple "Hide my email" → relay address @privaterelay.appleid.com → label as "Apple privé"
+ * Apple "Hide my email" → relay address @privaterelay.appleid.com (or the newer
+ *   @private.icloud.com domain Apple is rolling out) → label as "Apple privé"
  * No email at all but signed in → "Apple sans email" / "Google sans email"
  * Truly anonymous → "anonyme"
  */
 function userDisplayLabel(u: AdminUserRow): string {
   if (u.email) {
-    if (u.email.endsWith('@privaterelay.appleid.com')) {
+    if (u.email.endsWith('@privaterelay.appleid.com') || u.email.endsWith('@private.icloud.com')) {
       return `${u.email}  ·  Apple privé`;
     }
     return u.email;
@@ -67,8 +68,8 @@ export default function AdminScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<AdminUserRow[]>([]);
-  const [subscribers, setSubscribers] = useState<AdminLaunchSubscriberRow[]>([]);
-  const [tab, setTab] = useState<'overview' | 'users' | 'subscribers'>('overview');
+  const [tab, setTab] = useState<'overview' | 'users'>('overview');
+  const [anonCount, setAnonCount] = useState(0);
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -83,12 +84,10 @@ export default function AdminScreen() {
     }
     if (!isRefresh) setLoading(true);
     try {
-      const [u, s] = await Promise.all([
-        listAllUsers(),
-        listAllLaunchSubscribers(),
-      ]);
-      setUsers(u);
-      setSubscribers(s);
+      // Sessions without an account (one per install) are counted apart, so
+      // the lists and stats stay about real accounts.
+      setUsers(await listAllUsers());
+      setAnonCount(await countAnonymousSessions().catch(() => 0));
       setError(null);
     } catch (e: any) {
       setError(e?.message || 'Erreur de chargement');
@@ -115,8 +114,6 @@ export default function AdminScreen() {
     apple: users.filter(u => u.provider === 'apple').length,
   };
   const usersWithEmail = users.filter(u => !!u.email);
-  const subsWithPush = subscribers.filter(s => s.pushGranted);
-  const subsWithEmail = subscribers.filter(s => !!s.email);
 
   // ── Action count (sum of measurable actions per user) ──
   const actionCount = (u: AdminUserRow) =>
@@ -134,7 +131,6 @@ export default function AdminScreen() {
   const newToday = users.filter(u => isOn(u.createdAt, todayStart)).length;
   const newYesterday = users.filter(u => isOn(u.createdAt, yesterdayStart)).length;
   const activeToday = users.filter(u => isOn(u.lastSeen, todayStart)).length;
-  const subsToday = subscribers.filter(s => isOn(s.subscribedAt, todayStart)).length;
 
   // 7-day signups sparkline (counts per day, last 7 days)
   const sparkline7d: number[] = [];
@@ -151,19 +147,12 @@ export default function AdminScreen() {
   }
   const sparkMax7d = Math.max(1, ...sparkline7d);
 
-  // ── Engagement funnel (5 stages from inscription to subscriber) ──
+  // ── Engagement funnel (3 stages: inscription → quiz → ≥ 5 actions) ──
   const usedQuizCount = users.filter(u => u.quizCount > 0).length;
-  const usedAnyTool = users.filter(u =>
-    u.quizCount > 0 || u.childProfilesCount > 0 || u.completedCases > 0 || u.sherlockXp > 0
-  ).length;
-  // We map the deviceId of subscribers to user emails to estimate overlap.
-  // Imperfect (deviceId is a random string, not the auth uid) but okay.
-  const subscribersCount = subscribers.length;
   const funnel = [
-    { label: 'Inscrits',        value: totalUsers,    color: colors.accent },
+    { label: 'Inscrits',        value: totalUsers,    color: colors.accentStrong },
     { label: 'Quiz lancé',      value: usedQuizCount, color: '#c0713a' },
     { label: '≥ 5 actions',     value: activeUsers,   color: '#7b8e6e' },
-    { label: 'Sortie souscrite', value: subscribersCount, color: '#8b6ca7' },
   ];
   const funnelMax = Math.max(1, totalUsers);
 
@@ -178,7 +167,6 @@ export default function AdminScreen() {
   // Counts of users who visited each screen at least once (from screenViews map).
   const screensList: Array<{ key: keyof NonNullable<AdminUserRow['screenViews']>; emoji: string; label: string }> = [
     { key: 'home',        emoji: '🏠', label: 'Accueil' },
-    { key: 'pilot',       emoji: '📖', label: 'Pilote (Chap. 1)' },
     { key: 'quiz',        emoji: '🕐', label: 'Quiz' },
     { key: 'profiles',    emoji: '👥', label: 'Profils' },
     { key: 'celebrities', emoji: '🔎', label: 'Testez-vous' },
@@ -295,9 +283,8 @@ export default function AdminScreen() {
       <View style={styles.center}>
         <Text style={styles.errorText}>{error}</Text>
         <Text style={styles.errorSub}>
-          Vérifiez vos règles Firestore : l'admin doit pouvoir lire les collections
-          {' '}<Text style={{ fontWeight: '700' }}>users</Text> et
-          {' '}<Text style={{ fontWeight: '700' }}>launch_subscribers</Text>.
+          Vérifiez vos règles Firestore : l'admin doit pouvoir lire la collection
+          {' '}<Text style={{ fontWeight: '700' }}>users</Text>.
         </Text>
       </View>
     );
@@ -339,14 +326,14 @@ export default function AdminScreen() {
 
       {/* Tabs */}
       <View style={styles.tabs}>
-        {(['overview', 'users', 'subscribers'] as const).map(k => (
+        {(['overview', 'users'] as const).map(k => (
           <Pressable
             key={k}
             onPress={() => setTab(k)}
             style={[styles.tab, tab === k && styles.tabActive]}
           >
             <Text style={[styles.tabText, tab === k && styles.tabTextActive]}>
-              {k === 'overview' ? 'Vue d\'ensemble' : k === 'users' ? `Comptes (${totalUsers})` : `Abonnés (${subscribers.length})`}
+              {k === 'overview' ? 'Vue d\'ensemble' : `Comptes (${totalUsers})`}
             </Text>
           </Pressable>
         ))}
@@ -363,6 +350,11 @@ export default function AdminScreen() {
                 {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </Text>
             </View>
+            {anonCount > 0 && (
+              <Text style={styles.heroDelta}>
+                + {anonCount} session{anonCount > 1 ? 's' : ''} sans compte (non comptées ci-dessous)
+              </Text>
+            )}
             <View style={styles.heroMetrics}>
               <View style={styles.heroMetric}>
                 <Text style={styles.heroMetricValue}>+{newToday}</Text>
@@ -379,11 +371,6 @@ export default function AdminScreen() {
                 <Text style={styles.heroMetricValue}>{activeToday}</Text>
                 <Text style={styles.heroMetricLabel}>actif{activeToday > 1 ? 's' : ''}</Text>
                 <Text style={styles.heroDelta}>{activeToday > 0 ? 'aujourd\'hui' : 'silence'}</Text>
-              </View>
-              <View style={styles.heroMetric}>
-                <Text style={styles.heroMetricValue}>+{subsToday}</Text>
-                <Text style={styles.heroMetricLabel}>sortie</Text>
-                <Text style={styles.heroDelta}>nouvelle{subsToday > 1 ? 's' : ''} insc.</Text>
               </View>
             </View>
 
@@ -407,7 +394,7 @@ export default function AdminScreen() {
             <View style={styles.sparkFooter}>
               <Text style={styles.sparkLabel}>il y a 7j</Text>
               <Text style={styles.sparkSummary}>
-                <Text style={{ color: colors.accent, fontWeight: '700' }}>+{signups7d}</Text>
+                <Text style={{ color: colors.accentText, fontWeight: '700' }}>+{signups7d}</Text>
                 {' sur 7j'}
                 {signupsPrev7d > 0 && (
                   <Text style={{ color: colors.textMuted }}>
@@ -561,7 +548,7 @@ export default function AdminScreen() {
                     })}
                   </Text>
                   <Text style={styles.chartTooltipValue}>
-                    <Text style={{ fontWeight: '700', color: colors.accent }}>
+                    <Text style={{ fontWeight: '700', color: colors.accentText }}>
                       {signupHistory[chartSelectedIdx].count}
                     </Text>
                     {' nouveau'}{signupHistory[chartSelectedIdx].count !== 1 ? 'x' : ''}
@@ -722,20 +709,6 @@ export default function AdminScreen() {
             <Ionicons name="mail-outline" size={18} color={colors.accent} />
             <Text style={styles.exportBtnText}>Exporter les emails des comptes ({usersWithEmail.length})</Text>
           </Pressable>
-          <Pressable
-            onPress={() => exportEmails(subsWithEmail.map(s => s.email!).filter(Boolean), 'Emails sortie')}
-            style={({ pressed }) => [styles.exportBtn, pressed && { opacity: 0.85 }]}
-          >
-            <Ionicons name="mail-outline" size={18} color={colors.accent} />
-            <Text style={styles.exportBtnText}>Exporter les emails "sortie" ({subsWithEmail.length})</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => exportEmails(subscribers.map(s => s.pushToken!).filter(Boolean), 'Push tokens sortie')}
-            style={({ pressed }) => [styles.exportBtn, pressed && { opacity: 0.85 }]}
-          >
-            <Ionicons name="notifications-outline" size={18} color={colors.accent} />
-            <Text style={styles.exportBtnText}>Exporter les push tokens ({subscribers.filter(s => s.pushToken).length})</Text>
-          </Pressable>
         </View>
       )}
 
@@ -765,7 +738,7 @@ export default function AdminScreen() {
           </View>
 
           <Text style={styles.legendText}>
-            Légende — 🕐 quiz · 👥 profils enfants · 🔎 XP Sherlock · 📔 fiches Pokédex/45 · 🔥 streak · 🏅 badges
+            Légende : 🕐 quiz · 👥 profils enregistrés · 🔎 XP Sherlock · 📔 fiches du carnet/45 · 🏅 badges
           </Text>
           <Text style={styles.legendNote}>
             ⓘ Les comptes "sans email" sont d'anciens utilisateurs (avant le commit qui sauvegarde l'email). Le champ se backfille automatiquement à leur prochain login.
@@ -837,14 +810,9 @@ export default function AdminScreen() {
                     <View style={styles.chip}>
                       <Text style={styles.chipText}>📔 {u.unlockedFiches}/45</Text>
                     </View>
-                    {u.streak > 0 && (
-                      <View style={[styles.chip, { backgroundColor: '#ff6b3522' }]}>
-                        <Text style={[styles.chipText, { color: '#e07b54' }]}>🔥 {u.streak}j</Text>
-                      </View>
-                    )}
                     {u.badges > 0 && (
                       <View style={[styles.chip, { backgroundColor: colors.accentFill }]}>
-                        <Text style={[styles.chipText, { color: colors.accent }]}>🏅 {u.badges}</Text>
+                        <Text style={[styles.chipText, { color: colors.accentText }]}>🏅 {u.badges}</Text>
                       </View>
                     )}
                   </View>
@@ -873,13 +841,13 @@ export default function AdminScreen() {
                       <View style={styles.detailRow}>
                         <Text style={styles.detailLabel}>Date d'inscription</Text>
                         <Text style={styles.detailValue}>
-                          {formatDate(u.createdAt)} ({ageDays !== null ? `${ageDays}j` : '—'})
+                          {formatDate(u.createdAt)} ({ageDays !== null ? `${ageDays}j` : '·'})
                         </Text>
                       </View>
                       <View style={styles.detailRow}>
                         <Text style={styles.detailLabel}>Dernière session</Text>
                         <Text style={styles.detailValue}>
-                          {formatDate(u.lastSeen)} ({lastDays !== null ? `il y a ${lastDays}j` : '—'})
+                          {formatDate(u.lastSeen)} ({lastDays !== null ? `il y a ${lastDays}j` : '·'})
                         </Text>
                       </View>
                       <View style={styles.detailRow}>
@@ -898,7 +866,7 @@ export default function AdminScreen() {
                               <Text style={styles.detailQuizDate}>
                                 {q.completedAt ? new Date(q.completedAt).toLocaleDateString('fr-FR', {
                                   day: '2-digit', month: 'short',
-                                }) : '—'}
+                                }) : '·'}
                               </Text>
                               <Text style={styles.detailQuizMode}>{q.mode}</Text>
                               <View style={[styles.distNum, { backgroundColor: TYPE_COLORS[q.topType] || colors.accent }]}>
@@ -922,7 +890,7 @@ export default function AdminScreen() {
                             return (
                               <View key={c.id} style={styles.detailQuizRow}>
                                 <Text style={styles.detailQuizDate}>
-                                  {c.age ? `${c.age} ans` : '—'}
+                                  {c.age ? `${c.age} ans` : '·'}
                                 </Text>
                                 <Text style={[styles.detailQuizMode, { flex: 1 }]} numberOfLines={1}>
                                   {c.name}
@@ -937,7 +905,7 @@ export default function AdminScreen() {
                                     </Text>
                                   </>
                                 ) : (
-                                  <Text style={styles.detailQuizName}>—</Text>
+                                  <Text style={styles.detailQuizName}>·</Text>
                                 )}
                               </View>
                             );
@@ -954,7 +922,7 @@ export default function AdminScreen() {
                             (e as any)?.stopPropagation?.();
                             Alert.alert(
                               'Supprimer ce doc Firestore ?',
-                              `Cela supprime le document /users/${u.uid} de Firestore.\n\nUtile uniquement pour nettoyer les "orphelins" — comptes Auth déjà supprimés mais dont le doc Firestore subsiste.\n\nIRRÉVERSIBLE.`,
+                              `Cela supprime le document /users/${u.uid} de Firestore.\n\nUtile uniquement pour nettoyer les "orphelins" : comptes Auth déjà supprimés mais dont le doc Firestore subsiste.\n\nIRRÉVERSIBLE.`,
                               [
                                 { text: 'Annuler', style: 'cancel' },
                                 {
@@ -994,26 +962,6 @@ export default function AdminScreen() {
         </View>
       )}
 
-      {tab === 'subscribers' && (
-        <View style={styles.section}>
-          <Text style={styles.listLabel}>Inscrits "Sortie du livre" ({subscribers.length})</Text>
-          {subscribers.map(s => (
-            <View key={s.deviceId} style={styles.row}>
-              <View style={[styles.rowDot, {
-                backgroundColor: s.pushGranted ? colors.accent : colors.textDim,
-              }]} />
-              <View style={styles.rowBody}>
-                <Text style={styles.rowTitle}>
-                  {s.email ?? `(sans email · ${s.platform})`}
-                </Text>
-                <Text style={styles.rowSub}>
-                  {s.locale} · {s.platform} · {s.pushGranted ? 'push ✓' : 'push ✗'} · {formatDate(s.subscribedAt)}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
     </ScrollView>
   );
 }
@@ -1060,7 +1008,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
   },
-  tabTextActive: { color: colors.accent, fontWeight: '700' },
+  tabTextActive: { color: colors.accentText, fontWeight: '700' },
 
   section: { paddingHorizontal: spacing.md },
 
@@ -1125,11 +1073,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 11,
     color: colors.textSoft, fontWeight: '600',
   },
-  row: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 0.5, borderBottomColor: colors.border,
-  },
   rowDot: {
     width: 10, height: 10, borderRadius: 5,
   },
@@ -1169,7 +1112,7 @@ const styles = StyleSheet.create({
   },
   heroEyebrow: {
     fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.5, fontWeight: '700',
-    color: colors.accent,
+    color: colors.accentText,
   },
   heroDate: {
     fontFamily: fonts.serifItalic, fontSize: 12, color: colors.textMuted,
@@ -1342,7 +1285,7 @@ const styles = StyleSheet.create({
   chartStat: { alignItems: 'center' },
   chartStatValue: {
     fontFamily: fonts.serif, fontSize: 18, fontWeight: '700',
-    color: colors.accent,
+    color: colors.accentText,
   },
   chartStatLabel: {
     fontFamily: fonts.sans, fontSize: 10,
@@ -1401,7 +1344,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 13, color: colors.text,
   },
   usageValue: {
-    fontFamily: fonts.serif, fontSize: 18, color: colors.accent, fontWeight: '700',
+    fontFamily: fonts.serif, fontSize: 18, color: colors.accentText, fontWeight: '700',
     minWidth: 50, textAlign: 'right',
   },
   usagePct: {
@@ -1451,7 +1394,7 @@ const styles = StyleSheet.create({
     lineHeight: 17, marginBottom: 2,
   },
   legendHint: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.accent,
+    fontFamily: fonts.sans, fontSize: 11, color: colors.accentText,
     fontStyle: 'italic', marginBottom: spacing.sm,
   },
   legendNote: {
@@ -1500,7 +1443,7 @@ const styles = StyleSheet.create({
   detailSection: { marginTop: spacing.md },
   detailSectionLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 0.5, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 0.5, textTransform: 'uppercase',
     marginBottom: spacing.xs,
   },
   detailQuizRow: {

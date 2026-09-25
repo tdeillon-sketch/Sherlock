@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { DOSSIERS, RANKS, type DossierCase, type Dossier } from '../constants/dossiers';
 import { auth } from '../constants/firebase';
 import { saveDossierProgress, loadDossierProgress } from '../constants/firebase';
@@ -10,6 +11,8 @@ export interface DossierProgress {
   wrongCases: string[];       // cases the user has answered WRONG and not yet redeemed
   unlockedFiches: string[];
   totalXP: number;
+  // Legacy fields from the removed "Mission du jour" (daily 3-case session).
+  // Kept so progress saved by older versions loads and saves back unchanged.
   dailyLastDate: string | null;
   dailyCompleted: boolean;
   streak: number;
@@ -26,21 +29,20 @@ export type GameScreen =
   | 'hub'
   | 'playing'
   | 'reveal'
-  | 'session_summary'  // After daily mission (3 cases) done
   | 'collection'
   | 'fiche';
 
-// Historical note: there used to be a third mode 'rapide' (3 cases on-demand
-// with combo bonus). It has been merged INTO 'daily' to simplify the hub —
-// the daily mission now IS the 3-case session that gives combo + streak.
-export type GameMode = 'entrainement' | 'daily';
+// Historical note: there used to be a 'rapide' mode, then a 'daily' mission
+// (3 cases, combo bonus, streak). Both were removed; only the continuous
+// training mode remains.
+export type GameMode = 'entrainement';
 
 export interface PlayState {
   mode: GameMode;
   dossier: Dossier;        // dossier the case belongs to (for back-compat with case rendering)
   caseIndex: number;       // index within dossier
   currentCase: DossierCase;
-  // Session-level (daily=3 cases / entrainement=continuous)
+  // Session-level (continuous training)
   comboCount: number;      // current consecutive correct in this session
   casesPlayedInSession: number;
   // Per-case
@@ -50,16 +52,6 @@ export interface PlayState {
   xpEarned: number;
   fauxAmisAnswers: { a: number | null; b: number | null };
   detailAnswered: number | null;
-}
-
-// Session summary (after daily mission — 3 cases)
-export interface SessionSummary {
-  mode: GameMode;
-  cases: number;
-  correct: number;
-  xpTotal: number;
-  comboBonus: number;
-  bestCombo: number;
 }
 
 const DEFAULT_PROGRESS: DossierProgress = {
@@ -88,10 +80,6 @@ export function getRankInfo(xp: number): RankInfo {
     progress = Math.min(done / span, 1);
   }
   return { current: currentRank, next: nextRank, progress };
-}
-
-function getTodayString(): string {
-  return new Date().toISOString().split('T')[0];
 }
 
 // All cases as a flat pool: { dossier, caseIndex }
@@ -149,42 +137,93 @@ export function useDossier() {
   const [screen, setScreen] = useState<GameScreen>('hub');
   const [progress, setProgress] = useState<DossierProgress>(DEFAULT_PROGRESS);
   const [playState, setPlayState] = useState<PlayState | null>(null);
-  const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
   const [selectedFicheId, setSelectedFicheId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [xpGainAnim, setXpGainAnim] = useState<number | null>(null);
 
-  // Session accumulators (daily 3-case mission; reset & accumulate per session)
-  const [sessionCorrect, setSessionCorrect] = useState(0);
-  const [sessionXP, setSessionXP] = useState(0);
-  const [sessionMaxCombo, setSessionMaxCombo] = useState(0);
+  // Cases already played in the current session (so the next pick avoids them)
   const [sessionPlayedIds, setSessionPlayedIds] = useState<string[]>([]);
   // Rank-up celebration: set to the new rank when XP crosses a threshold.
   const [rankUp, setRankUp] = useState<RankInfo['current'] | null>(null);
 
-  // ── Load progress from Firebase ──
-  useEffect(() => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) { setLoading(false); return; }
+  // ── Progress follows the signed-in account ──
+  // Loaded for the current uid when the tab gains focus (e.g. after the
+  // sign-in modal closes on another account); writes go only to the uid the
+  // progress was loaded for, never to another account. If the load fails
+  // (offline), play goes on locally and what was gained is merged into the
+  // saved progress as soon as a later load succeeds.
+  const loadedUid = useRef<string | null>(null);  // saved progress known for this uid
+  const stateUid = useRef<string | null>(null);   // uid the on-screen progress belongs to
+  const firstLoad = useRef(true);
+  const loadingRef = useRef(false);
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+
+  // Local play started from DEFAULT_PROGRESS: its XP and cases are exactly
+  // what was gained, so they add to the saved progress.
+  const mergeGained = (saved: DossierProgress, gained: DossierProgress): DossierProgress => {
+    const union = (x: string[], y: string[]) => Array.from(new Set([...(x ?? []), ...(y ?? [])]));
+    const completedCases = union(saved.completedCases, gained.completedCases);
+    const done = new Set(completedCases);
+    return {
+      ...saved,
+      completedCases,
+      unlockedFiches: union(saved.unlockedFiches, gained.unlockedFiches),
+      wrongCases: union(saved.wrongCases, gained.wrongCases).filter(id => !done.has(id)),
+      totalXP: (saved.totalXP ?? 0) + (gained.totalXP ?? 0),
+      bestCombo: Math.max(saved.bestCombo ?? 0, gained.bestCombo ?? 0),
+    };
+  };
+
+  const load = useCallback((uid: string, keepLocal: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     loadDossierProgress(uid)
       .then(p => {
-        if (p) {
-          setProgress({
-            ...DEFAULT_PROGRESS,
-            ...p,
-            bestCombo: p.bestCombo ?? 0,
-            wrongCases: p.wrongCases ?? [],
-          });
-        }
+        if (auth.currentUser?.uid !== uid) return;
+        const saved: DossierProgress = p
+          ? { ...DEFAULT_PROGRESS, ...p, bestCombo: p.bestCombo ?? 0, wrongCases: p.wrongCases ?? [] }
+          : DEFAULT_PROGRESS;
+        const next = keepLocal ? mergeGained(saved, progressRef.current) : saved;
+        setProgress(next);
+        loadedUid.current = uid;
+        if (keepLocal) saveDossierProgress(uid, next).catch(() => {});
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => { loadingRef.current = false; firstLoad.current = false; setLoading(false); });
   }, []);
+
+  const syncUser = useCallback(() => {
+    const uid = auth.currentUser?.uid ?? null;
+    if (uid && uid === loadedUid.current) return;
+    if (uid && uid === stateUid.current) {
+      // Same account, saved progress still unknown (a load failed): retry,
+      // keeping what was played meanwhile.
+      load(uid, true);
+      return;
+    }
+    // Another account (or none): start from its own progress.
+    stateUid.current = uid;
+    loadedUid.current = null;
+    setProgress(DEFAULT_PROGRESS);
+    setPlayState(null);
+    setScreen('hub');
+    setSessionPlayedIds([]);
+    if (!uid) { setLoading(false); return; }
+    // Loading view only the first time: later reloads (account switch) keep
+    // the hub on screen, so an action resumed after sign-in still finds it.
+    if (firstLoad.current) setLoading(true);
+    load(uid, false);
+  }, [load]);
+  useFocusEffect(syncUser);
 
   const persistProgress = useCallback((p: DossierProgress) => {
     const uid = auth.currentUser?.uid;
-    if (uid) saveDossierProgress(uid, p).catch(() => {});
-  }, []);
+    if (!uid) return;
+    if (uid === loadedUid.current) { saveDossierProgress(uid, p).catch(() => {}); return; }
+    // Saved progress not known yet for this account: try again (merging).
+    if (uid === stateUid.current) load(uid, true);
+  }, [load]);
 
   // ── Navigation ──
   const openCollection = useCallback(() => setScreen('collection'), []);
@@ -195,15 +234,10 @@ export function useDossier() {
   const goHub = useCallback(() => {
     setScreen('hub');
     setPlayState(null);
-    setSessionSummary(null);
-    setSessionCorrect(0);
-    setSessionXP(0);
-    setSessionMaxCombo(0);
     setSessionPlayedIds([]);
   }, []);
   const goBack = useCallback(() => {
     if (screen === 'fiche') setScreen('collection');
-    else if (screen === 'session_summary') goHub();
     else if (screen === 'collection') setScreen('hub');
     else if (screen === 'playing' || screen === 'reveal') goHub();
     else setScreen('hub');
@@ -229,39 +263,12 @@ export function useDossier() {
     setScreen('playing');
   }, []);
 
-  // ── Public: start each mode ──
-
-  // Shared reset helper so "start daily" and "start entrainement" don't drift.
-  const resetSessionAccumulators = useCallback(() => {
-    setSessionCorrect(0);
-    setSessionXP(0);
-    setSessionMaxCombo(0);
-    setSessionPlayedIds([]);
-  }, []);
-
+  // ── Public: start training ──
   const startEntrainement = useCallback(() => {
-    resetSessionAccumulators();
+    setSessionPlayedIds([]);
     const pick = pickSmartCase(progress.completedCases, progress.wrongCases);
     if (pick) launchCase('entrainement', pick.dossier, pick.caseIndex, 0, 0);
-  }, [progress.completedCases, progress.wrongCases, launchCase, resetSessionAccumulators]);
-
-  // Daily mission = 3 cases back-to-back with combo bonus + streak.
-  // Uses pickSmartCase (personalised) rather than a deterministic same-for-all
-  // case, so each user gets fresh variety + priority to their "wrong" pool.
-  const startDaily = useCallback(() => {
-    // Defensive guard: if the daily was already completed today, ignore.
-    // (The UI already disables the button, but this prevents a replay on edge cases.)
-    const today = getTodayString();
-    if (progress.dailyCompleted && progress.dailyLastDate === today) return;
-    resetSessionAccumulators();
-    const pick = pickSmartCase(progress.completedCases, progress.wrongCases);
-    if (pick) launchCase('daily', pick.dossier, pick.caseIndex, 0, 0);
-  }, [progress.dailyCompleted, progress.dailyLastDate, progress.completedCases, progress.wrongCases, launchCase, resetSessionAccumulators]);
-
-  const isDailyAvailable = useCallback((): boolean => {
-    const today = getTodayString();
-    return !(progress.dailyCompleted && progress.dailyLastDate === today);
-  }, [progress]);
+  }, [progress.completedCases, progress.wrongCases, launchCase]);
 
   // ── Enquête: reveal next indice ──
   const revealNextIndice = useCallback(() => {
@@ -308,7 +315,7 @@ export function useDossier() {
     });
   }, []);
 
-  // ── Confirm → reveal screen, persist progress, update combo/streak ──
+  // ── Confirm → reveal screen, persist progress, update combo ──
   const confirmAndReveal = useCallback(() => {
     if (!playState?.answered) return;
     setScreen('reveal');
@@ -322,10 +329,6 @@ export function useDossier() {
     const newCombo = isCorrect ? playState.comboCount + 1 : 0;
     setPlayState(prev => prev ? { ...prev, comboCount: newCombo } : prev);
 
-    // Track session accumulators
-    if (isCorrect) setSessionCorrect(n => n + 1);
-    setSessionXP(n => n + xpForThis);
-    setSessionMaxCombo(n => Math.max(n, newCombo));
     setSessionPlayedIds(arr => [...arr, c.id]);
 
     // Persist progress
@@ -352,11 +355,6 @@ export function useDossier() {
         setRankUp(getRankInfo(newXP).current);
       }
 
-      // NOTE: daily streak + dailyCompleted are NOT updated here anymore.
-      // They are bumped once at the END of the 3-case daily session inside
-      // `nextCase`, because the user requested streak to count as soon as
-      // the mission is attempted (even if some answers are wrong).
-
       const newBestCombo = Math.max(prev.bestCombo, newCombo);
 
       const updated: DossierProgress = {
@@ -376,68 +374,14 @@ export function useDossier() {
     if (xpForThis > 0) setXpGainAnim(xpForThis);
   }, [playState, persistProgress]);
 
-  // ── Next case in session, or end session ──
-  // Daily mission = 3 cases with combo bonus + streak.
-  // Entrainement = continuous, no limit.
+  // ── Next case (training is continuous) ──
+  // Picks the next case, avoiding the ones already played in this session.
   const nextCase = useCallback(() => {
     if (!playState) { goHub(); return; }
-    const newPlayedCount = playState.casesPlayedInSession + 1;
-
-    // Daily mission ends after 3 cases — compute combo bonus, bump streak, show summary.
-    if (playState.mode === 'daily' && newPlayedCount >= 3) {
-      // Combo bonus tiered on max combo reached during the session.
-      // 3/3 correct → big bonus. 2 in a row → small bonus. Else nothing.
-      // Rationale: the streak itself rewards *showing up*; the combo bonus
-      // rewards *performing well*. "moins de points" if you miss.
-      const comboBonus = sessionMaxCombo >= 3 ? 200 : sessionMaxCombo === 2 ? 50 : 0;
-
-      // Update progress atomically:
-      //  - Add combo bonus to XP
-      //  - Mark daily as completed for today (disables the button)
-      //  - Bump streak: +1 if previous completion was yesterday, else restart at 1.
-      //    Streak bumps REGARDLESS of correct count — the ritual is what matters.
-      const today = getTodayString();
-      setProgress(prev => {
-        // Guard: if somehow we already bumped today, don't double-bump.
-        if (prev.dailyCompleted && prev.dailyLastDate === today) {
-          const updated = { ...prev, totalXP: prev.totalXP + comboBonus };
-          persistProgress(updated);
-          return updated;
-        }
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        const newStreak = prev.dailyLastDate === yesterdayStr ? prev.streak + 1 : 1;
-        const updated: DossierProgress = {
-          ...prev,
-          totalXP: prev.totalXP + comboBonus,
-          dailyCompleted: true,
-          dailyLastDate: today,
-          streak: newStreak,
-        };
-        persistProgress(updated);
-        return updated;
-      });
-
-      setSessionSummary({
-        mode: 'daily',
-        cases: 3,
-        correct: sessionCorrect,
-        xpTotal: sessionXP + comboBonus,
-        comboBonus,
-        bestCombo: sessionMaxCombo,
-      });
-      setScreen('session_summary');
-      setPlayState(null);
-      return;
-    }
-
-    // Otherwise (daily < 3, or entrainement): pick next case, avoiding the ones
-    // already played in the current session so the user doesn't repeat.
     const pick = pickSmartCase(progress.completedCases, progress.wrongCases, sessionPlayedIds);
     if (!pick) { goHub(); return; }
-    launchCase(playState.mode, pick.dossier, pick.caseIndex, playState.comboCount, newPlayedCount);
-  }, [playState, sessionMaxCombo, sessionCorrect, sessionXP, sessionPlayedIds, progress.completedCases, progress.wrongCases, launchCase, persistProgress, goHub]);
+    launchCase(playState.mode, pick.dossier, pick.caseIndex, playState.comboCount, playState.casesPlayedInSession + 1);
+  }, [playState, sessionPlayedIds, progress.completedCases, progress.wrongCases, launchCase, goHub]);
 
   // Quit the current session early (returns to hub)
   const quitSession = useCallback(() => {
@@ -446,11 +390,11 @@ export function useDossier() {
 
   return {
     // State
-    screen, progress, playState, sessionSummary, selectedFicheId, loading, xpGainAnim,
+    screen, progress, playState, selectedFicheId, loading, xpGainAnim,
     // Navigation
     openCollection, openFiche, goHub, goBack,
-    // Modes (rapide was merged into daily — daily now runs 3 cases)
-    startEntrainement, startDaily, isDailyAvailable,
+    // Mode
+    startEntrainement,
     // Gameplay
     revealNextIndice, submitAnswer, submitFauxAmis, confirmAndReveal, nextCase, quitSession,
     // Helpers

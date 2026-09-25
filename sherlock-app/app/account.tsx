@@ -6,35 +6,47 @@
 //  the entry point for that.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator,
+  View, Text, Pressable, StyleSheet, Alert, ScrollView, ActivityIndicator, Platform,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { onIdTokenChanged } from 'firebase/auth';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, trackScreen,
+  auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, isAnonymousUser, trackScreen,
 } from '../constants/firebase';
+import { openSignIn, requireReauth } from '../constants/authGate';
 import { useT } from '../i18n';
+import { prepareJournalSignOut, clearLocalJournal, stopJournalSync } from '../constants/ritualJournal';
+import { FEEDBACK_EMAIL, openFeedbackEmail } from '../utils/feedback';
 
 export default function AccountScreen() {
   const [busy, setBusy] = useState<null | 'signout' | 'delete'>(null);
   const { t, locale, setLocale } = useT();
   useEffect(() => { trackScreen('account').catch(() => {}); }, []);
+  // Re-read the account after a sign-in / link (a link keeps the same user
+  // object, so nothing else would redraw this screen).
+  const [, redraw] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => onIdTokenChanged(auth, () => redraw()), []);
+  useFocusEffect(useCallback(() => { redraw(); }, []));
 
   const user = auth.currentUser;
+  const anonymous = isAnonymousUser(user);
   const provider = isAppleSignedIn(user) ? 'Apple'
                  : isGoogleSignedIn(user) ? 'Google'
-                 : '—';
+                 : '';
 
   const handleSignOut = async () => {
     if (busy) return;
     setBusy('signout');
     try {
+      // Send pending journal answers first, then drop the phone copy.
+      const uid = auth.currentUser?.uid;
+      if (uid) await prepareJournalSignOut(uid);
+      // The root layout then starts a fresh session without an account and
+      // remounts every screen (nothing of this account stays in memory).
       await signOut();
-      // Reset the navigation stack — root layout will detect signed-out
-      // state and render the AuthScreen.
-      router.replace('/');
     } catch (e: any) {
       Alert.alert(t('account.signOutErrorTitle'), e?.message ?? t('account.signOutErrorBody'));
     } finally {
@@ -42,35 +54,66 @@ export default function AccountScreen() {
     }
   };
 
-  const performDelete = async () => {
+  const performDelete = async (afterReauth = false) => {
+    // Confirm the identity FIRST, before anything is deleted (skipped right
+    // after that confirmation, so nothing can loop it):
+    //  - Apple (on iPhone): always. Revoking Sign in with Apple (App Store
+    //    rule) needs the one-time code of an Apple sheet shown just before.
+    //  - Otherwise, when signed in a while ago (Firebase would refuse the
+    //    final step; a phone clock ahead can't loop it either).
+    const current = auth.currentUser;
+    if (current && !current.isAnonymous && !afterReauth) {
+      let confirm = Platform.OS === 'ios' && isAppleSignedIn(current);
+      if (!confirm) {
+        const info = await current.getIdTokenResult().catch(() => null);
+        const age = info ? Date.now() - Date.parse(info.authTime) : Infinity;
+        confirm = !(age < 4 * 60 * 1000);
+      }
+      // Straight to the confirmation screen: it says why, and that the
+      // deletion finishes right after.
+      if (confirm) { requireReauth(() => { performDelete(true); }); return; }
+    }
     setBusy('delete');
+    const uid = auth.currentUser?.uid;
+    const hadAccount = !isAnonymousUser(auth.currentUser);
+    // No journal upload may land after the online copy has been listed.
+    if (uid) stopJournalSync(uid);
     try {
-      await deleteAccount();
-      // Auth listener in _layout will pick up the signed-out state
-      // and render the AuthScreen.
-      router.replace('/');
+      const { appleRevoked } = await deleteAccount();
+      if (uid) await clearLocalJournal(uid);
+      // Always say it is done (the app then looks as before: a fresh session
+      // without an account). Apple could not be told (offline, timeout): say
+      // where the user can remove 5herlock from their Apple Account.
+      if (!hadAccount) Alert.alert(t('account.erasedTitle'), t('account.erasedBody'));
+      else Alert.alert(t('account.deletedTitle'), t(appleRevoked === false ? 'account.deletedAppleBody' : 'account.deletedBody'));
+      // The root layout starts a fresh session without an account and
+      // remounts every screen.
     } catch (e: any) {
       const code = e?.code as string | undefined;
       if (code === 'auth/requires-recent-login') {
+        // The data was already deleted online before this error. Firebase
+        // wants a recent sign-in to delete the account itself: confirm the
+        // identity with the same Apple / Google account, then finish. (For
+        // Apple, that sheet also brings a new code: the retry revokes too.)
+        if (uid) await clearLocalJournal(uid);
+        // Without an account there is nothing to confirm: the data is gone,
+        // start a fresh session.
+        if (isAnonymousUser(auth.currentUser)) {
+          await signOut().catch(() => {});
+          Alert.alert(t('account.erasedTitle'), t('account.erasedBody'));
+          return;
+        }
         Alert.alert(
           t('account.reauthTitle'),
           t('account.reauthBody'),
           [
-            {
-              text: t('account.reauthAction'),
-              onPress: async () => {
-                try { await signOut(); } catch {}
-                router.replace('/');
-              },
-            },
+            { text: t('account.reauthAction'), onPress: () => requireReauth(() => { performDelete(true); }) },
             { text: t('account.cancel'), style: 'cancel' },
           ],
         );
       } else {
-        Alert.alert(
-          t('account.deleteFailedTitle'),
-          e?.message ?? t('account.deleteFailedBody'),
-        );
+        // Offline or server error: nothing was deleted, the user can retry.
+        Alert.alert(t('account.deleteFailedTitle'), t('account.deleteFailedBody'));
       }
     } finally {
       setBusy(null);
@@ -80,8 +123,8 @@ export default function AccountScreen() {
   const handleDelete = () => {
     if (busy) return;
     Alert.alert(
-      t('account.deleteConfirmTitle'),
-      t('account.deleteConfirmBody'),
+      t(anonymous ? 'account.eraseConfirmTitle' : 'account.deleteConfirmTitle'),
+      t(anonymous ? 'account.eraseConfirmBody' : 'account.deleteConfirmBody'),
       [
         { text: t('account.cancel'), style: 'cancel' },
         {
@@ -91,13 +134,13 @@ export default function AccountScreen() {
             // Second confirmation, per Apple's "prevent accidental deletion"
             Alert.alert(
               t('account.deleteConfirm2Title'),
-              t('account.deleteConfirm2Body'),
+              t(anonymous ? 'account.eraseConfirm2Body' : 'account.deleteConfirm2Body'),
               [
                 { text: t('account.cancel'), style: 'cancel' },
                 {
                   text: t('account.deleteConfirm2Action'),
                   style: 'destructive',
-                  onPress: performDelete,
+                  onPress: () => { performDelete(); },
                 },
               ],
             );
@@ -118,6 +161,18 @@ export default function AccountScreen() {
       </View>
 
       {/* ── Identity card ── */}
+      {anonymous ? (
+        <View style={styles.card}>
+          <Text style={styles.feedbackBody}>{t('account.noAccount')}</Text>
+          <Pressable
+            onPress={openSignIn}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.feedbackBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.feedbackBtnText}>{t('account.createAccount')}</Text>
+          </Pressable>
+        </View>
+      ) : (
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t('account.connectedWith')}</Text>
         <Text style={styles.cardValue}>{provider}</Text>
@@ -128,6 +183,7 @@ export default function AccountScreen() {
           </>
         )}
       </View>
+      )}
 
       {/* ── Language selector ── */}
       <View style={styles.card}>
@@ -160,7 +216,21 @@ export default function AccountScreen() {
         </View>
       </View>
 
-      {/* ── Sign out ── */}
+      {/* ── Feedback: write to Thomas ── */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('feedback.cardTitle')}</Text>
+        <Text style={styles.feedbackBody}>{t('feedback.cardBody')}</Text>
+        <Text selectable style={styles.feedbackEmail}>{FEEDBACK_EMAIL}</Text>
+        <Pressable
+          onPress={() => openFeedbackEmail(t)}
+          style={({ pressed }) => [styles.feedbackBtn, pressed && { opacity: 0.85 }]}
+        >
+          <Text style={styles.feedbackBtnText}>✉️  {t('feedback.cta')}</Text>
+        </Pressable>
+      </View>
+
+      {/* ── Sign out (only with an account: without one, it would lose the data) ── */}
+      {!anonymous && (
       <Pressable
         onPress={handleSignOut}
         disabled={busy !== null}
@@ -175,12 +245,13 @@ export default function AccountScreen() {
           <Text style={styles.actionBtnText}>{t('account.signOut')}</Text>
         )}
       </Pressable>
+      )}
 
       {/* ── Danger zone ── */}
       <View style={styles.dangerZone}>
         <Text style={styles.dangerLabel}>{t('account.dangerLabel')}</Text>
         <Text style={styles.dangerDesc}>
-          {t('account.dangerDesc')}
+          {t(anonymous ? 'account.dangerDescAnon' : 'account.dangerDesc')}
         </Text>
         <Pressable
           onPress={handleDelete}
@@ -193,7 +264,7 @@ export default function AccountScreen() {
           {busy === 'delete' ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.deleteBtnText}>{t('account.deleteBtn')}</Text>
+            <Text style={styles.deleteBtnText}>{anonymous ? t('account.deleteAnonBtn') : t('account.deleteBtn')}</Text>
           )}
         </Pressable>
       </View>
@@ -234,7 +305,7 @@ const styles = StyleSheet.create({
     borderColor: colors.accent,
   },
   langBtnText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft },
-  langBtnTextActive: { color: colors.accent, fontWeight: '700' },
+  langBtnTextActive: { color: colors.accentText, fontWeight: '700' },
 
   card: {
     marginHorizontal: spacing.md,
@@ -252,6 +323,22 @@ const styles = StyleSheet.create({
   cardValue: {
     fontFamily: fonts.serif, fontSize: 17, color: colors.text,
   },
+  feedbackBody: {
+    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19,
+    color: colors.textSoft, marginTop: 2,
+  },
+  feedbackEmail: {
+    fontFamily: fonts.sans, fontSize: 14, color: colors.text, marginTop: spacing.sm,
+  },
+  feedbackBtn: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.md,
+    backgroundColor: colors.accentFill,
+    borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.accent,
+    alignItems: 'center',
+  },
+  feedbackBtnText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accentText },
 
   actionBtn: {
     marginHorizontal: spacing.md, marginTop: spacing.lg,

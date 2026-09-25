@@ -3,7 +3,7 @@
     "name": "5herlock",
     "slug": "sherlock-app",
     "scheme": "sherlock-app",
-    "version": "3.0.0",
+    "version": "4.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,10 +19,13 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryAddUsageDescription": "5herlock enregistre l'image de votre résultat dans vos photos lorsque vous le demandez.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.635336758858-dpqdvnbogs3pkcoe61d0shnb24qv53fg"
+              "com.googleusercontent.apps.635336758858-dpqdvnbogs3pkcoe61d0shnb24qv53fg",
+              "sherlock-app",
+              "com.thomasdeillon.sherlock"
             ]
           }
         ]
@@ -45,12 +48,6 @@
       "expo-font",
       "expo-web-browser",
       "expo-apple-authentication",
-      [
-        "expo-notifications",
-        {
-          "color": "#f05a00"
-        }
-      ],
       "expo-localization"
     ],
     "extra": {

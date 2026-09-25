@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   bannerLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 1.5, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 1.5, textTransform: 'uppercase',
     marginBottom: spacing.xs,
   },
   bannerTitle: {

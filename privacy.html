@@ -3,16 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Politique de confidentialité — Sherlock Parent</title>
+<meta name="theme-color" content="#f7f3ee" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0d1f2d" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" sizes="256x256" href="app-icon.png" />
+<link rel="apple-touch-icon" href="app-icon.png" />
+<title>Politique de confidentialité de 5herlock</title>
 <style>
   :root {
-    --bg: #0d1f2d;
-    --surface: #132f42;
+    color-scheme: light dark;
+    --bg: #f7f3ee;
+    --surface: #ffffff;
     --accent: #c0713a;
-    --text: #f0f0f0;
-    --text-soft: #c8d8e8;
-    --text-muted: #8899aa;
-    --border: rgba(255, 255, 255, 0.1);
+    --accent-text: #914b1c;
+    --text: #0d1f2d;
+    --text-soft: #2a3f50;
+    --text-muted: #556474;
+    --border: rgba(13, 31, 45, 0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1f2d;
+      --surface: #132f42;
+      --accent-text: #e0925a;
+      --text: #f0f0f0;
+      --text-soft: #c8d8e8;
+      --text-muted: #8899aa;
+      --border: rgba(255, 255, 255, 0.1);
+    }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -26,10 +43,10 @@
   }
   .eyebrow {
     font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px;
   }
   h1 {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     font-size: 34px; color: var(--text); margin-bottom: 8px;
   }
   .date {
@@ -38,8 +55,8 @@
     border-bottom: 1px solid var(--border);
   }
   h2 {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 22px; color: var(--accent);
+    font-family: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 22px; color: var(--accent-text);
     margin: 36px 0 14px; padding-top: 8px;
   }
   h3 {
@@ -47,11 +64,12 @@
     margin: 20px 0 8px;
   }
   p { margin-bottom: 12px; font-size: 15px; }
-  ul { margin-left: 20px; margin-bottom: 16px; }
+  ul, ol { margin-left: 20px; margin-bottom: 16px; }
   li { margin-bottom: 6px; font-size: 15px; }
   strong { color: var(--text); }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  a { color: var(--accent-text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; border-radius: 4px; }
   hr {
     border: none; border-top: 1px solid var(--border); margin: 32px 0;
   }
@@ -68,12 +86,12 @@
 </head>
 <body>
 
-<div class="eyebrow">Sherlock Parent</div>
+<div class="eyebrow">5herlock</div>
 <h1>Politique de confidentialité</h1>
-<div class="date">Dernière mise à jour : 22 avril 2026</div>
+<div class="date">Dernière mise à jour : 25 septembre 2026</div>
 
 <h2>1. Qui sommes-nous ?</h2>
-<p>L'application <strong>Sherlock Parent</strong> est éditée par <strong>Thomas Deillon</strong>, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».</p>
+<p>L'application <strong>5herlock</strong> est éditée par <strong>Thomas Deillon</strong>.</p>
 <p>Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter à l'adresse : <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>.</p>
 
 <h2>2. Quelles données collectons-nous ?</h2>
@@ -82,23 +100,25 @@
 <p>L'application propose deux modes d'authentification au choix : <strong>Sign in with Apple</strong> ou <strong>Google Sign-In</strong>. Lors de votre connexion, nous recevons :</p>
 <ul>
   <li>Votre <strong>adresse email</strong> (avec Sign in with Apple, vous pouvez choisir de masquer votre adresse réelle ; Apple génère alors un alias privé qui transfère le courrier)</li>
-  <li>Votre <strong>nom</strong> (tel que renseigné sur votre compte Apple ou Google, et seulement si vous l'autorisez)</li>
+  <li>Votre <strong>nom</strong>, si vous vous connectez avec Google (tel que renseigné sur votre compte Google ; avec Apple, nous ne l'enregistrons pas)</li>
   <li>Un <strong>identifiant unique</strong> (UID) utilisé pour vous reconnaître</li>
 </ul>
 <p>Ces données sont transmises par Apple ou Google lors de votre authentification et sont stockées de manière sécurisée via les services Firebase Authentication de Google.</p>
+<p>Vous pouvez aussi utiliser l'application <strong>sans compte</strong> : vos résultats sont alors enregistrés chez Google Firebase sous un identifiant anonyme, sans email ni nom. Si vous vous connectez ensuite avec un compte Apple ou Google, nouveau ou existant, ils sont ajoutés à ce compte. Un compte est nécessaire pour enregistrer les profils de votre famille et vos réponses dans « Mon journal ».</p>
 
 <h3>2.2 Données créées au fil de votre usage</h3>
 <ul>
   <li>Les <strong>résultats de vos tests</strong> (quiz ennéagramme : profil dominant, scores détaillés, ailes détectées)</li>
-  <li>Les <strong>profils d'enfants</strong> que vous créez (prénom, âge optionnel, historique des quiz)</li>
-  <li>Vos <strong>progrès de jeu</strong> dans la section « Les Dossiers Sherlock » (XP, rang, fiches collectées, streak quotidien)</li>
-  <li><strong>Optionnellement, vos notes personnelles</strong> saisies dans la zone « Une situation qui vous intrigue »</li>
+  <li>Les <strong>profils de votre famille</strong> que vous enregistrez, enfants et proches (prénom, âge optionnel pour un enfant, historique des quiz)</li>
+  <li>Le <strong>regard d'un proche</strong> (« second avis ») : le profil qu'un proche vous attribue en répondant au quiz sur vous, avec sa date</li>
+  <li>Vos <strong>progrès de jeu</strong> dans la section « Testez-vous » (XP, rang, fiches collectées)</li>
+  <li><strong>Vos réponses à la question du jour</strong> dans « Mon journal », sauvegardées avec votre compte dans un espace séparé, pour les retrouver sur un autre appareil</li>
 </ul>
 
 <h3>2.3 Données techniques</h3>
 <ul>
-  <li>Date de dernière connexion</li>
-  <li>Logs d'erreurs éventuelles (pour le débogage)</li>
+  <li>Date de création du compte et de dernière connexion</li>
+  <li>Nombre de visites par écran de l'application</li>
 </ul>
 
 <h3>2.4 Ce que nous ne collectons PAS</h3>
@@ -117,7 +137,7 @@
 <ul>
   <li><strong>Vous authentifier</strong> et reconnaître votre compte entre sessions</li>
   <li><strong>Sauvegarder vos progrès</strong> et les synchroniser entre vos appareils</li>
-  <li><strong>Améliorer l'application</strong> via des logs techniques anonymisés</li>
+  <li><strong>Améliorer l'application</strong>, à partir des données d'usage (section 2.3) et de l'outil d'administration décrit en section 6</li>
 </ul>
 <p>Aucune de vos données n'est revendue à des tiers, utilisée à des fins publicitaires, partagée avec d'autres utilisateurs, ou exploitée pour vous profiler.</p>
 
@@ -125,29 +145,32 @@
 <p>Vos données sont hébergées par <strong>Google Firebase</strong>. Google Firebase est certifié conforme au <strong>RGPD</strong>. Vous pouvez consulter la politique de confidentialité de Google Cloud à l'adresse : <a href="https://cloud.google.com/security/privacy" target="_blank" rel="noopener">cloud.google.com/security/privacy</a>.</p>
 
 <h2>5. Combien de temps conservons-nous vos données ?</h2>
-<p>Vos données sont conservées <strong>tant que votre compte est actif</strong>. Si vous n'utilisez plus l'application pendant <strong>24 mois consécutifs</strong>, votre compte et toutes les données associées sont automatiquement supprimés.</p>
+<p>Vos données sont conservées <strong>jusqu'à ce que vous les supprimiez</strong>, depuis l'application (ci-dessous) ou par email (section 7).</p>
+<p>Sans compte, vos données sont liées à un identifiant anonyme propre à cet appareil : pour les effacer, touchez « Effacer mes données » avant de désinstaller l'application. Après une désinstallation, nous ne pouvons plus les relier à vous ; elles restent enregistrées, sans email ni nom.</p>
 
 <h3>Supprimer votre compte directement depuis l'application</h3>
 <p>Vous pouvez supprimer définitivement votre compte à tout moment, <strong>sans nous contacter</strong>, depuis l'application :</p>
 <ol>
   <li>Ouvrez l'onglet <strong>Accueil</strong></li>
   <li>Touchez l'icône 👤 en haut à droite</li>
-  <li>Touchez <strong>« Supprimer mon compte »</strong></li>
+  <li>Touchez <strong>« Supprimer mon compte »</strong> (sans compte : <strong>« Effacer mes données »</strong>)</li>
   <li>Confirmez (deux confirmations sont demandées par sécurité)</li>
 </ol>
 <p>Cette action supprime <strong>immédiatement et définitivement</strong> :</p>
 <ul>
-  <li>votre compte d'authentification (Apple ou Google)</li>
-  <li>l'ensemble de vos profils enfants et leurs historiques</li>
-  <li>vos résultats de quiz</li>
+  <li>votre compte 5herlock (votre compte Apple ou Google lui-même n'est pas touché)</li>
+  <li>l'ensemble des profils de votre famille et leurs historiques</li>
+  <li>vos résultats de quiz et les seconds avis</li>
+  <li>vos réponses dans « Mon journal »</li>
   <li>votre progression dans le jeu (XP, rang, fiches débloquées)</li>
 </ul>
+<p>Si vous utilisez « Se connecter avec Apple », l'application vous demande de confirmer une dernière fois avec Apple, puis demande à Apple de retirer l'autorisation donnée à 5herlock.</p>
 <p>Si vous préférez nous contacter par email plutôt que d'utiliser le bouton in-app, voir la section 7.</p>
 
 <h2>6. Qui a accès à vos données ?</h2>
 <ul>
   <li><strong>Vous</strong> : vous pouvez consulter toutes les données associées à votre profil depuis l'application</li>
-  <li><strong>L'éditeur</strong> (Thomas Deillon) : uniquement de manière agrégée et anonymisée, pour améliorer l'application</li>
+  <li><strong>L'éditeur</strong> (Thomas Deillon) : pour faire fonctionner et améliorer l'application, via un outil d'administration qui lui est réservé. Pour chaque compte, cet outil montre l'email et le nom, les dates d'inscription et de dernière connexion, les résultats des quiz, les profils enregistrés (prénom, âge d'un enfant, profil trouvé), la progression du jeu et le nombre de visites par écran. Les réponses de « Mon journal » sont stockées à part et n'apparaissent pas dans cet outil.</li>
   <li><strong>Google Firebase</strong> : en tant que sous-traitant technique d'hébergement</li>
 </ul>
 <p>Aucune autre entité n'a accès à vos données. Nous ne vendons, ne louons et ne partageons vos données avec aucun partenaire commercial.</p>
@@ -162,7 +185,7 @@
   <li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données</li>
   <li><strong>Droit de limitation</strong> : demander la limitation du traitement</li>
 </ul>
-<p>Pour exercer ces droits, envoyez un email à <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a> avec comme sujet « RGPD — [votre demande] ». Nous nous engageons à répondre dans un délai de <strong>30 jours maximum</strong>.</p>
+<p>Pour exercer ces droits, envoyez un email à <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a> avec comme sujet « RGPD : [votre demande] ». Nous nous engageons à répondre dans un délai de <strong>30 jours maximum</strong>.</p>
 
 <h2>8. Sécurité</h2>
 <p>Nous mettons en œuvre les mesures techniques suivantes pour protéger vos données :</p>
@@ -182,7 +205,7 @@
 
 <h2>11. Contact et réclamation</h2>
 <p><strong>Contact</strong> : <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a></p>
-<p><strong>Réclamation auprès de l'autorité de contrôle</strong> : vous pouvez déposer une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés), 3 Place de Fontenoy, 75007 Paris — <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>.</p>
+<p><strong>Réclamation auprès de l'autorité de contrôle</strong> : vous pouvez déposer une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés), 3 Place de Fontenoy, 75007 Paris, <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>.</p>
 
 <div class="footer">
   Cette politique de confidentialité est rédigée en français et constitue la version qui fait foi.

@@ -52,8 +52,9 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.tealMuted,
+        // Readable on the dark bar: active 6.2:1, inactive 5.5:1 (WCAG AA).
+        tabBarActiveTintColor: colors.accentLight,
+        tabBarInactiveTintColor: colors.tabInactive,
         tabBarStyle: {
           backgroundColor: colors.bgNav,
           borderTopColor: colors.tealLine,
@@ -64,7 +65,7 @@ export default function TabLayout() {
           paddingTop: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontFamily: fonts.sans,
         },
       }}

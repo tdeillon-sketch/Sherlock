@@ -1,69 +1,502 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sherlock Parent — Compagnon du livre</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5herlock : Ennéagramme famille</title>
+<meta name="description" content="Faites le test de personnalité pour votre enfant, puis passez le téléphone à l'autre parent et comparez vos regards. À essayer sans compte. Sans publicité ni abonnement.">
+<meta name="apple-itunes-app" content="app-id=6762472752">
+<meta name="theme-color" content="#f7f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1f2d" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="alternate" hreflang="fr" href="https://tdeillon-sketch.github.io/Sherlock/?lang=fr">
+<link rel="alternate" hreflang="en" href="https://tdeillon-sketch.github.io/Sherlock/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://tdeillon-sketch.github.io/Sherlock/">
+<link rel="icon" type="image/png" sizes="256x256" href="app-icon.png">
+<link rel="apple-touch-icon" href="app-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="5herlock">
+<meta property="og:title" content="5herlock : Ennéagramme famille">
+<meta property="og:description" content="Faites le test de personnalité pour votre enfant, puis passez le téléphone à l'autre parent et comparez vos regards. À essayer sans compte. Sans publicité ni abonnement.">
+<meta property="og:url" content="https://tdeillon-sketch.github.io/Sherlock/">
+<meta property="og:image" content="https://tdeillon-sketch.github.io/Sherlock/app-icon.png">
+<meta property="og:image:width" content="256">
+<meta property="og:image:height" content="256">
+<meta property="og:image:alt" content="Icône de l'application 5herlock : deux empreintes de pas blanches sur fond orange">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
 <style>
+  /* Couleurs reprises de sherlock-app/constants/theme.ts */
   :root {
-    --bg: #0d1f2d;
-    --surface: #132f42;
+    color-scheme: light dark;
+    --bg: #f7f3ee;
+    --surface: #ffffff;
+    --surface-2: #efe7de;
+    --text: #0d1f2d;
+    --text-soft: #2a3f50;
+    --text-muted: #556474;
     --accent: #c0713a;
-    --text: #f0f0f0;
-    --text-soft: #c8d8e8;
-    --text-muted: #8899aa;
+    --accent-text: #914b1c;
+    --accent-strong: #b25f26;
+    --accent-deep: #9d5421;
+    --accent-light: #e8a06a;
+    --accent-fill: rgba(192, 113, 58, 0.12);
+    --border: rgba(13, 31, 45, 0.12);
+    --danger: #b02a42;
+    --danger-bg: rgba(233, 69, 96, 0.06);
+    --danger-border: rgba(233, 69, 96, 0.3);
+    --shadow: 0 1px 2px rgba(13, 31, 45, 0.05), 0 8px 24px rgba(13, 31, 45, 0.06);
+    --icon-shadow: 0 10px 30px rgba(192, 113, 58, 0.28);
+    --serif: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1f2d;
+      --surface: #132f42;
+      --surface-2: #173a50;
+      --text: #f0f0f0;
+      --text-soft: #c8d8e8;
+      --text-muted: #8899aa;
+      --accent-text: #e0925a;
+      --accent-fill: rgba(192, 113, 58, 0.15);
+      --border: rgba(255, 255, 255, 0.1);
+      --danger: #f06a80;
+      --danger-bg: rgba(233, 69, 96, 0.06);
+      --danger-border: rgba(233, 69, 96, 0.25);
+      --shadow: none;
+      --icon-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg); color: var(--text-soft); min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 48px 24px; line-height: 1.5; text-align: center;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-soft);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-wrap: break-word;
   }
-  .eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+  h1, h2, h3, p, ol, ul { margin: 0; }
+  strong { color: var(--text); font-weight: 600; }
+  a { color: var(--accent-text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 600px) { .wrap { padding: 0 24px; } }
+
+  /* Language switch: without JavaScript both languages stay readable, French first */
+  html.js[data-ui="fr"] [data-lang="en"],
+  html.js[data-ui="en"] [data-lang="fr"],
+  html.js .nojs-only { display: none !important; }
+  html:not(.js) .lang-switch { display: none; }
+
+  /* Header */
+  .site-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-muted); }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--accent-strong);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-style: italic; font-size: 16px; line-height: 1;
   }
-  h1 {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 38px; color: var(--text); margin-bottom: 12px; max-width: 600px; line-height: 1.25;
+  .brand-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+  .lang-switch { display: inline-flex; padding: 3px; border: 1px solid var(--border); border-radius: 28px; background: var(--surface); }
+  .lang-switch button {
+    appearance: none; border: 0; margin: 0; cursor: pointer;
+    min-width: 44px; min-height: 36px; padding: 0 12px; border-radius: 28px;
+    background: transparent; color: var(--text-muted);
+    font: 600 13px/1 var(--sans); letter-spacing: 1px;
   }
-  .tagline {
-    font-size: 15px; color: var(--text-muted); font-style: italic;
-    margin-bottom: 48px; max-width: 500px;
+  .lang-switch button[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-text); box-shadow: inset 0 0 0 1px var(--accent); }
+  .lang-switch button:focus-visible { border-radius: 28px; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 24px 0 8px; }
+  .app-icon { display: block; width: 96px; height: 96px; margin: 0 auto 20px; border-radius: 22px; box-shadow: var(--icon-shadow); }
+  h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(40px, 11vw, 56px); line-height: 1.05; letter-spacing: -0.01em; color: var(--text); }
+  .kicker, .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-text); }
+  .hero .kicker { margin-top: 12px; }
+  .subtitle { font-family: var(--serif); font-style: italic; font-size: clamp(21px, 5.4vw, 26px); line-height: 1.3; color: var(--text); margin-top: 16px; }
+  .pitch { font-size: 17px; max-width: 34em; margin: 16px auto 0; }
+  .cta { margin-top: 24px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 12px 24px; border-radius: 28px;
+    font: 600 15px/1.2 var(--sans); text-decoration: none; text-align: center;
   }
-  .links { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
-  a.btn {
-    display: inline-block; background: var(--surface); color: var(--text);
-    padding: 14px 28px; border-radius: 24px; text-decoration: none;
-    font-size: 14px; font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s;
+  .btn:focus-visible { border-radius: 28px; }
+  .btn-primary { color: #fff; background: linear-gradient(135deg, var(--accent-strong), var(--accent-deep)); box-shadow: 0 6px 18px rgba(157, 84, 33, 0.28); }
+  .btn-primary:hover { text-decoration: none; filter: brightness(1.06); }
+  .btn-secondary { color: var(--accent-text); background: var(--accent-fill); border: 1px solid var(--accent); }
+  .btn-secondary:hover { text-decoration: none; background: rgba(192, 113, 58, 0.22); }
+  .fineprint { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+  .toc { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; list-style: none; padding: 0; margin-top: 32px; }
+  .toc a {
+    display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border-radius: 28px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; text-decoration: none;
   }
-  a.btn:hover { border-color: var(--accent); color: var(--accent); }
-  .footer {
-    margin-top: 72px; color: var(--text-muted); font-size: 12px;
+  .toc a:hover { border-color: var(--accent); color: var(--accent-text); }
+
+  /* Sections */
+  section { margin-top: 56px; scroll-margin-top: 16px; }
+  h2 { font-family: var(--serif); font-weight: 700; font-size: clamp(24px, 6vw, 28px); line-height: 1.2; color: var(--text); margin-bottom: 16px; }
+  h2::before { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; }
+  .eyebrow + h2::before { display: none; }
+  .eyebrow { margin-bottom: 8px; }
+  section p + p { margin-top: 12px; }
+  .lead { font-size: 17px; }
+
+  .features, .steps { list-style: none; padding: 0; counter-reset: item; }
+  .features { display: grid; gap: 12px; margin-top: 24px; }
+  .features li {
+    counter-increment: item; position: relative;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    padding: 16px 16px 16px 60px;
   }
-  .footer a { color: var(--accent); text-decoration: none; }
+  .features li::before, .steps li::before {
+    content: counter(item); position: absolute; left: 16px; top: 16px;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-fill); color: var(--accent-text);
+    font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 16px; line-height: 1;
+  }
+  .features h3 { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.35; color: var(--text); margin-bottom: 4px; }
+
+  .pair { display: grid; gap: 16px; margin-top: 56px; }
+  @media (min-width: 640px) { .pair { grid-template-columns: 1fr 1fr; } }
+  .pair section { margin-top: 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; }
+  .card h2 { font-size: 22px; }
+  .card .btn { margin-top: 16px; }
+  .small { font-size: 14px; color: var(--text-muted); }
+
+  .danger { background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: 12px; padding: 20px; }
+  @media (min-width: 600px) { .danger, .card { padding: 24px; } }
+  .danger .eyebrow { color: var(--danger); }
+  .steps { display: grid; gap: 12px; margin: 20px 0; }
+  .steps li { counter-increment: item; position: relative; padding: 3px 0 0 44px; min-height: 30px; }
+  .steps li::before { left: 0; top: 0; }
+  .danger .note { border-top: 1px solid var(--danger-border); margin-top: 20px; padding-top: 20px; }
+
+  /* FAQ */
+  .faq { margin-top: 8px; border-top: 1px solid var(--border); }
+  .faq details { border-bottom: 1px solid var(--border); }
+  .faq summary {
+    list-style: none; cursor: pointer; position: relative;
+    padding: 16px 40px 16px 0; font-weight: 600; font-size: 17px; line-height: 1.4; color: var(--text);
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+"; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-fill); color: var(--accent-text); font-size: 20px; font-weight: 400; line-height: 1;
+    transition: transform 0.2s ease;
+  }
+  .faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  .faq details p { padding: 0 0 20px; }
+
+  /* Footer */
+  .site-footer { margin-top: 72px; padding: 24px 0 48px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; color: var(--text-muted); }
+  .site-footer p + p { margin-top: 6px; }
+  .site-footer [data-lang] + [data-lang] { margin-top: 20px; }
+  .lang-sep { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
+<script>
+(function () {
+  var d = document.documentElement;
+  var titles = { fr: "5herlock : Ennéagramme famille", en: "5herlock: Enneagram Parenting" };
+  var descs = {
+    fr: "Faites le test de personnalité pour votre enfant, puis passez le téléphone à l'autre parent et comparez vos regards. À essayer sans compte. Sans publicité ni abonnement.",
+    en: "Take the personality test for your child, then hand the phone to the other parent and compare your views. Try it without an account. No ads, no subscription."
+  };
+  var alts = {
+    fr: "Icône de l'application 5herlock : deux empreintes de pas blanches sur fond orange",
+    en: "5herlock app icon: two white footprints on an orange background"
+  };
+  var KEY = "5herlock-lang";
+
+  function pick() {
+    var m = /[?&]lang=(fr|en)(?:&|$)/.exec(location.search);
+    if (m) return m[1];
+    try {
+      var s = localStorage.getItem(KEY);
+      if (s === "fr" || s === "en") return s;
+    } catch (e) {}
+    var n = (navigator.languages && navigator.languages[0]) || navigator.language || "fr";
+    if (/^fr/i.test(n)) return "fr";
+    return "en";
+  }
+
+  function apply(lang) {
+    d.setAttribute("data-ui", lang);
+    d.lang = lang;
+    document.title = titles[lang];
+    var meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", descs[lang]);
+    var icon = document.getElementById("app-icon");
+    if (icon) icon.alt = alts[lang];
+    var btns = document.querySelectorAll("[data-set-lang]");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", String(btns[i].getAttribute("data-set-lang") === lang));
+    }
+  }
+
+  d.className += " js";
+  apply(pick());
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // A link such as #delete-data opens the language that holds it
+    function followHash() {
+      if (location.hash.length < 2) return;
+      var id;
+      try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { return; }
+      var target = document.getElementById(id);
+      var block = target && target.closest("[data-lang]");
+      if (block && block.getAttribute("data-lang") !== d.getAttribute("data-ui")) {
+        apply(block.getAttribute("data-lang"));
+        target.scrollIntoView();
+      }
+    }
+    apply(d.getAttribute("data-ui"));
+    followHash();
+    window.addEventListener("hashchange", followHash);
+    var sw = document.querySelector(".lang-switch");
+    if (!sw) return;
+    sw.addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-set-lang]");
+      if (!b) return;
+      var lang = b.getAttribute("data-set-lang");
+      apply(lang);
+      try { localStorage.setItem(KEY, lang); } catch (e) {}
+      if (/[?&]lang=/.test(location.search) && window.history && history.replaceState) {
+        var q = location.search.replace(/([?&]lang=)(fr|en)/, "$1" + lang);
+        history.replaceState(null, "", location.pathname + q + location.hash);
+      }
+    });
+  });
+})();
+</script>
 </head>
 <body>
+<div class="wrap">
 
-<div class="eyebrow">Le compagnon de lecture</div>
-<h1>On a tous besoin<br/>de quelqu'un d'autre</h1>
-<p class="tagline">
-  Thomas Deillon — le voyage intérieur d'un père imparfait<br/>
-  pour mieux comprendre ses enfants.
-</p>
+<header class="site-header">
+  <a class="brand" href="./">
+    <span class="brand-mark" aria-hidden="true">5</span>
+    <span class="brand-label">5herlock</span>
+  </a>
+  <div class="lang-switch" role="group" aria-label="Langue / Language">
+    <button type="button" data-set-lang="fr" aria-pressed="true" lang="fr" title="Français">FR</button>
+    <button type="button" data-set-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
+  </div>
+</header>
 
-<div class="links">
-  <a href="privacy.html" class="btn">Politique de confidentialité</a>
+<main>
+  <div class="hero">
+    <img id="app-icon" class="app-icon" src="app-icon.png" width="96" height="96" alt="Icône de l'application 5herlock : deux empreintes de pas blanches sur fond orange">
+    <h1>5herlock</h1>
+  </div>
+
+  <!-- ════════════ FRANÇAIS ════════════ -->
+  <div data-lang="fr">
+    <div class="hero">
+      <p class="kicker">Ennéagramme famille</p>
+      <p class="subtitle">Parent, enfant : se comprendre.</p>
+      <p class="pitch">5herlock vous aide à comprendre votre enfant tel qu'il est, pas tel que vous l'imaginez. Il vous aide aussi à mieux comprendre l'autre parent, et vous-même.</p>
+      <p class="cta"><a class="btn btn-primary" href="https://apps.apple.com/app/id6762472752">Télécharger sur l'App Store</a></p>
+      <p class="fineprint">Pour iPhone, en français et en anglais. Gratuit, sans publicité, sans abonnement.</p>
+      <nav aria-label="Sur cette page">
+        <ul class="toc">
+          <li><a href="#support">Support</a></li>
+          <li><a href="#supprimer">Supprimer vos données</a></li>
+          <li><a href="#questions">Questions fréquentes</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <section aria-labelledby="fr-app">
+      <h2 id="fr-app">Ce que fait l'application</h2>
+      <p class="lead">L'application s'appuie sur l'Ennéagramme : neuf manières d'être au monde, aucune meilleure qu'une autre. Pas une étiquette, une carte. Pour voir ce qui se joue chez l'autre, et ajuster votre réponse.</p>
+      <ol class="features">
+        <li><h3>Quiz</h3><p>Un test qui s'adapte à vos réponses. Pour vous, pour votre enfant (un test pensé à partir de 10 ans) ou pour un proche.</p></li>
+        <li><h3>Votre enfant n'est pas un petit vous</h3><p>Quand votre propre type arrive en tête du résultat de votre enfant, ou juste derrière, l'application vous le signale : ce type peut venir de votre regard autant que de votre enfant.</p></li>
+        <li><h3>Deux regards</h3><p>L'autre parent répond au même test sur votre téléphone, sans voir vos réponses. Vos deux regards sont comparés, puis combinés. Un proche peut aussi répondre à quelques questions sur vous, et son regard est comparé au vôtre.</p></li>
+        <li><h3>Duo, profils et carte de famille</h3><p>Pour chaque paire de types, ce qui circule et ce qui accroche, avec des conseils concrets. Pour un enfant, des repères selon son âge et trois clés pour l'accompagner. Et votre foyer vu comme un système.</p></li>
+        <li><h3>Testez-vous et Mon journal</h3><p>Un jeu de détective pour apprendre à reconnaître les neuf types à travers 45 personnalités connues. Et chaque jour, une question sur votre vie de parent.</p></li>
+      </ol>
+    </section>
+
+    <div class="pair">
+      <section class="card" aria-labelledby="fr-sans-compte">
+        <h2 id="fr-sans-compte">Sans compte pour commencer</h2>
+        <p>Le quiz, le Duo et le jeu s'ouvrent tout de suite, sans compte. Un compte Apple ou Google n'est demandé que pour enregistrer votre famille et votre journal. Ce que vous avez déjà fait est conservé.</p>
+        <p class="small">Sans compte, vos résultats sont enregistrés en ligne (Google Firebase) sous un identifiant anonyme, sans email ni nom.</p>
+      </section>
+      <section class="card" id="support" aria-labelledby="fr-support">
+        <h2 id="fr-support">Support</h2>
+        <p>Une question, un problème, une idée pour améliorer l'app : écrivez à <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>.</p>
+      </section>
+    </div>
+
+    <section id="supprimer" class="danger" aria-labelledby="fr-supprimer">
+      <p class="eyebrow">Zone sensible</p>
+      <h2 id="fr-supprimer">Supprimer vos données</h2>
+      <p>Vous pouvez tout supprimer vous-même, depuis l'application.</p>
+      <ol class="steps">
+        <li>Ouvrez l'onglet « <strong>Accueil</strong> ».</li>
+        <li>Touchez l'icône 👤 en haut à droite : l'écran « <strong>Mon compte</strong> » s'ouvre.</li>
+        <li>Avec un compte, touchez « <strong>Supprimer mon compte</strong> ». Sans compte, touchez « <strong>Effacer mes données</strong> ».</li>
+        <li>Confirmez deux fois : « <strong>Supprimer définitivement</strong> », puis « <strong>Oui, supprimer</strong> ».</li>
+      </ol>
+      <p>Avec un compte, l'application peut ensuite vous demander de confirmer votre identité avec le même compte Apple ou Google : la suppression se termine juste après. Si vous utilisez « Se connecter avec Apple », cette confirmation est toujours demandée : elle permet aussi de retirer 5herlock de votre compte Apple.</p>
+      <p>La suppression de votre compte efface définitivement vos profils, vos résultats de quiz, votre journal, votre historique et votre progression. <strong>Cette action est irréversible.</strong></p>
+      <div class="note">
+        <p><strong>Par email :</strong> vous pouvez aussi demander la suppression à <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>. Indiquez l'adresse affichée sous « Email » dans « Mon compte ». Vous recevrez une réponse sous 30 jours.</p>
+        <p>Sans compte, vos données ne sont liées à aucune adresse email : effacez-les depuis l'application, avec « Effacer mes données ».</p>
+        <p>Le détail des données enregistrées figure dans la politique de confidentialité.</p>
+        <p><a class="btn btn-secondary" href="privacy.html">Politique de confidentialité</a></p>
+      </div>
+    </section>
+
+    <section id="questions" aria-labelledby="fr-faq">
+      <h2 id="fr-faq">Questions fréquentes</h2>
+      <div class="faq">
+        <details>
+          <summary>Faut-il un compte ?</summary>
+          <p>Non, pas pour commencer. Le quiz, le Duo et le jeu s'ouvrent tout de suite. Un compte Apple ou Google n'est demandé que pour enregistrer votre famille et votre journal, et ne rien perdre en changeant de téléphone. Ce que vous avez déjà fait est conservé.</p>
+        </details>
+        <details>
+          <summary>Qui répond au test de mon enfant, et à partir de quel âge ?</summary>
+          <p>Vous, le parent : vous répondez pour votre enfant. Le test est pensé pour un enfant de 10 ans et plus. Plus jeune, sa personnalité est encore en train de se dessiner : prenez le résultat comme une piste, pas comme une étiquette.</p>
+        </details>
+        <details>
+          <summary>Le résultat dit-il qui est mon enfant ?</summary>
+          <p>Non. Un résultat est une piste, un point de départ pour en parler, jamais un verdict sur votre enfant. Chez l'enfant, le profil n'est pas figé : il se précise en grandissant. L'Ennéagramme n'est pas la seule grille de lecture, et il a ses limites. Prenez ce qui vous parle, laissez le reste.</p>
+        </details>
+        <details>
+          <summary>Qui voit mes réponses et mon journal ?</summary>
+          <p>Aucune donnée n'est vendue, et rien n'est partagé avec d'autres utilisateurs. Avec un compte, l'éditeur voit vos résultats de quiz dans un outil d'administration qui lui est réservé, pour faire fonctionner et améliorer l'application. Votre journal est privé : il est enregistré avec votre compte, n'apparaît pas dans cet outil et n'est partagé avec personne. Vous pouvez effacer une réponse du journal quand vous voulez. Le détail figure dans la <a href="privacy.html">politique de confidentialité</a>.</p>
+        </details>
+        <details>
+          <summary>L'application est-elle payante ?</summary>
+          <p>Non. 5herlock est gratuit, sans publicité, sans abonnement.</p>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <!-- ════════════ ENGLISH ════════════ -->
+  <div data-lang="en" lang="en">
+    <p class="lang-sep nojs-only">English</p>
+    <div class="hero">
+      <p class="kicker">Enneagram Parenting</p>
+      <p class="subtitle">Personality test for families.</p>
+      <p class="pitch">5herlock helps you understand your child as they are, not as you imagine them. It also helps you understand the other parent, and yourself.</p>
+      <p class="cta"><a class="btn btn-primary" href="https://apps.apple.com/app/id6762472752">Download on the App Store</a></p>
+      <p class="fineprint">For iPhone, in English and French. Free, no ads, no subscription.</p>
+      <nav aria-label="On this page">
+        <ul class="toc">
+          <li><a href="#support-en">Support</a></li>
+          <li><a href="#delete-data">Delete your data</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <section aria-labelledby="en-app">
+      <h2 id="en-app">What the app does</h2>
+      <p class="lead">The app draws on the Enneagram: nine ways of being in the world, none better than another. Not a label but a map: a way to see what is going on for the other person, and adjust how you respond.</p>
+      <ol class="features">
+        <li><h3>Quiz</h3><p>A test that adapts to your answers. For yourself, for your child (one test, designed for age 10 and over) or for someone close.</p></li>
+        <li><h3>Your child is not a mini-you</h3><p>When your own type comes out on top of your child’s result, or just behind it, the app points it out: that type may come from your lens as much as from your child.</p></li>
+        <li><h3>Two views</h3><p>The other parent takes the same test on your phone, without seeing your answers. Your two views are compared, then combined. Someone close can also answer a few questions about you, and their view is compared with yours.</p></li>
+        <li><h3>Duo, profiles and family map</h3><p>For any pair of types, what flows between them and where the friction lies, with practical advice. For a child, milestones for their age and three keys to support them. And your household seen as a system.</p></li>
+        <li><h3>Case files and My journal</h3><p>A detective game to learn to spot the nine types through 45 well-known figures. And one question a day about your life as a parent.</p></li>
+      </ol>
+    </section>
+
+    <div class="pair">
+      <section class="card" aria-labelledby="en-no-account">
+        <h2 id="en-no-account">No account needed to start</h2>
+        <p>The quiz, Duo and the game open straight away, with no account. You only need an Apple or Google account to save your family and your journal. Anything you have already done is kept.</p>
+        <p class="small">Without an account, your results are saved online (Google Firebase) under an anonymous ID, with no email or name.</p>
+      </section>
+      <section class="card" id="support-en" aria-labelledby="en-support">
+        <h2 id="en-support">Support</h2>
+        <p>A question, a problem, an idea to improve the app: write to <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>.</p>
+      </section>
+    </div>
+
+    <section id="delete-data" class="danger" aria-labelledby="en-delete">
+      <p class="eyebrow">Danger zone</p>
+      <h2 id="en-delete">Delete your data</h2>
+      <p>You can delete everything yourself, from within the app.</p>
+      <ol class="steps">
+        <li>Open the “<strong>Home</strong>” tab.</li>
+        <li>Tap the 👤 icon at the top right: the “<strong>My account</strong>” screen opens.</li>
+        <li>With an account, tap “<strong>Delete my account</strong>”. Without an account, tap “<strong>Erase my data</strong>”.</li>
+        <li>Confirm twice: “<strong>Delete permanently</strong>”, then “<strong>Yes, delete</strong>”.</li>
+      </ol>
+      <p>With an account, the app may then ask you to confirm your identity with the same Apple or Google account: the deletion finishes right after. If you use Sign in with Apple, this confirmation is always requested: it also lets the app remove 5herlock from your Apple Account.</p>
+      <p>Deleting your account permanently erases your profiles, quiz results, journal, history, and progress. <strong>This action cannot be undone.</strong></p>
+      <div class="note">
+        <p><strong>By email:</strong> you can also ask for deletion at <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>. Give the address shown under “Email” in “My account”. You will get a reply within 30 days.</p>
+        <p>Without an account, your data is not linked to any email address: erase it from within the app, with “Erase my data”.</p>
+        <p>The privacy policy (in French) lists the data that is stored.</p>
+        <p><a class="btn btn-secondary" href="privacy.html" hreflang="fr">Privacy policy (in French)</a></p>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="en-faq">
+      <h2 id="en-faq">FAQ</h2>
+      <div class="faq">
+        <details>
+          <summary>Do I need an account?</summary>
+          <p>No, not to get started. The quiz, Duo and the game open straight away. You only need an Apple or Google account to save your family and your journal, and lose nothing when you change phones. Anything you have already done is kept.</p>
+        </details>
+        <details>
+          <summary>Who answers my child’s test, and from what age?</summary>
+          <p>You do: you answer for your child. The test is designed for children aged 10 and over. Younger children are still taking shape: take the result as a lead, not a label.</p>
+        </details>
+        <details>
+          <summary>Does the result say who my child is?</summary>
+          <p>No. A result is a lead, a starting point for a conversation, never a verdict on your child. In children, a profile is not fixed: it sharpens as they grow. The Enneagram is not the only way to read people, and it has its limits. Take what speaks to you, leave the rest.</p>
+        </details>
+        <details>
+          <summary>Who can see my answers and my journal?</summary>
+          <p>No data is sold, and nothing is shared with other users. With an account, the publisher sees your quiz results in a private admin tool, to run and improve the app. Your journal is private: it is saved with your account, does not appear in that tool and is not shared with anyone. You can delete a journal answer whenever you like. The <a href="privacy.html" hreflang="fr">privacy policy</a> has the details.</p>
+        </details>
+        <details>
+          <summary>Does the app cost anything?</summary>
+          <p>No. 5herlock is free, with no ads and no subscription.</p>
+        </details>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div data-lang="fr">
+    <p>L'application 5herlock est éditée par Thomas Deillon.</p>
+    <p><a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a> · <a href="privacy.html">Politique de confidentialité</a></p>
+    <p>© 2026 Thomas Deillon</p>
+  </div>
+  <div data-lang="en" lang="en">
+    <p>The 5herlock app is published by Thomas Deillon.</p>
+    <p><a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a> · <a href="privacy.html" hreflang="fr">Privacy policy (in French)</a></p>
+    <p>© 2026 Thomas Deillon</p>
+  </div>
+</footer>
+
 </div>
-
-<div class="footer">
-  Application disponible prochainement sur l'App Store.<br/>
-  Contact : <a href="mailto:contact@thomasdeillon.com">contact@thomasdeillon.com</a>
-</div>
-
 </body>
 </html>

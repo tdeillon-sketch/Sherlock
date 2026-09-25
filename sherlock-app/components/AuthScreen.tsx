@@ -1,6 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
 //  AUTH SCREEN — Sign in with Google AND Sign in with Apple
 //
+//  Two uses:
+//   - mode "modal" (normal case): the app is used without an account
+//     (anonymous session); this screen appears when something is to be
+//     saved, and links the session to Apple / Google (nothing is lost).
+//   - mode "gate" (fallback): only if the anonymous session can't start
+//     (e.g. first launch offline), as the first screen.
+//
 //  Apple Store guideline 4.8 requires that any third-party sign-in
 //  option (Google, Facebook, etc.) be matched by an "equivalent"
 //  login service. Sign in with Apple satisfies this requirement.
@@ -17,8 +24,8 @@ import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
 import { colors, fonts, spacing, radius } from '../constants/theme';
 import {
-  signInAnon, signInWithGoogleIdToken, signInWithAppleIdToken,
-  getUserData, createUserData, updateLastSeen,
+  auth, signInAnon, signInWithGoogleIdToken, signInWithAppleIdToken, ensureUserDoc,
+  reauthWithGoogleIdToken, reauthWithAppleIdToken, isAppleSignedIn, isGoogleSignedIn,
 } from '../constants/firebase';
 import { GOOGLE_OAUTH, isGoogleConfigured } from '../constants/google_oauth';
 import { useT } from '../i18n';
@@ -27,6 +34,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 interface Props {
   onSuccess: () => void;
+  mode?: 'gate' | 'modal' | 'reauth';
+  onClose?: () => void;
 }
 
 // Generate a cryptographically random nonce string for Apple Sign In.
@@ -44,7 +53,12 @@ async function generateAppleNonce(): Promise<{ raw: string; hashed: string }> {
   return { raw, hashed };
 }
 
-export default function AuthScreen({ onSuccess }: Props) {
+export default function AuthScreen({ onSuccess, mode = 'gate', onClose }: Props) {
+  const isModal = mode === 'modal' || mode === 'reauth';
+  const isReauth = mode === 'reauth';
+  // Re-authentication: only the provider of the current account.
+  const showApple = !isReauth || isAppleSignedIn(auth.currentUser);
+  const showGoogle = !isReauth || isGoogleSignedIn(auth.currentUser);
   const { t, locale, setLocale } = useT();
   const [loading, setLoading] = useState<null | 'google' | 'apple'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,16 +93,15 @@ export default function AuthScreen({ onSuccess }: Props) {
     scopes: ['openid', 'profile', 'email'],
   });
 
-  // Common post-sign-in: create user doc if needed, update lastSeen, callback.
+  // Common post-sign-in (the sign-in helpers already made sure the user
+  // document exists; this is a no-op safety net that never overwrites).
   const finishSignIn = async (uid: string) => {
-    const existing = await getUserData(uid).catch(() => null);
-    if (!existing) {
-      await createUserData(uid);
-    } else {
-      await updateLastSeen(uid).catch(() => {});
-    }
+    if (!isReauth) await ensureUserDoc(uid).catch(() => {});
     onSuccess();
   };
+  const reauthError = (e: any, fallback: string) =>
+    e?.code === 'auth/user-mismatch' || e?.code === 'auth/user-not-found'
+      ? t('auth.errorReauthMismatch') : fallback;
 
   // ── Google response handler ──
   useEffect(() => {
@@ -100,10 +113,15 @@ export default function AuthScreen({ onSuccess }: Props) {
           const idToken = response.authentication?.idToken
             ?? (response.params as any)?.id_token;
           if (!idToken) throw new Error(t('auth.errorNoGoogleIdToken'));
+          if (isReauth) {
+            await reauthWithGoogleIdToken(idToken);
+            onSuccess();
+            return;
+          }
           const user = await signInWithGoogleIdToken(idToken);
           await finishSignIn(user.uid);
         } catch (e: any) {
-          setError(e?.message ?? t('auth.errorGoogleFailed'));
+          setError(isReauth ? reauthError(e, t('auth.errorGoogleFailed')) : (e?.message ?? t('auth.errorGoogleFailed')));
         } finally {
           setLoading(null);
         }
@@ -147,6 +165,13 @@ export default function AuthScreen({ onSuccess }: Props) {
       if (!credential.identityToken) {
         throw new Error(t('auth.errorAppleNoToken'));
       }
+      if (isReauth) {
+        // Firebase checks the identity token; the one-time code of this same
+        // sheet is kept so the deletion can revoke Sign in with Apple.
+        await reauthWithAppleIdToken(credential.identityToken, raw, credential.authorizationCode);
+        onSuccess();
+        return;
+      }
       const user = await signInWithAppleIdToken(credential.identityToken, raw);
       await finishSignIn(user.uid);
     } catch (e: any) {
@@ -154,7 +179,7 @@ export default function AuthScreen({ onSuccess }: Props) {
       if (e?.code === 'ERR_REQUEST_CANCELED' || e?.code === 'ERR_CANCELED') {
         // Silent cancel — no error display
       } else {
-        setError(e?.message ?? t('auth.errorAppleFailed'));
+        setError(isReauth ? reauthError(e, t('auth.errorAppleFailed')) : (e?.message ?? t('auth.errorAppleFailed')));
       }
     } finally {
       setLoading(null);
@@ -163,6 +188,16 @@ export default function AuthScreen({ onSuccess }: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
+      {isModal && onClose && (
+        <Pressable
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('auth.close')}
+          style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
+        >
+          <Text style={styles.closeBtnText}>✕</Text>
+        </Pressable>
+      )}
       <View style={styles.inner}>
         {/* ── Language toggle (top of screen) ── */}
         <View style={styles.langToggle}>
@@ -193,9 +228,17 @@ export default function AuthScreen({ onSuccess }: Props) {
         </View>
 
         <Text style={styles.emoji}>🔐</Text>
-        <Text style={styles.title}>{t('auth.title')}</Text>
-        <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
+        <Text style={styles.title}>
+          {isReauth ? t('auth.reauthTitle') : isModal ? t('auth.saveTitle') : t('auth.title')}
+        </Text>
+        <Text style={styles.subtitle}>
+          {isReauth
+            ? t(showApple && !showGoogle ? 'auth.reauthSubtitleApple'
+              : showGoogle && !showApple ? 'auth.reauthSubtitleGoogle' : 'auth.reauthSubtitle')
+            : isModal ? t('auth.saveSubtitle') : t('auth.subtitle')}
+        </Text>
 
+        {!isReauth && (
         <View style={styles.benefitsBox}>
           <View style={styles.benefitRow}>
             <Text style={styles.benefitIcon}>☁️</Text>
@@ -210,9 +253,10 @@ export default function AuthScreen({ onSuccess }: Props) {
             <Text style={styles.benefitText}>{t('auth.benefit3')}</Text>
           </View>
         </View>
+        )}
 
         {/* ── Sign in with Apple (iOS 13+) ── */}
-        {appleAvailable && (
+        {appleAvailable && showApple && (
           <Pressable
             onPress={onPressApple}
             disabled={loading !== null}
@@ -233,6 +277,7 @@ export default function AuthScreen({ onSuccess }: Props) {
         )}
 
         {/* ── Sign in with Google ── */}
+        {showGoogle && (
         <Pressable
           onPress={onPressGoogle}
           disabled={loading !== null || !request}
@@ -251,6 +296,7 @@ export default function AuthScreen({ onSuccess }: Props) {
             </>
           )}
         </Pressable>
+        )}
 
         {error && (
           <View style={styles.errorBox}>
@@ -260,34 +306,34 @@ export default function AuthScreen({ onSuccess }: Props) {
 
         <Text style={styles.hint}>{t('auth.privacyHint')}</Text>
 
-        {/* ── DEV BYPASS ── (visible only in Expo Go / __DEV__) */}
-        {(__DEV__ || isExpoGo) && (
+        {/* Fallback screen only: try again without an account (the first
+            attempt failed, e.g. offline) — never a login wall. */}
+        {mode === 'gate' && (
           <Pressable
             onPress={async () => {
-              setLoading('google');
               setError(null);
-              try {
-                const user = await signInAnon();
-                await finishSignIn(user.uid);
-              } catch (e: any) {
-                setError(e?.message ?? 'Bypass échoué');
-              } finally {
-                setLoading(null);
-              }
+              try { await signInAnon(); } catch { setError(t('auth.errorNoNetwork')); }
             }}
-            style={styles.devBypass}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.continueBtn, pressed && { opacity: 0.6 }]}
           >
-            <Text style={styles.devBypassText}>
-              🔓 Dev bypass (anonymous) — Expo Go only
-            </Text>
+            <Text style={styles.continueBtnText}>{t('auth.continueWithout')}</Text>
           </Pressable>
         )}
+
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  continueBtn: { marginTop: spacing.lg, minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md },
+  continueBtnText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft, textDecorationLine: 'underline' },
+  closeBtn: {
+    position: 'absolute', top: spacing.lg, right: spacing.md, zIndex: 2,
+    width: 44, height: 44, alignItems: 'center', justifyContent: 'center',
+  },
+  closeBtnText: { fontSize: 20, color: colors.textMuted },
   scroll: {
     flexGrow: 1,
     backgroundColor: colors.bg,
@@ -327,7 +373,7 @@ const styles = StyleSheet.create({
     color: colors.textSoft,
   },
   langBtnTextActive: {
-    color: colors.accent,
+    color: colors.accentText,
     fontWeight: '700',
   },
 

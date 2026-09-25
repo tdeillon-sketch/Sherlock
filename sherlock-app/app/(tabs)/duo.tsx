@@ -203,8 +203,10 @@ function TypeGrid({
                 {t}
               </Text>
               <Text
-                style={[gridStyles.short, { color: isSel ? 'rgba(255,255,255,0.8)' : colors.textDim }]}
+                style={[gridStyles.short, { color: isSel ? colors.white : colors.textMuted }]}
                 numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
               >
                 {typeNames[i]}
               </Text>
@@ -251,7 +253,7 @@ const gridStyles = StyleSheet.create({
   },
   short: {
     fontFamily: fonts.sans,
-    fontSize: 8,
+    fontSize: 10,
     textAlign: 'center',
     marginTop: 1,
   },
@@ -286,7 +288,7 @@ export default function DuoScreen() {
     }, []),
   );
   const quickPairs = (family?.self?.type != null)
-    ? family.children.filter((c) => c.type != null)
+    ? [...family.adults, ...family.children].filter((c) => c.type != null)
     : [];
 
   const context = deriveContext(roleA, roleB);
@@ -389,14 +391,18 @@ export default function DuoScreen() {
         {quickPairs.length > 0 && (
           <View style={styles.shortcutsRow}>
             <Text style={styles.shortcutsLabel}>{t('duo.shortcuts')}</Text>
-            <View style={styles.shortcutsChips}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.shortcutsChips}
+            >
               {quickPairs.map((c) => (
                 <Pressable
                   key={c.id}
                   onPress={() => {
                     setRoleA('adulte');
                     setTypeA(family!.self!.type!);
-                    setRoleB('enfant');
+                    setRoleB(c.kind === 'adult' ? 'adulte' : 'enfant');
                     setTypeB(c.type!);
                   }}
                   style={({ pressed }) => [styles.shortcutChip, pressed && { opacity: 0.7 }]}
@@ -404,7 +410,7 @@ export default function DuoScreen() {
                   <Text style={styles.shortcutChipText}>{t('family.me')} ↔ {c.name}</Text>
                 </Pressable>
               ))}
-            </View>
+            </ScrollView>
           </View>
         )}
 
@@ -594,7 +600,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted, letterSpacing: 0.8, textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
-  shortcutsChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  shortcutsChips: { flexDirection: 'row', gap: 8, paddingRight: spacing.md },
   shortcutChip: {
     paddingHorizontal: 12, paddingVertical: 8,
     borderRadius: radius.full,
@@ -602,7 +608,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.accent,
   },
   shortcutChipText: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '600',
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accentText, fontWeight: '600',
   },
 
   // ── Selectors ──
@@ -648,7 +654,7 @@ const styles = StyleSheet.create({
   contextBannerText: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: colors.accent,
+    color: colors.accentText,
     fontWeight: '600',
   },
 

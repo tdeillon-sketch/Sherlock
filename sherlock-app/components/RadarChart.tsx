@@ -116,7 +116,7 @@ export default function RadarChart({ scores, size = 280 }: RadarChartProps) {
           key={`label-${l.num}`}
           x={l.x}
           y={l.y}
-          fill={l.num === topType ? colors.accentLight : colors.textDim}
+          fill={l.num === topType ? colors.accentLight : colors.textMuted}
           fontSize={l.num === topType ? 13 : 11}
           fontWeight={l.num === topType ? 'bold' : 'normal'}
           textAnchor="middle"
