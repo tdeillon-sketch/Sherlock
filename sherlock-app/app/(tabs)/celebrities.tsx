@@ -760,6 +760,11 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
           <Text style={styles.funFactText}>{funFact}</Text>
         </View>
       )}
+
+      {/* Public figures: a reading of their public image, not a verdict */}
+      <Text style={[styles.disclaimer, { marginHorizontal: spacing.md, marginBottom: spacing.xl }]}>
+        {t('dossiers.disclaimer')}
+      </Text>
     </ScrollView>
   );
 }
@@ -840,6 +845,9 @@ function HubScreen({
           </View>
         </View>
       </Pressable>
+
+      {/* Public figures: a reading of their public image, not a verdict */}
+      <Text style={styles.disclaimer}>{t('dossiers.disclaimer')}</Text>
     </ScrollView>
   );
 }
@@ -1084,6 +1092,11 @@ const styles = StyleSheet.create({
   sherlockBarFooter: { alignItems: 'center' },
   sherlockBarNext: {
     fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
+  },
+
+  disclaimer: {
+    fontFamily: fonts.sans, fontSize: 11.5, lineHeight: 17,
+    color: colors.textMuted, marginTop: spacing.sm, paddingHorizontal: spacing.xs,
   },
 
   // Mode cards

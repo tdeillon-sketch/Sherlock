@@ -511,6 +511,7 @@ export const fr = {
   // Sherlock Files / Case files screen
   dossiers: {
     hubTitle: 'Les Dossiers Sherlock',
+    disclaimer: "Les types attribués aux personnalités sont des hypothèses de lecture, fondées sur leur image publique (propos, biographies, œuvres). Ils ne prétendent rien dire de leur vie privée, ne sont pas validés par les personnes citées et n'engagent qu'une façon de regarder. Les personnages de fiction appartiennent à leurs ayants droit. Une personne citée souhaite une modification ? Écrivez à thomas.5sherlock@gmail.com.",
     hubSubtitle: "Apprenez à reconnaître les 9 façons d'être, et ce qui les distingue",
     lessonLabel: '💡 Ce que ça révèle',
     rankCurrent: 'Rang actuel',

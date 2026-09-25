@@ -502,6 +502,7 @@ export const en = {
   // Sherlock Files / Case files screen
   dossiers: {
     hubTitle: 'The Sherlock Files',
+    disclaimer: 'The types given to public figures are readings based on their public image (statements, biographies, work). They claim nothing about their private lives, are not endorsed by the people named and reflect only one way of looking. Fictional characters belong to their rights holders. Someone named would like a change? Write to thomas.5sherlock@gmail.com.',
     hubSubtitle: 'Learn to recognize the 9 ways of being, and what sets them apart',
     lessonLabel: '💡 What this reveals',
     rankCurrent: 'Current rank',
