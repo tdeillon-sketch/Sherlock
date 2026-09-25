@@ -7,7 +7,7 @@ export const TYPES = [
         short: "Un sens aigu du bien et du mal, un besoin d'ordre et de justice.",
         fear: "Ne pas être assez bon, faire mal",
         need: "Ordre, justesse, intégrité",
-        metaphor: "Le Perfectionniste est comme un fil à plomb — cet outil que les maçons utilisent pour vérifier qu'un mur est droit. L'enfant de type 1 évalue constamment : c'est juste ou faux, c'est bien ou mal. Cette capacité innée en fait un être de justice, un gardien d'intégrité. Mais elle peut aussi devenir lourde. Le type 1 se demande sans cesse : « Suis-je assez bon ? »",
+        metaphor: "Le Perfectionniste est comme un fil à plomb : cet outil que les maçons utilisent pour vérifier qu'un mur est droit. L'enfant de type 1 évalue constamment : c'est juste ou faux, c'est bien ou mal. Cette capacité innée en fait un être de justice, un gardien d'intégrité. Mais elle peut aussi devenir lourde. Le type 1 se demande sans cesse : « Suis-je assez bon ? »",
         integration: {
             toward: 7,
             desc: "En sécurité, le Perfectionniste intègre vers le type 7 : il déverrouille sa joie, sa spontanéité, son humour. La pression interne se relâche. Il se permet de rire de ses erreurs et de jouer sans but."
@@ -17,17 +17,17 @@ export const TYPES = [
             desc: "Sous stress, le type 1 désintègre vers le type 4 : la critique interne devient dévastatrice. L'enfant se retire, devient morose, mélancolique. Il sent que tout est sa faute."
         },
         ages: {
-            "5-8": "À cet âge, le type 1 range ses jouets avec méthode, a des cahiers impeccables (pas une rature !), et vous signale vos incohérences avec aplomb. « Ce n'est pas juste ! » est sa phrase phare — non par jalousie, mais par un vrai sens de la justice.",
+            "5-8": "À cet âge, le type 1 range ses jouets avec méthode, a des cahiers impeccables (pas une rature !), et vous signale vos incohérences avec aplomb. « Ce n'est pas juste ! » est sa phrase phare, non par jalousie, mais par un vrai sens de la justice.",
             "8-12": "Le Perfectionniste devient plus rigide. Les résultats scolaires deviennent une affaire personnelle. La frustration est un affect majeur : les choses devraient être mieux. Il développe une relation au self-improvement intense et peut être dur envers lui-même et les autres.",
             "13-16": "L'idéalisme rencontre la réalité. L'adolescent peut devenir un militant fervent ou se replier sur sa culpabilité. Certains se jettent dans des causes (écologie, justice sociale), d'autres internalisent tout jusqu'au burn-out."
         },
         keys: [
             { title: "Validez ses standards sans les reproduire", desc: "Écoutez-le avec sérieux quand il signale une injustice. Dites : « Tu as remarqué quelque chose d'important. Merci. » Mais ne l'autorisez pas à transformer la famille en tribunal permanent. L'excellence est une orientation, pas une prison." },
             { title: "Offrez-lui des espaces d'imperfection", desc: "Créez des moments où les erreurs sont invitées. Jouez à des jeux où vous faites exprès de perdre. Montrez que vous êtes imparfait et que c'est o.k. Ces mémoires d'imperfection partagée sont des grâces pour un type 1." },
-            { title: "Valorisez la tentative plus que la perfection", desc: "Quand il doute — « Mais et si j'échoue ? » — dites : « Je suis fier de toi pour avoir essayé, indépendamment du résultat. » Célébrez le courage plus que la victoire." }
+            { title: "Valorisez la tentative plus que la perfection", desc: "Quand il doute (« Mais et si j'échoue ? »), dites : « Je suis fier de toi pour avoir essayé, indépendamment du résultat. » Célébrez le courage plus que la victoire." }
         ],
         belief: "Pour être quelqu'un de bien, je dois être parfait, juste, irréprochable. L'erreur est une faute morale.",
-        compulsion: { name: "Colère (ressentiment)", desc: "Une colère froide, contenue, faite d'irritation chronique de voir que rien — ni lui, ni les autres, ni le monde — n'est à la hauteur de l'idéal." },
+        compulsion: { name: "Colère (ressentiment)", desc: "Une colère froide, contenue, faite d'irritation chronique de voir que rien (ni lui, ni les autres, ni le monde) n'est à la hauteur de l'idéal." },
         virtue: { name: "Sérénité", desc: "La sagesse d'accepter ce qui est, de faire de son mieux avec ce qu'il contrôle, et de lâcher prise sur le reste avec une paix profonde." },
         identity: "Je suis celui qui fait bien les choses.",
         missionLibre: "Le 1 libéré ne cherche plus à corriger le monde, mais à incarner la sérénité. Il devient un leader éthique : son discernement, libéré du jugement, inspire par l'exemple plutôt que par la critique.",
@@ -106,7 +106,7 @@ export const TYPES = [
         short: "Une sensibilité profonde, un besoin d'être compris.",
         fear: "Être banal, ne pas être compris",
         need: "Authenticité et singularité",
-        metaphor: "L'enfant qui sent tout. Pas seulement les événements — les non-dits, la tristesse de l'invisible. Le Type 4 naît avec la conviction sourde d'être différent : le mauvais mot dans la chanson. Et cette sensation le pousse vers sa plus grande force : l'authenticité. Mais d'abord, elle le rend seul.",
+        metaphor: "L'enfant qui sent tout. Pas seulement les événements : les non-dits, la tristesse de l'invisible. Le Type 4 naît avec la conviction sourde d'être différent : le mauvais mot dans la chanson. Et cette sensation le pousse vers sa plus grande force : l'authenticité. Mais d'abord, elle le rend seul.",
         integration: {
             toward: 1,
             desc: "En intégration vers le type 1, la profondeur émotionnelle trouve une structure. L'enfant canalise ses émotions en action : il peint avec discipline, écrit avec précision. L'authenticité ne signifie plus isolement ; elle devient contribution."
@@ -127,7 +127,7 @@ export const TYPES = [
         ],
         belief: "Il me manque quelque chose d'essentiel pour être complet. Je suis fondamentalement différent et je dois trouver mon identité unique pour être aimé.",
         compulsion: { name: "Envie (du manque)", desc: "Non pas la jalousie, mais la conviction qu'il lui manque une qualité essentielle que les autres possèdent. Son attention reste tournée vers l'absent, l'inaccessible, l'idéalisé." },
-        virtue: { name: "Équanimité", desc: "La capacité de ressentir toute la gamme des émotions humaines — joie comme tristesse — sans se laisser emporter. La découverte que rien d'essentiel ne lui manque." },
+        virtue: { name: "Équanimité", desc: "La capacité de ressentir toute la gamme des émotions humaines, joie comme tristesse, sans se laisser emporter. La découverte que rien d'essentiel ne lui manque." },
         identity: "Je suis mes sentiments.",
         missionLibre: "Le 4 libéré ne se complaît plus dans le sentiment de différence. Il devient un leader créatif et empathique : sa profondeur se met au service de la beauté et du sens, et il révèle l'humanité cachée dans l'imperfection.",
         wings: "Type 3 (l'ambitieux) et Type 5 (le penseur)"
@@ -139,7 +139,7 @@ export const TYPES = [
         short: "Une curiosité insatiable, un besoin de comprendre.",
         fear: "Être incompétent, être envahi",
         need: "Comprendre et préserver son énergie",
-        metaphor: "L'Observateur regarde le monde de loin, écoute plus qu'il ne parle, construit des systèmes mentaux labyrinthiques pour comprendre comment les choses fonctionnent. Il ne veut pas participer. Il veut voir. Il veut savoir. Et il veut qu'on le laisse tranquille pour le faire. Ce besoin d'espace est sa signature — et souvent son énigme pour ceux qui l'aiment. Au fond, il préserve son énergie pour se sentir compétent et ne jamais se retrouver dépassé.",
+        metaphor: "L'Observateur regarde le monde de loin, écoute plus qu'il ne parle, construit des systèmes mentaux labyrinthiques pour comprendre comment les choses fonctionnent. Il ne veut pas participer. Il veut voir. Il veut savoir. Et il veut qu'on le laisse tranquille pour le faire. Ce besoin d'espace est sa signature, et souvent son énigme pour ceux qui l'aiment. Au fond, il préserve son énergie pour se sentir compétent et ne jamais se retrouver dépassé.",
         integration: {
             toward: 8,
             desc: "En intégration vers le type 8, il sort de sa tour. Tout son savoir, il le transforme en action. Il devient assertif, confiant, capable de faire connaître son expertise au monde."
@@ -149,13 +149,13 @@ export const TYPES = [
             desc: "En désintégration vers le type 7, il s'éparpille en distractions : saute d'un intérêt à l'autre, devient hyperactif, fuit dans les écrans et les stimulations."
         },
         ages: {
-            "5-8": "Il regarde les autres jouer avec une curiosité détachée. Il pose des questions qui prennent les adultes au dépourvu. Les invitations anniversaire sont des calvaires — trop d'enfants, trop de bruit. Les livres deviennent ses amis.",
+            "5-8": "Il regarde les autres jouer avec une curiosité détachée. Il pose des questions qui prennent les adultes au dépourvu. Les invitations anniversaire sont des calvaires : trop d'enfants, trop de bruit. Les livres deviennent ses amis.",
             "8-12": "Il devient un expert dans un ou deux domaines qu'il a décidé de comprendre à fond. Les autres enfants trouvent son expertise fascinante pendant cinq minutes puis s'ennuient. Il a besoin d'espace pour fonctionner.",
             "13-16": "L'indépendance intellectuelle. Il questionne tout. La peur de l'incompétence peut s'installer : la peur que tout son savoir ne suffit pas, qu'il n'est qu'un imposteur dans sa propre tour."
         },
         keys: [
-            { title: "La solitude n'est pas un symptôme à guérir", desc: "Respectez l'espace de votre Observateur. Ne le forcez pas à participer juste pour participer. Mais assurez-vous qu'il est seul de façon saine — qu'il apprend, qu'il explore, qu'il grandit." },
-            { title: "Ta connaissance vaut quelque chose", desc: "Validez son expertise. Créez des espaces où son savoir compte. Encouragez-le à partager d'une façon qui le satisfait — pas pour impressionner, mais pour communiquer véritablement." },
+            { title: "La solitude n'est pas un symptôme à guérir", desc: "Respectez l'espace de votre Observateur. Ne le forcez pas à participer juste pour participer. Mais assurez-vous qu'il est seul de façon saine : qu'il apprend, qu'il explore, qu'il grandit." },
+            { title: "Ta connaissance vaut quelque chose", desc: "Validez son expertise. Créez des espaces où son savoir compte. Encouragez-le à partager d'une façon qui le satisfait, pas pour impressionner, mais pour communiquer véritablement." },
             { title: "Le cœur existe, même derrière l'intellect", desc: "Il n'est pas froid. Il est prudent sur le plan émotionnel. Il a besoin de savoir qu'il est sécuritaire de descendre de la tour. Que l'amour peut être vrai même quand il est difficile à exprimer." }
         ],
         belief: "Le monde est envahissant et mes ressources sont limitées. Je dois comprendre avant d'agir et conserver mon énergie en minimisant mes engagements.",
@@ -175,7 +175,7 @@ export const TYPES = [
         metaphor: "Le Loyal scanne en permanence l'horizon. Quelque chose va-t-il mal ? Sommes-nous en sécurité ? Il pose des questions que les autres enfants ne posent pas. Il remarque les tensions que les adultes pensent cachées. C'est un enfant loyal, fidèle, qui ferait tout pour protéger ceux qu'il aime. Et qui construit un comité intérieur de voix qui discutent : « Mais et si... ? »",
         integration: {
             toward: 9,
-            desc: "En intégration vers le type 9, la vigilance se relâche. Il apprend à faire confiance — aux autres et surtout à lui-même. Il trouve une stabilité intérieure, une tranquillité qui transforme sa prudence en sagesse."
+            desc: "En intégration vers le type 9, la vigilance se relâche. Il apprend à faire confiance aux autres, et surtout à lui-même. Il trouve une stabilité intérieure, une tranquillité qui transforme sa prudence en sagesse."
         },
         disintegration: {
             toward: 3,
@@ -191,7 +191,7 @@ export const TYPES = [
             { title: "Ton doute ne veut pas dire que tu es faible", desc: "Au lieu de tenter de le guérir de son doute, apprenez-lui à y vivre. « Tu doutes. C'est qui tu es. Tu peux douter et agir de toute façon. » C'est un courage qu'il faut cultiver." },
             { title: "Tu as besoin d'appartenance, pas de perfection", desc: "Donnez-lui une tribu où il peut être authentique. Montrez-lui qu'il vous appartient, inconditionnellement. C'est la sécurité dont il a vraiment besoin." }
         ],
-        belief: "Le monde est dangereux et imprévisible. Je ne peux pas faire confiance à ma propre guidance — je dois être vigilant et trouver une autorité extérieure fiable.",
+        belief: "Le monde est dangereux et imprévisible. Je ne peux pas faire confiance à ma propre guidance : je dois être vigilant et trouver une autorité extérieure fiable.",
         compulsion: { name: "Peur (anxiété chronique)", desc: "Une « peur de la peur » qui pousse à imaginer tous les scénarios catastrophes. Le doute ronge la certitude, la méfiance questionne chaque intention." },
         virtue: { name: "Courage (Foi)", desc: "Non pas l'absence de peur, mais la capacité d'agir malgré la peur. Trouver son autorité et sa sécurité non plus à l'extérieur, mais en soi-même." },
         identity: "Je suis celui qui doute (et qui est loyal).",
@@ -216,12 +216,12 @@ export const TYPES = [
         },
         ages: {
             "5-8": "Mille projets dès le lundi matin. Piano le lundi, escalade le mardi, botanique le mercredi. Il peut commencer cinq projets et en terminer aucun. Mais il transforme le repas en fête et le trajet en aventure. L'anxiété ? Il l'esquive.",
-            "8-12": "Le papillon social : toujours en mouvement, invité à chaque fête. La FOMO s'installe. La concentration à l'école est un défi — non par incapacité, mais par problème de sélection de ce qui mérite son attention.",
+            "8-12": "Le papillon social : toujours en mouvement, invité à chaque fête. La FOMO s'installe. La concentration à l'école est un défi, non par incapacité, mais par problème de sélection de ce qui mérite son attention.",
             "13-16": "Il veut tout vivre, tout essayer. Les risques deviennent concrets. Mais c'est aussi l'enfant qui rêve de changer le monde et qui inspire les autres par son optimisme."
         },
         keys: [
             { title: "De la structure, mais pas trop", desc: "L'Aventurier a besoin de limites pour être libre. Des limites claires sur les écrans, les activités, le sommeil. Mais laissez de la place pour la spontanéité. C'est l'équilibre qui compte." },
-            { title: "Aidez-le à terminer les choses", desc: "Non en le forçant, mais en restant présent. L'Aventurier a besoin de sentir que laisser briller longtemps, c'est magique — pas seulement l'étincelle du début." },
+            { title: "Aidez-le à terminer les choses", desc: "Non en le forçant, mais en restant présent. L'Aventurier a besoin de sentir que laisser briller longtemps, c'est magique, pas seulement l'étincelle du début." },
             { title: "Nommez l'évitement", desc: "« Je remarque que quand c'est difficile, tu changes de sujet. C'est normal. Mais ensemble, on peut apprendre à rester un peu même quand c'est moins brillant. » L'Aventurier a besoin d'apprendre la profondeur par la découverte." }
         ],
         belief: "Le monde est plein d'opportunités, mais je dois éviter la douleur et la limitation. Je dois garder mes options ouvertes pour ne pas être piégé.",
@@ -238,7 +238,7 @@ export const TYPES = [
         short: "Une force tranquille (ou pas si tranquille), un besoin de contrôle.",
         fear: "Être contrôlé, montrer sa faiblesse",
         need: "Contrôle, justice et intensité",
-        metaphor: "L'enfant qui prend de la place. Pas toujours méchamment, mais avec une présence qui se fait sentir. Il sait ce qu'il veut. Il voit les dynamiques de pouvoir instinctivement. Le monde est fait de forts et de faibles, et le Chef refuse d'être du mauvais côté — pas pour lui, mais pour sa tribu, les petits qu'il a pris sous son aile.",
+        metaphor: "L'enfant qui prend de la place. Pas toujours méchamment, mais avec une présence qui se fait sentir. Il sait ce qu'il veut. Il voit les dynamiques de pouvoir instinctivement. Le monde est fait de forts et de faibles, et le Chef refuse d'être du mauvais côté, pas pour lui, mais pour sa tribu, les petits qu'il a pris sous son aile.",
         integration: {
             toward: 2,
             desc: "En intégration vers le type 2, le plus dur devient accessible : la tendresse. Le Chef apprend à montrer sa vulnérabilité, à demander de l'aide. Le guerrier découvre qu'aimer peut être plus puissant que dominer."
@@ -248,7 +248,7 @@ export const TYPES = [
             desc: "En désintégration vers le type 5, c'est l'isolement total. L'enfant devient silencieux, soupçonneux, froid. La confiance disparaît. Il construit des mondes paranoïaques dans sa tête."
         },
         ages: {
-            "5-8": "Dès quatre ans, il refuse de se coucher sans explication. L'autorité, pour le Chef, ça se gagne. Il protège les autres enfants et a un sens de la justice instinctif. Les crises sont spectaculaires — mais c'est une inébranlable honnêteté.",
+            "5-8": "Dès quatre ans, il refuse de se coucher sans explication. L'autorité, pour le Chef, ça se gagne. Il protège les autres enfants et a un sens de la justice instinctif. Les crises sont spectaculaires, mais c'est une inébranlable honnêteté.",
             "8-12": "Le chef de meute. Leader naturel du groupe, il décide où aller et à quoi jouer. Les confrontations avec l'autorité scolaire apparaissent. La vulnérabilité ? Il la cache comme un secret honteux.",
             "13-16": "Une force de nature. L'intensité monte. Pensée binaire : fort ou faible, loyal ou traître. Il peut blesser par la force de sa présence, ou se lever contre l'injustice. Derrière tout cela : une peur terrifiante d'être contrôlé."
         },
@@ -281,7 +281,7 @@ export const TYPES = [
             desc: "En désintégration vers le type 6, l'apaisement devient anxiété. L'enfant devient soupçonneux et craintif, imaginant les pires scénarios, doutant de ce qui était autrefois évident."
         },
         ages: {
-            "5-8": "L'enfant « facile » qui dit toujours oui. Pas de crises, pas de conflits. Mais il y a une forme de résistance passive — le Médiateur ne dit pas non par politesse, mais parce qu'il a compris que c'est plus sécurisant. Il a un sens extraordinaire de l'empathie.",
+            "5-8": "L'enfant « facile » qui dit toujours oui. Pas de crises, pas de conflits. Mais il y a une forme de résistance passive : le Médiateur ne dit pas non par politesse, mais parce qu'il a compris que c'est plus sécurisant. Il a un sens extraordinaire de l'empathie.",
             "8-12": "Le médiateur invisible. Il flotte, sympathique à tout groupe, mais sans vraiment appartenir à aucun. Il risque de se perdre dans les autres. La procrastination s'installe : s'engager ressemble à choisir une identité.",
             "13-16": "Le Médiateur commence à se demander « Et moi ? » et cette question est terrifiante. Il est vulnérable aux pressions des pairs. Mais c'est aussi l'âge où il peut trouver sa voix, s'il est accompagné avec douceur."
         },
@@ -290,7 +290,7 @@ export const TYPES = [
             { title: "Validez ses limites molles", desc: "Quand le Médiateur dit « je ne suis pas sûr » ou « peut-être », c'est une limite, pas une indécision. Respectez-la. Il doit apprendre que s'affirmer ne signifie pas blesser les autres." },
             { title: "Connectez-le à lui-même, pas aux autres", desc: "Aidez-le à distinguer : ce qui vient de lui, ce qui vient de sa mère, ce qui vient de son groupe. « Ceci est ce que TU ressens. Ceci est ce que TU crois. Ceci est ce que TU veux. »" }
         ],
-        belief: "Mon opinion, mes désirs et ma présence ne sont pas si importants. Pour maintenir la paix, je ne dois pas m'affirmer — cela risquerait de créer des conflits.",
+        belief: "Mon opinion, mes désirs et ma présence ne sont pas si importants. Pour maintenir la paix, je ne dois pas m'affirmer : cela risquerait de créer des conflits.",
         compulsion: { name: "Paresse de soi", desc: "Pas une paresse physique, mais spirituelle : une tendance à s'oublier, à anesthésier ses propres désirs et sa colère pour ne pas déranger l'ordre établi." },
         virtue: { name: "Action juste (Amour saint)", desc: "S'engager pleinement dans la vie depuis son propre centre, en étant éveillé à soi-même. Sa contribution unique compte ; la vraie paix vient de la présence engagée." },
         identity: "Je suis facile à vivre.",
@@ -299,203 +299,7 @@ export const TYPES = [
     }
 ];
 
-// QuizMode — kept (used by QuizResult.tsx and admin.tsx). The legacy v2
+// QuizMode: kept (used by QuizResult.tsx and admin.tsx). The legacy v2
 // quiz question banks (QUIZ_ENFANT/ADO/ADULTE, DISAMBIG_POOL) and their
 // interfaces were removed; the live quiz uses constants/quiz_v3.ts.
 export type QuizMode = 'enfant' | 'ado' | 'adulte';
-
-// ===== CHAPTERS =====
-export const CHAPTERS = [
-    {
-        part: "Premiere partie — Le plus beau chantier du monde",
-        chapters: [
-            { num: 1, title: "Le seul animal qui ne sait pas elever ses petits", quote: "« L'homme est la mesure de toutes choses » — Protagoras", desc: "L'homme est le seul être vivant qui n'est pas programmé pour élever ses petits. Tout est à construire. Cette liberté est vertigineuse : pas de mode d'emploi, pas d'instinct qui dicte quoi faire. C'est le point de départ du livre — accepter qu'être parent, c'est avancer sans carte.", keyPoints: ["L'homme est le seul être vivant qui n'a pas de programme inné pour élever ses petits", "La parentalité est un chantier permanent, sans mode d'emploi", "Le dîner du mardi soir comme rituel sacré de connexion familiale", "Le principe du PGHM : en cordée, on n'avance pas tant que quelqu'un n'est pas entendu", "Ce livre n'est pas une méthode mais un récit personnel d'un père imparfait"], reflections: ["Quel est votre plus grand défi quotidien en tant que parent ?", "Avez-vous un rituel familial qui crée de la connexion ?", "Qu'est-ce que vous aimeriez transmettre que vous n'avez pas reçu ?"] },
-            { num: 2, title: "Le chameau, le lion et l'enfant", quote: "« Il faut encore porter du chaos en soi pour enfanter une etoile dansante » — Nietzsche", desc: "Inspiré des trois métamorphoses de Nietzsche. Le chameau porte le poids de l'héritage, le lion se révolte contre les « tu dois », l'enfant crée librement. En tant que parent, on traverse ces phases : subir ce qu'on a reçu, s'en libérer, puis choisir ce qu'on veut transmettre.", keyPoints: ["Les trois métamorphoses de Nietzsche : chameau (porter l'héritage), lion (se révolter), enfant (créer librement)", "En tant que parent, on traverse ces phases : subir ce qu'on a reçu, s'en libérer, choisir ce qu'on veut transmettre", "L'Ennéagramme comme carte de la personnalité, pas une boîte", "Chaque type voit le monde avec un filtre différent — les « lunettes »", "Importance de la connaissance de soi avant de vouloir éduquer"], reflections: ["À quelle métamorphose vous situez-vous aujourd'hui : chameau, lion ou enfant ?", "Quel héritage familial avez-vous choisi consciemment de transmettre ?", "Connaissez-vous votre propre type Ennéagramme ?", "En quoi vos « lunettes » diffèrent-elles de celles de votre enfant ?"] },
-            { num: 3, title: "On ne choisit pas sa famille (mais on la construit)", quote: "« Dis-moi comment tu aimes, je te dirai quelle societe tu construis »", desc: "Chaque famille est une société en miniature avec ses lois, ses rapports de force, ses valeurs implicites. Ce chapitre explore comment on construit consciemment le système familial plutôt que de le subir.", keyPoints: ["Chaque famille est une société en miniature avec ses lois et valeurs implicites", "Le concept du « monstre dans la cave » : nos mécanismes de défense inconscients", "Trois monstres : le corbeau (critique interne), le chameau (surcharge), le renard (esquive)", "Nommer le monstre = commencer à le désactiver", "Quand on crie sur son enfant, c'est souvent le monstre qui parle"], reflections: ["Quel est votre « monstre » principal : le corbeau, le chameau ou le renard ?", "Dans quelles situations votre monstre prend-il le dessus ?", "Comment réagissez-vous quand vous êtes fatigué(e) et que votre enfant vous sollicite ?", "Pouvez-vous nommer une fois récente où votre réaction était disproportionnée ?"] }
-        ]
-    },
-    {
-        part: "Deuxieme partie — Ouvre les yeux",
-        chapters: [
-            { num: 4, title: "Neuf facons de voir le monde", quote: "« Connais-toi toi-meme » — Temple de Delphes", desc: "Introduction à l'Ennéagramme : neuf façons de voir le monde, neuf lentilles différentes. Votre enfant et vous n'avez peut-être pas la même lentille. C'est là que résident les malentendus — pas de malveillance, juste deux mondes qui ne parlent pas la même langue.", keyPoints: ["Chaque enfant a sa propre logique interne et son mécanisme de survie affectif", "L'Ennéagramme décrit 9 façons fondamentales de percevoir le monde", "L'enfant n'est pas une version miniature du parent", "Les malentendus viennent de deux mondes qui ne parlent pas la même langue", "Ne pas projeter son propre type sur ses enfants"], reflections: ["En quoi votre enfant perçoit-il le monde différemment de vous ?", "Avez-vous déjà projeté vos propres attentes sur votre enfant ?", "Quel malentendu récurrent existe entre vous et votre enfant ?"] },
-            { num: 5, title: "Ce qui parle quand vous criez", quote: "« Ce que tu ne ramenes pas a la conscience te revient sous forme de destin » — Jung", desc: "Explorer ses zones d'ombre. Quand on crie sur ses enfants, c'est souvent notre propre blessure qui parle. Ce chapitre invite à identifier son « monstre » — cette part d'ombre qui nous habite et qui, une fois reconnue, peut devenir une force.", keyPoints: ["Quand on crie, c'est souvent notre propre blessure qui parle, pas l'éducation", "Le travail d'ombre (shadow work) de Jung appliqué à la parentalité", "Les valeurs fondamentales de chaque type guident les décisions parentales", "Les conflits de valeurs dans le couple sont normaux — les comprendre change tout", "L'importance de comprendre les valeurs de l'autre avant de les juger"], reflections: ["Quelle blessure personnelle se réactive quand vous criez ?", "Connaissez-vous les valeurs non-négociables de votre conjoint(e) ?", "Sur quel sujet vos valeurs parentales divergent-elles le plus ?", "Comment réagissez-vous quand votre enfant touche à vos valeurs profondes ?"] },
-            { num: 6, title: "Ce qui ne se negocie pas", quote: "« Il n'y a pas de vent favorable pour celui qui ne sait pas ou il va » — Seneque", desc: "Définir ses valeurs non-négociables en tant que parent. Pas des règles arbitraires, mais une boussole intérieure. C'est en explorant son monstre qu'on découvre ses valeurs — l'énergie est la même, juste canalisée différemment.", keyPoints: ["Les 5 langages de l'amour de Gary Chapman appliqués à la parentalité", "Chaque enfant a un langage de l'amour dominant : paroles, temps, cadeaux, services, toucher", "Le parent donne souvent de l'amour dans SON langage, pas celui de l'enfant", "Le croisement Ennéagramme × langages de l'amour pour comprendre plus finement", "L'amour n'est pas un sentiment mais une décision et un acte intentionnel"], reflections: ["Quel est votre langage de l'amour dominant ?", "Quel est celui de votre enfant ?", "Donnez-vous de l'amour dans votre langage ou dans celui de votre enfant ?", "Comment pourriez-vous « traduire » votre amour dans le langage de votre enfant ?"] }
-        ]
-    },
-    {
-        part: "Troisieme partie — Ce qui tient quand tout tremble",
-        chapters: [
-            { num: 7, title: "Le verbe le plus difficile", quote: "« L'amour prend patience, l'amour rend service... » — 1 Corinthiens 13", desc: "Qu'est-ce que l'amour ? Non pas un sentiment, mais un verbe. Un choix. Une exigence. Ce chapitre définit l'amour parental comme un acte délibéré, quotidien, difficile — pas comme une émotion spontanée.", keyPoints: ["L'amour n'est pas un sentiment spontané mais un verbe — un choix quotidien", "Le concept du « parent suffisamment bon » de Winnicott", "La parentalité n'est pas une performance mais une relation", "La différence entre aimer et bien aimer", "La robustesse familiale vient de la qualité des liens, pas de la force individuelle"], reflections: ["Cherchez-vous à être un parent parfait ou un parent « suffisamment bon » ?", "Quand l'amour parental devient-il le plus difficile pour vous ?", "Comment montrez-vous concrètement votre amour au quotidien ?"] },
-            { num: 8, title: "Ce que la foret sait et la monoculture ignore", quote: "« Le chene qui n'a pas plie sous le vent se brise. Le roseau plie et ne se rompt jamais. » — La Fontaine", desc: "La robustesse inspirée du vivant, selon les travaux d'Olivier Hamant. Une forêt diverse est plus robuste qu'une monoculture. De même, une famille qui accepte ses différences et ses imperfections résiste mieux aux tempêtes.", keyPoints: ["La diversité est une force, pas un problème — comme une forêt mixte vs une monoculture", "La robustesse familiale vient de la diversité des profils, pas de l'uniformité", "La différence de profils dans le couple est une complémentarité", "Le Wu Wei (sagesse taoïste) : l'art de ne pas forcer", "Les meilleurs moments de paternité = ceux où on n'a rien forcé"], reflections: ["Comment la diversité des profils enrichit-elle votre famille ?", "Quel trait de votre enfant vous agace le plus ? Pourrait-il être une force ?", "Quand avez-vous lâché prise et constaté un meilleur résultat ?", "Votre famille ressemble-t-elle plutôt à une forêt mixte ou à une monoculture ?"] },
-            { num: 9, title: "Ce que Laurent m'a appris", quote: "« Pardonner, c'est liberer un prisonnier et decouvrir que ce prisonnier, c'etait soi. » — Lewis B. Smedes", desc: "Le pardon comme geste fondamental. Nous blesserons ceux que nous aimons — par maladresse, par fatigue. Ni l'amour ni la robustesse ne survivent sans ce troisième geste, le plus difficile et le plus décisif.", keyPoints: ["Le pardon est l'acte central de la robustesse familiale", "La différence entre s'excuser (atténuer) et demander pardon (reconnaître)", "Le pardon envers soi-même est le plus difficile", "La culpabilité parentale est un monstre silencieux", "Le pardon est l'endroit où la connaissance de soi et l'amour de l'autre se rejoignent"], reflections: ["Quand avez-vous dernièrement demandé pardon à votre enfant ?", "Y a-t-il quelque chose que vous ne vous êtes pas encore pardonné en tant que parent ?", "Faites-vous la différence entre vous excuser et demander pardon ?", "Comment le pardon pourrait-il transformer une relation familiale tendue ?"] }
-        ]
-    },
-    {
-        part: "Quatrieme partie — Apprendre a regarder partir",
-        chapters: [
-            { num: 10, title: "La main qu'on lache", quote: "« L'enfant est l'avenir de l'homme. » — Gaston Bachelard", desc: "Le dernier chapitre parle du lâcher-prise. Quand les enfants grandissent, le parent doit apprendre à lâcher la main qu'il tient. Tous les outils du livre — les profils, les monstres, les valeurs, l'amour — sont forgés dans l'enfance pour préparer ce moment.", keyPoints: ["L'adolescence est une métamorphose, pas une crise", "L'émergence du lion chez l'ado : le « je veux » contre le « tu dois »", "Comprendre le type de l'ado pour adapter sa réponse parentale", "Se rendre inutile : le paradoxe ultime de la parentalité", "Le travail est réussi quand on ne l'est plus — quand l'enfant peut voler"], reflections: ["Comment vivez-vous le besoin d'autonomie croissant de votre enfant ?", "Quelle est la chose la plus difficile à « lâcher » dans votre rôle de parent ?", "Que souhaitez-vous que votre enfant retienne de son enfance ?", "Êtes-vous prêt(e) à devenir « inutile » ?"] }
-        ]
-    },
-    {
-        part: "Annexe",
-        chapters: [
-            { num: "A", title: "L'Enneagramme au quotidien", quote: "", desc: "Un guide détaillé des neuf profils de l'Ennéagramme, adapté aux enfants par tranche d'âge (5-8 ans, 8-12 ans, 13-16 ans). Avec un quiz, des portraits complets, les mécanismes d'intégration et de désintégration, et trois clés d'accompagnement pour chaque type.", keyPoints: ["Les 9 types en détail avec portraits par tranche d'âge", "Quiz pratique pour identifier le profil de votre enfant", "Mécanismes d'intégration et de désintégration", "3 clés d'accompagnement concrètes pour chaque type", "Le concept des ailes : les nuances entre types voisins"], reflections: ["Avez-vous reconnu votre enfant dans l'un des 9 portraits ?", "Quel profil vous surprend le plus ?", "Quelles clés d'accompagnement allez-vous essayer cette semaine ?"] }
-        ]
-    }
-];
-
-// ===== Q&A DATABASE =====
-export const QA_DB = [
-    {
-        q: "Comment identifier le profil Enneagramme de mon enfant ?",
-        a: "Le livre propose un quiz de 9 situations du quotidien (dessin, parc, changement de programme, repas de famille...). Pour chaque situation, choisissez la réaction qui ressemble le plus à votre enfant. Les résultats vous donneront une première intuition. Mais rappelez-vous : ce quiz n'est qu'une porte d'entrée. Un enfant est toujours plus complexe qu'une lettre. L'essentiel est de lire les portraits avec le cœur ouvert, en cherchant à reconnaître, non à enfermer.",
-        tags: ["enneagramme", "profil", "quiz", "type", "identifier"],
-        source: "Annexe — L'Enneagramme au quotidien"
-    },
-    {
-        q: "Qu'est-ce que l'integration et la desintegration dans l'Enneagramme ?",
-        a: "L'Ennéagramme n'est pas un système statique. Quand votre enfant grandit dans la sécurité affective, dans la joie, il intègre : il acquiert les qualités saines d'un autre type. Par exemple, un type 1 accepté qui se sent vraiment intégré développe l'optimisme du type 7. Inversement, quand l'enfant est sous stress, fatigué, menacé, il désintègre : il adopte les traits malsains d'un autre type. Ces moments de désintégration sont des signaux qui disent « Mon enfant souffre. Je dois le rassurer. »",
-        tags: ["integration", "desintegration", "stress", "securite", "enneagramme", "croissance"],
-        source: "Annexe — Integration et desintegration"
-    },
-    {
-        q: "Qu'est-ce que les ailes dans l'Enneagramme ?",
-        a: "Les ailes sont les deux types voisins de votre enfant sur le cercle de l'Ennéagramme. Par exemple, un type 1 a pour ailes le type 9 et le type 2. Cela signifie que votre enfant peut parfois basculer vers les tendances de l'un ou l'autre voisin. Reconnaître l'aile dominante de votre enfant, c'est ajouter une teinte à votre compréhension. Ce n'est pas une complication — c'est de la précision amoureuse.",
-        tags: ["ailes", "wings", "enneagramme", "voisin", "type"],
-        source: "Annexe — Les ailes"
-    },
-    {
-        q: "Pourquoi est-ce que je crie sur mes enfants ?",
-        a: "Le chapitre 5, « Ce qui parle quand vous criez », explore cette question essentielle. Quand vous criez, c'est souvent votre propre blessure qui parle, pas une réaction proportionnée à ce que l'enfant a fait. Jung disait : « Ce que tu ne ramènes pas à la conscience te revient sous forme de destin. » Identifier votre « monstre » — cette part d'ombre — est la première étape pour arrêter de le projeter sur vos enfants.",
-        tags: ["crier", "colere", "ombre", "monstre", "jung", "blessure", "emotion"],
-        source: "Chapitre 5 — Ce qui parle quand vous criez"
-    },
-    {
-        q: "Comment definir mes valeurs en tant que parent ?",
-        a: "Le chapitre 6 parle de « ce qui ne se négocie pas ». L'idée est de définir une boussole intérieure, pas des règles arbitraires. Et voici le paradoxe : c'est en explorant votre monstre (chapitre 5) que vous découvrez vos valeurs. L'énergie est la même, juste canalisée différemment. Le corbeau qui murmure « tu n'es pas assez » est la même énergie qui vous pousse à apprendre, comprendre et transmettre.",
-        tags: ["valeurs", "boussole", "principes", "non-negociable", "education"],
-        source: "Chapitre 6 — Ce qui ne se negocie pas"
-    },
-    {
-        q: "C'est quoi la robustesse parentale ?",
-        a: "Inspiré des travaux d'Olivier Hamant, le chapitre 8 compare la famille à une forêt : une forêt diverse est plus robuste qu'une monoculture. La robustesse, c'est la capacité à persister malgré l'imprévisible. Une famille qui accepte ses différences et ses imperfections résiste mieux aux tempêtes qu'une famille qui vise la perfection. C'est le chêne qui se brise sous le vent, tandis que le roseau plie et ne se rompt jamais.",
-        tags: ["robustesse", "resilience", "foret", "hamant", "vivant", "imperfection", "diversite"],
-        source: "Chapitre 8 — Ce que la foret sait et la monoculture ignore"
-    },
-    {
-        q: "Comment aimer ses enfants ?",
-        a: "Le chapitre 7 définit l'amour non comme un sentiment, mais comme un verbe. Un choix délibéré, quotidien, difficile. Aimer, ce n'est pas une émotion spontanée — c'est le verbe le plus difficile. L'amour parental demande patience, service, humilité. Et surtout, il demande de ne pas confondre aimer avec contrôler.",
-        tags: ["amour", "aimer", "verbe", "patience", "choix", "sentiment"],
-        source: "Chapitre 7 — Le verbe le plus difficile"
-    },
-    {
-        q: "Comment pardonner en tant que parent ?",
-        a: "Le chapitre 9, inspiré par ce que Laurent a appris à l'auteur, parle du pardon comme geste fondamental. Nous blesserons ceux que nous aimons — par maladresse, par fatigue, par notre monstre intérieur. Ni l'amour ni la robustesse ne survivent sans le pardon. Comme le dit Lewis B. Smedes : « Pardonner, c'est libérer un prisonnier et découvrir que ce prisonnier, c'était soi. »",
-        tags: ["pardon", "pardonner", "erreur", "blessure", "faute", "culpabilite"],
-        source: "Chapitre 9 — Ce que Laurent m'a appris"
-    },
-    {
-        q: "Comment lacher prise quand mes enfants grandissent ?",
-        a: "Le chapitre 10, « La main qu'on lâche », est le dernier du livre. Il parle de cette métamorphose qui arrive quand les enfants grandissent et que le parent doit apprendre à lâcher la main qu'il tient. Tous les outils du livre — les profils, les monstres, les valeurs, l'amour, le pardon — sont forgés dans l'enfance pour préparer ce moment. C'est peut-être la tâche la plus difficile : regarder partir celui qu'on a accompagné.",
-        tags: ["lacher prise", "adolescence", "grandir", "partir", "autonomie", "separation"],
-        source: "Chapitre 10 — La main qu'on lache"
-    },
-    {
-        q: "Qu'est-ce que les trois metamorphoses de Nietzsche ?",
-        a: "Le chapitre 2 s'inspire d'Ainsi parlait Zarathoustra. Le chameau porte le poids de l'héritage — tout ce que nos parents, la société, la culture ont posé sur nos épaules. Le lion se révolte contre les « tu dois » et dit « je veux ». L'enfant crée librement, sans le poids du passé ni la colère du présent. En tant que parent, on traverse ces phases : d'abord subir ce qu'on a reçu, puis s'en libérer, puis choisir ce qu'on veut transmettre.",
-        tags: ["nietzsche", "chameau", "lion", "enfant", "metamorphose", "heritage", "liberte"],
-        source: "Chapitre 2 — Le chameau, le lion et l'enfant"
-    },
-    {
-        q: "Pourquoi mon enfant de type 1 est-il si critique ?",
-        a: "L'enfant de type 1 a un fil à plomb en lui qui évalue constamment : c'est juste ou faux, c'est bien ou mal. Il ne critique pas par méchanceté, mais par un sens inné de la justice et de l'ordre. Il se critique lui-même encore plus durement. La clé est de valider ses standards sans les reproduire, de lui offrir des espaces d'imperfection, et surtout de lui dire : « Tu n'es pas responsable de rendre le monde parfait. Tes erreurs font partie de qui tu es. Et je t'aime dans tes erreurs. »",
-        tags: ["type 1", "perfectionniste", "critique", "justice", "ordre", "erreur"],
-        source: "Annexe — Type 1, Le Perfectionniste"
-    },
-    {
-        q: "Mon enfant aide tout le monde mais s'oublie. C'est normal ?",
-        a: "Votre enfant est probablement de type 2, le Généreux. C'est un enfant qui trouve sa place en étant utile, en aimant les autres. Mais le secret du type 2, c'est que cette générosité peut devenir une prison — donner pour être aimé, puis souffrir quand l'amour ne semble pas à la hauteur du don. Aidez-le à découvrir ses propres désirs et enseignez-lui que dire non, c'est un acte d'amour envers soi-même.",
-        tags: ["type 2", "genereux", "aide", "oubli de soi", "dire non", "generosite"],
-        source: "Annexe — Type 2, Le Genereux"
-    },
-    {
-        q: "Mon enfant est obsede par la reussite. Comment reagir ?",
-        a: "Votre enfant est peut-être de type 3, le Battant. Il a une capacité innée à performer et à réussir, mais risque de confondre ce qu'il fait avec ce qu'il est. La clé est de séparer votre amour de ses résultats. Célébrez qu'il existe, pas ce qu'il fait. Créez des espaces de non-performance où il n'y a rien à prouver. L'enfant doit apprendre que vous aimez sa présence, non sa productivité.",
-        tags: ["type 3", "gagneur", "reussite", "performance", "echec", "image"],
-        source: "Annexe — Type 3, Le Battant"
-    },
-    {
-        q: "Mon enfant est tres sensible et se sent different. Comment l'aider ?",
-        a: "Votre enfant est peut-être de type 4, l'Artiste. Il naît avec la conviction d'être différent, le mauvais mot dans la chanson. Cette sensation le pousse vers l'authenticité, mais d'abord elle le rend seul. Dites-lui que ses émotions sont réelles, pas dramatiques. Que sa différence est son chemin, pas sa prison. Et surtout, restez présent quand il s'enferme — il a besoin de savoir qu'on ne l'oublie pas, pas qu'on le force à sortir.",
-        tags: ["type 4", "artiste", "sensible", "different", "emotion", "authenticite", "solitude"],
-        source: "Annexe — Type 4, L'Artiste"
-    },
-    {
-        q: "Mon enfant passe son temps seul a lire et observer. Dois-je m'inquieter ?",
-        a: "Si votre enfant est de type 5 (l'Observateur), sa solitude n'est pas un symptôme à guérir — c'est de la respiration. Il a besoin d'espace pour fonctionner, de temps pour recharger. Ne le forcez pas à participer juste pour participer. Mais assurez-vous qu'il est seul de façon saine. Validez son expertise, créez des espaces où son savoir compte, et rappelez-lui que le cœur existe même derrière l'intellect.",
-        tags: ["type 5", "observateur", "solitude", "lecture", "introverti", "espace", "savoir"],
-        source: "Annexe — Type 5, L'Observateur"
-    },
-    {
-        q: "Mon enfant est tres anxieux et pose beaucoup de questions. Que faire ?",
-        a: "Votre enfant est peut-être de type 6, le Loyal. Il scanne en permanence l'horizon pour les dangers. Il a un comité intérieur de voix qui discutent : « Et si... ? » Ce n'est pas de la névrose, c'est de la vigilance — de l'amour qui a peur. La clé est la cohérence : si vous dites quelque chose, faites-le. Apprenez-lui à vivre avec son doute plutôt qu'à le combattre. Et montrez-lui qu'il vous appartient, inconditionnellement.",
-        tags: ["type 6", "loyal", "anxiete", "peur", "securite", "confiance", "doute"],
-        source: "Annexe — Type 6, Le Loyal"
-    },
-    {
-        q: "Mon enfant commence plein de choses sans jamais finir. C'est un probleme ?",
-        a: "C'est typique du type 7, l'Aventurier. Il a des idées en permanence, des projets qui se bousculent. Le moment excitant dure seulement jusqu'au moment où il faut vraiment le faire. Ce n'est pas de la paresse — c'est que l'Aventurier fuit l'inconfort émotionnel par instinct. Mettez de la structure (mais pas trop), aidez-le à terminer les choses en restant présent, et nommez l'évitement sans le reprocher.",
-        tags: ["type 7", "aventurier", "finir", "projets", "enthousiasme", "ennui", "concentration"],
-        source: "Annexe — Type 7, L'Aventurier"
-    },
-    {
-        q: "Mon enfant veut tout controler et refuse l'autorite. Comment gerer ?",
-        a: "Votre enfant est probablement de type 8, le Chef. L'autorité, pour lui, ça se gagne. Il voit les dynamiques de pouvoir instinctivement et refuse d'être du mauvais côté. Soyez plus fort mais juste — ferme, cohérent, impartial, sans ironie. Créez de l'espace pour la vulnérabilité en la nommant, sans l'exiger. Et reconnaissez le bien qu'il fait : il protège les autres, et cette force peut être une beauté.",
-        tags: ["type 8", "chef", "autorite", "controle", "pouvoir", "force", "leader"],
-        source: "Annexe — Type 8, Le Chef"
-    },
-    {
-        q: "Mon enfant dit toujours oui et n'a jamais d'opinion. C'est normal ?",
-        a: "Votre enfant est peut-être de type 9, le Médiateur. Il dit oui non par indécision, mais parce qu'il a compris que c'est plus sécurisant. Il a une résistance passive : si vous insistez trop, il se repliera dans un silence qui peut durer. Posez des questions sans attente de réponse immédiate. Validez ses « peut-être » comme des limites, pas des hésitations. Aidez-le à se connecter à lui-même : « Ceci est ce que TU veux. »",
-        tags: ["type 9", "mediateur", "harmonie", "opinion", "passif", "oui", "conflit"],
-        source: "Annexe — Type 9, Le Mediateur"
-    },
-    {
-        q: "L'homme sait-il naturellement elever ses enfants ?",
-        a: "Non, et c'est le point de départ du livre. Le chapitre 1 explique que l'homme est le seul animal qui ne sait pas élever ses petits. Il n'est pas programmé. Tout est à construire. Cette liberté est vertigineuse — pas de mode d'emploi, pas d'instinct qui dicte quoi faire. Mais c'est aussi ce qui rend la parentalité si riche : on peut choisir quel parent on veut être.",
-        tags: ["instinct", "nature", "animal", "construire", "liberte", "choix"],
-        source: "Chapitre 1 — Le seul animal qui ne sait pas elever ses petits"
-    },
-    {
-        q: "Comment construire sa famille de facon consciente ?",
-        a: "Le chapitre 3 rappelle qu'on ne choisit pas sa famille, mais qu'on la construit. Chaque famille est une société en miniature avec ses lois, ses rapports de force, ses valeurs implicites. Le livre invite à passer d'un système subi à un système choisi, en prenant conscience de la façon dont on distribue le pouvoir, dont on récompense et dont on punit au sein de la famille.",
-        tags: ["famille", "construire", "systeme", "valeurs", "societe", "choix", "conscient"],
-        source: "Chapitre 3 — On ne choisit pas sa famille (mais on la construit)"
-    },
-    {
-        q: "Quel est le message central du livre ?",
-        a: "Le livre porte un message central : on ne devient pas un meilleur parent en appliquant des méthodes, mais en acceptant de se transformer soi-même. Le titre « On a tous besoin de quelqu'un d'autre » est autant une déclaration de vulnérabilité que de force. L'alignement — être le même partout où l'on est — est ce qui donne au leadership parental sa puissance. De Nietzsche à l'Ennéagramme, de Jung à l'Arbinger Institute, le livre tisse philosophie, psychologie et expérience vécue.",
-        tags: ["message", "central", "resume", "theme", "alignement", "transformation"],
-        source: "A propos du livre"
-    },
-    {
-        q: "Comment accompagner mon enfant selon son age ?",
-        a: "L'annexe du livre détaille chaque type de l'Ennéagramme selon trois tranches d'âge : 5-8 ans (les fondations), 8-12 ans (le renforcement des traits) et 13-16 ans (la crise d'identité). Ces tranches correspondent à des tournants du développement moral et affectif. L'enfant de 5 ans ne raisonne pas comme l'adolescent de 14 ans, même s'ils sont du même type. Sa conscience grandit, sa complexité s'étoffe. Utilisez le quiz et les profils pour mieux comprendre chaque étape.",
-        tags: ["age", "accompagner", "tranche", "developpement", "croissance", "5 ans", "8 ans", "13 ans", "adolescent"],
-        source: "Annexe — Comment lire les portraits"
-    }
-];
-
-// ===== Q&A SUGGESTION TAGS =====
-export const QA_SUGGESTIONS = [
-    "L'Enneagramme, c'est quoi ?",
-    "Pourquoi je crie ?",
-    "Mon enfant est anxieux",
-    "Lacher prise",
-    "Les 3 metamorphoses",
-    "Robustesse parentale",
-    "Amour = verbe",
-    "Pardon",
-    "Mon enfant est sensible",
-    "Il veut tout controler"
-];

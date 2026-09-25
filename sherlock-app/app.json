@@ -48,12 +48,6 @@
       "expo-font",
       "expo-web-browser",
       "expo-apple-authentication",
-      [
-        "expo-notifications",
-        {
-          "color": "#f05a00"
-        }
-      ],
       "expo-localization"
     ],
     "extra": {
