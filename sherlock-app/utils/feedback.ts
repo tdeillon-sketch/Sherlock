@@ -17,7 +17,7 @@ export async function openFeedbackEmail(t: Translate): Promise<void> {
   const version = Constants.expoConfig?.version ?? '';
   const os = Platform.OS === 'ios' ? 'iOS' : Platform.OS;
   const footer = `5herlock ${version} · ${os} ${Platform.Version}`;
-  const body = `${t('feedback.bodyIntro')}\n\n\n\n—\n${footer}`;
+  const body = `${t('feedback.bodyIntro')}\n\n\n\n${footer}`;
   const url =
     `mailto:${FEEDBACK_EMAIL}` +
     `?subject=${encodeURIComponent(t('feedback.subject'))}` +

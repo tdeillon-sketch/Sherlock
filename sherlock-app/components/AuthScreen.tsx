@@ -278,7 +278,7 @@ export default function AuthScreen({ onSuccess }: Props) {
             style={styles.devBypass}
           >
             <Text style={styles.devBypassText}>
-              🔓 Dev bypass (anonymous) — Expo Go only
+              🔓 Dev bypass (anonymous): Expo Go only
             </Text>
           </Pressable>
         )}
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     color: colors.textSoft,
   },
   langBtnTextActive: {
-    color: colors.accent,
+    color: colors.accentText,
     fontWeight: '700',
   },
 

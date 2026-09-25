@@ -19,11 +19,15 @@ import {
   serverTimestamp,
   collection,
   getDocs,
+  getDocsFromServer,
   query,
   orderBy,
   limit,
   increment,
+  writeBatch,
+  arrayUnion,
 } from 'firebase/firestore';
+import type { RitualEntry } from './ritualJournal';
 
 // ── Admin allowlist ──
 // Only this email gets access to the admin dashboard.
@@ -124,8 +128,10 @@ export async function signOut(): Promise<void> {
 
 /**
  * Permanently delete the current user's account:
+ *  - Removes the journal entries /journals/{uid}/entries/*
  *  - Removes the Firestore document /users/{uid}
  *  - Deletes the Firebase Auth user
+ * The caller also clears the local journal copy (clearLocalJournal).
  * After this, the user will be signed out and the local state should be reset.
  *
  * NOTE: Firebase requires a recent sign-in for `deleteUser`. If the call
@@ -135,6 +141,9 @@ export async function signOut(): Promise<void> {
 export async function deleteAccount(): Promise<void> {
   const user = auth.currentUser;
   if (!user) throw new Error("Aucun utilisateur connecté");
+  // 0. The journal holds personal answers: if it can't be deleted (e.g.
+  //    offline), stop here so nothing personal is left behind online.
+  await deleteAllJournalEntriesRemote(user.uid);
   // 1. Delete Firestore data first (best-effort — if it fails the auth
   //    user remains so we don't end up with orphaned data).
   try {
@@ -160,6 +169,8 @@ export interface UserData {
   displayName?: string | null;
   quizResults: QuizResult[];
   badges: Badge[];
+  /** "Second avis": how someone close saw you, one entry per round */
+  secondOpinions?: SecondOpinionEntry[];
 }
 
 function detectProvider(user: User): 'google' | 'apple' | 'anonymous' {
@@ -172,8 +183,26 @@ export interface QuizResult {
   mode: string;       // 'enfant' | 'ado' | 'adulte'
   topType: number;
   wingType: number | null;
+  wingCertainty?: number;      // 0..100 (results since the wing is always asked)
   scores: Record<number, number>;
   completedAt: string; // ISO date
+}
+
+/** "Second avis": someone close answered the short quiz about you. */
+export interface SecondOpinionEntry {
+  date: string;                 // ISO
+  selfTop: number;              // your type at the time (compared against)
+  observerTop: number;          // the type the close person's answers point to
+  agree: boolean;
+  candidates: { type: number; selfPercent: number; obsPercent: number }[];
+  selfQuizAt: string | null;    // completedAt of the self quiz used as a base
+}
+
+export async function saveSecondOpinion(uid: string, e: SecondOpinionEntry): Promise<void> {
+  await updateDoc(userDocRef(uid), {
+    secondOpinions: arrayUnion(e),
+    lastSeen: serverTimestamp(),
+  });
 }
 
 export interface Badge {
@@ -262,7 +291,7 @@ export async function updateLastSeen(uid: string): Promise<void> {
 // Best-effort: errors are swallowed (no throw to UI).
 export type Screen =
   | 'home' | 'quiz' | 'profiles' | 'celebrities' | 'duo'
-  | 'pilot' | 'journal' | 'account';
+  | 'journal' | 'account';
 
 export async function trackScreen(screen: Screen): Promise<void> {
   const user = auth.currentUser;
@@ -302,6 +331,70 @@ export async function loadDossierProgress(uid: string): Promise<DossierProgressD
   return (data as any)?.dossierProgress ?? null;
 }
 
+// ── Journal ("Mon journal") ──
+// Stored apart from /users/{uid}, in /journals/{uid}/entries/{YYYY-MM-DD}
+// (one document per day), with an owner-only rule and deliberately no admin
+// read: the answers are personal. See ADMIN.md for the rule.
+
+const journalEntriesCol = (uid: string) => collection(db, 'journals', uid, 'entries');
+
+export async function listJournalEntriesRemote(uid: string): Promise<RitualEntry[]> {
+  // From the server only: offline, getDocs would resolve with an EMPTY cached
+  // result, which the sync would read as "everything was deleted".
+  const snap = await getDocsFromServer(journalEntriesCol(uid));
+  return snap.docs.map((d) => {
+    const data = d.data() as any;
+    return {
+      date: d.id,
+      ts: typeof data.ts === 'number' ? data.ts : 0,
+      locale: data.locale === 'en' ? 'en' : 'fr',
+      question: typeof data.question === 'string' ? data.question : '',
+      answer: typeof data.answer === 'string' ? data.answer : '',
+    };
+  });
+}
+
+export async function putJournalEntryRemote(uid: string, e: RitualEntry): Promise<void> {
+  await setDoc(doc(db, 'journals', uid, 'entries', e.date), {
+    date: e.date, ts: e.ts, locale: e.locale, question: e.question, answer: e.answer,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteJournalEntryRemote(uid: string, date: string): Promise<void> {
+  await deleteDoc(doc(db, 'journals', uid, 'entries', date));
+}
+
+function commitWithTimeout(batch: ReturnType<typeof writeBatch>, ms: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'unavailable' })), ms);
+    batch.commit().then(
+      () => { clearTimeout(timer); resolve(); },
+      (e) => { clearTimeout(timer); reject(e); },
+    );
+  });
+}
+
+/** Delete every journal entry of this account (account deletion).
+ *  "permission-denied" means the rule was never published, so nothing could
+ *  have been stored online: treated as done. Any other error is thrown. */
+export async function deleteAllJournalEntriesRemote(uid: string): Promise<void> {
+  let snap;
+  try {
+    // Server only: offline this rejects ('unavailable'), which stops the
+    // account deletion before anything else is deleted.
+    snap = await getDocsFromServer(journalEntriesCol(uid));
+  } catch (e: any) {
+    if (e?.code === 'permission-denied') return;
+    throw e;
+  }
+  for (let i = 0; i < snap.docs.length; i += 450) {
+    const batch = writeBatch(db);
+    snap.docs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
+    await commitWithTimeout(batch, 15000);
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  CHILD PROFILES — historique du quiz par enfant
 // ═══════════════════════════════════════════════════════════════
@@ -315,6 +408,7 @@ export interface ChildProfileEntry {
   secondType: number;
   secondPercent: number;
   wingType: number | null;
+  wingCertainty?: number;      // 0..100 (results since the wing is always asked)
   scores: Record<number, number>;
   /** Optional open-ended note from the parent */
   note?: string;
@@ -358,6 +452,10 @@ export interface FamilyMember {
   age?: number;
   testCount: number;
   lastDate: string | null;
+  /** Child/adult: mode of the last quiz (child: its age band '5-8'|'9-12'|'13-17') */
+  lastMode?: string | null;
+  /** Self only: the latest "second avis" (how someone close sees you). */
+  secondOpinion?: { observerTop: number; agree: boolean; date: string; count: number } | null;
 }
 
 export interface Family {
@@ -375,7 +473,16 @@ export async function loadFamily(uid: string): Promise<Family> {
     kind: 'self', id: 'self', name: '',
     type: lastSelf.topType, wingType: lastSelf.wingType ?? null,
     testCount: selfResults.length, lastDate: lastSelf.completedAt ?? null,
+    secondOpinion: null,
   } : null;
+  const opinions: SecondOpinionEntry[] = Array.isArray(data?.secondOpinions) ? data!.secondOpinions! : [];
+  if (self && opinions.length) {
+    const last = opinions[opinions.length - 1];
+    self.secondOpinion = {
+      // Compared with the type shown on your line (you may have retaken the quiz).
+      observerTop: last.observerTop, agree: last.observerTop === self.type, date: last.date, count: opinions.length,
+    };
+  }
   const profiles: ChildProfile[] = Array.isArray((data as any)?.childProfiles) ? (data as any).childProfiles : [];
   const toMember = (p: ChildProfile, kind: 'child' | 'adult'): FamilyMember => {
     const hist = Array.isArray(p.history) ? p.history : [];
@@ -384,6 +491,7 @@ export async function loadFamily(uid: string): Promise<Family> {
       kind, id: p.id, name: p.name,
       type: last?.topType ?? null, wingType: last?.wingType ?? null,
       age: p.age, testCount: hist.length, lastDate: last?.date ?? null,
+      lastMode: last?.mode ?? null,
     };
   };
   const children = profiles.filter(p => p.kind !== 'adult').map(p => toMember(p, 'child'));
@@ -392,9 +500,9 @@ export async function loadFamily(uid: string): Promise<Family> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  ADMIN — list all users + launch subscribers
+//  ADMIN — list all users
 //  Requires Firestore rules that allow the admin email to read the
-//  full /users and /launch_subscribers collections.
+//  full /users collection.
 // ═══════════════════════════════════════════════════════════════
 
 export interface AdminUserRow {
@@ -408,10 +516,9 @@ export interface AdminUserRow {
   quizCount: number;          // # quizzes completed
   childProfilesCount: number; // # saved child profiles
   sherlockXp: number;         // Total XP in the Dossiers / Testez-vous game
-  unlockedFiches: number;     // Suspect files unlocked (Pokédex)
+  unlockedFiches: number;     // Suspect files unlocked (casebook)
   completedCases: number;     // Sherlock cases completed
   badges: number;             // Achievement badges earned
-  streak: number;             // Daily mission streak
   /** Aggregated engagement: 0 (none) → 100 (heavy user) */
   engagement: number;
   // Raw arrays — for the detail expand & for distribution stats
@@ -419,16 +526,6 @@ export interface AdminUserRow {
   childProfiles: ChildProfile[];
   // Screen views (incremented by trackScreen). May be undefined for legacy users.
   screenViews?: Partial<Record<Screen, number>>;
-}
-
-export interface AdminLaunchSubscriberRow {
-  deviceId: string;
-  email: string | null;
-  pushGranted: boolean;
-  pushToken: string | null;
-  locale: string;
-  platform: string;
-  subscribedAt: number | null;
 }
 
 function tsToMillis(value: any): number | null {
@@ -470,7 +567,6 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
     const unlockedFiches = Array.isArray(dossier.unlockedFiches) ? dossier.unlockedFiches.length : 0;
     const completedCases = Array.isArray(dossier.completedCases) ? dossier.completedCases.length : 0;
     const badgesArr = Array.isArray(data.badges) ? data.badges : [];
-    const streak = typeof dossier.streak === 'number' ? dossier.streak : 0;
     const engagement = computeEngagement({
       quizCount: quizResults.length, childProfiles: childProfiles.length, sherlockXp,
       unlockedFiches, badges: badgesArr.length,
@@ -488,7 +584,6 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       unlockedFiches,
       completedCases,
       badges: badgesArr.length,
-      streak,
       engagement,
       quizResults,
       childProfiles,
@@ -507,21 +602,4 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
  */
 export async function deleteUserDocAsAdmin(uid: string): Promise<void> {
   await deleteDoc(userDocRef(uid));
-}
-
-/** Admin only — read all /launch_subscribers docs */
-export async function listAllLaunchSubscribers(): Promise<AdminLaunchSubscriberRow[]> {
-  const snap = await getDocs(query(collection(db, 'launch_subscribers'), orderBy('subscribedAt', 'desc'), limit(500)));
-  return snap.docs.map(d => {
-    const data = d.data() as any;
-    return {
-      deviceId: d.id,
-      email: data.email ?? null,
-      pushGranted: !!data.pushGranted,
-      pushToken: data.pushToken ?? null,
-      locale: data.locale ?? 'unknown',
-      platform: data.platform ?? 'unknown',
-      subscribedAt: tsToMillis(data.subscribedAt),
-    };
-  });
 }

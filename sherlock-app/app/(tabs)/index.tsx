@@ -1,24 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, TextInput } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import { colors, fonts, spacing, radius } from '../../constants/theme';
-import { useT, getTypeText } from '../../i18n';
-import { getDailyQuestion, formatRitualDate } from '../../constants/ritualQuestions';
-import { saveAnswer } from '../../constants/ritualJournal';
+import { useT } from '../../i18n';
 import { openFeedbackEmail } from '../../utils/feedback';
-import { TYPES } from '../../constants/data';
-import { TYPES as TYPES_V3, type EnneaType } from '../../constants/quiz_v3';
-import { auth, isAdmin, onAuthChange, trackScreen, loadFamily, type Family } from '../../constants/firebase';
+import { auth, isAdmin, onAuthChange, trackScreen } from '../../constants/firebase';
 
 // ═══════════════════════════════════════════════════════════════
 //  HOME
 //
-//  First visit (nothing typed yet):
+//  One reading order, for everyone:
 //    what this app is for → what is what (+ where to start) → what you can
-//    reach → the daily ritual → why this app (Thomas's text).
-//  Returning visit (family already typed):
-//    Ma famille → the daily ritual → "Comment ça marche ?" (folded guide)
-//    → why this app.
+//    reach → why this app (Thomas's text).
+//  "Ma famille" lives in Profils, the daily question ("Mon journal") in
+//  Testez-vous.
 // ═══════════════════════════════════════════════════════════════
 
 // "Quoi est quoi" — one row per part of the app. The four tabs reuse the tab
@@ -35,15 +30,8 @@ const GUIDE: { icon: string; titleKey: string; descKey: string; route: string }[
 const paragraphs = (s: string) => s.split('\n\n').map((p) => p.trim()).filter(Boolean);
 
 export default function HomeScreen() {
-  const { t, locale } = useT();
-  const [ritualOpen, setRitualOpen] = useState(false);
-  const [ritualNote, setRitualNote] = useState('');
-  const [howOpen, setHowOpen] = useState(false);
+  const { t } = useT();
   const [admin, setAdmin] = useState(isAdmin(auth.currentUser));
-  const [family, setFamily] = useState<Family | null>(null);
-  const dailyQuestion = getDailyQuestion();
-  const ritualDate = formatRitualDate(new Date(), locale);
-  const ritualText = locale === 'en' ? dailyQuestion.en : dailyQuestion.fr;
 
   // Re-evaluate admin status when auth changes
   useEffect(() => {
@@ -54,22 +42,6 @@ export default function HomeScreen() {
   useEffect(() => {
     trackScreen('home').catch(() => {});
   }, []);
-
-  // Refresh "Ma famille" whenever the home regains focus (a quiz/profile may
-  // have been saved in another tab).
-  useFocusEffect(
-    useCallback(() => {
-      const uid = auth.currentUser?.uid;
-      if (uid) loadFamily(uid).then(setFamily).catch(() => {});
-    }, []),
-  );
-
-  const familyMembers = family
-    ? [...(family.self ? [family.self] : []), ...family.adults, ...family.children].filter((m) => m.type != null)
-    : [];
-  // Someone who has already typed their family knows the app: show their
-  // family first and fold the guide into one line.
-  const isReturning = familyMembers.length > 0;
 
   // ── 1. What this app is for ──
   const introSection = (
@@ -128,127 +100,6 @@ export default function HomeScreen() {
     </View>
   );
 
-  const guide = (
-    <>
-      {introSection}
-      {guideSection}
-      {reachSection}
-    </>
-  );
-
-  // ── Daily ritual ──
-  const ritualCard = (
-    <View style={styles.ritualCard}>
-      <View style={styles.ritualHeader}>
-        <Text style={styles.ritualEyebrow}>{t('home.ritualEyebrow')} · {ritualDate}</Text>
-        <View style={styles.ritualDot} />
-      </View>
-      <Text style={styles.ritualText}>« {ritualText} »</Text>
-      {!ritualOpen ? (
-        <View style={styles.ritualCtaRow}>
-          <Pressable
-            onPress={() => setRitualOpen(true)}
-            style={({ pressed }) => [styles.ritualCtaPrimary, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualCtaPrimary')}</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <View style={styles.ritualNoteWrap}>
-          <Text style={styles.ritualNoteLabel}>{t('home.ritualNoteTitle')}</Text>
-          <TextInput
-            value={ritualNote}
-            onChangeText={setRitualNote}
-            placeholder={t('home.ritualNotePlaceholder')}
-            placeholderTextColor={colors.textDim}
-            style={styles.ritualNoteInput}
-            multiline
-            numberOfLines={4}
-          />
-          <View style={styles.ritualCtaRow}>
-            <Pressable
-              onPress={async () => {
-                if (ritualNote.trim()) {
-                  await saveAnswer({ question: ritualText, answer: ritualNote, locale });
-                }
-                setRitualOpen(false);
-                setRitualNote('');
-              }}
-              style={({ pressed }) => [styles.ritualCtaPrimary, pressed && { opacity: 0.85 }]}
-            >
-              <Text style={styles.ritualCtaPrimaryText}>{t('home.ritualNoteSave')}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => { setRitualOpen(false); setRitualNote(''); }}
-              style={({ pressed }) => [styles.ritualCtaSecondary, pressed && { opacity: 0.85 }]}
-            >
-              <Text style={styles.ritualCtaSecondaryText}>{t('home.ritualNoteCancel')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-      <Pressable
-        onPress={() => router.push('/journal' as never)}
-        style={({ pressed }) => [styles.journalLink, pressed && { opacity: 0.6 }]}
-        hitSlop={8}
-      >
-        <Text style={styles.journalLinkText}>{t('journal.viewJournal')}  →</Text>
-      </Pressable>
-    </View>
-  );
-
-  // ── Ma famille (saved profiles) ──
-  const familySection = isReturning ? (
-    <View style={styles.section}>
-      <Text style={styles.sectionLabel}>{t('family.title')}</Text>
-      <View style={styles.familyList}>
-        {familyMembers.map((m) => {
-          const typeNum = m.type as number;
-          const color = TYPES[typeNum - 1]?.color ?? colors.accent;
-          const v3 = TYPES_V3[typeNum as EnneaType];
-          const typeName = v3 ? getTypeText(v3, 'name', locale) : (TYPES[typeNum - 1]?.name ?? '');
-          const label = m.kind === 'self' ? t('family.me') : m.name;
-          return (
-            <Pressable
-              key={m.id}
-              onPress={() => router.push(`/profiles/${typeNum}` as never)}
-              style={({ pressed }) => [styles.familyRow, pressed && { opacity: 0.7 }]}
-            >
-              <View style={[styles.familyBadge, { backgroundColor: color }]}>
-                <Text style={styles.familyBadgeNum}>{typeNum}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.familyName}>{label}</Text>
-                <Text style={styles.familyType}>
-                  {t('result.type')} {typeNum}{m.wingType ? `w${m.wingType}` : ''} · {typeName}
-                </Text>
-                {m.kind === 'adult' && (
-                  <Text style={styles.familyType}>👥 {t('subject.procheTitle')}</Text>
-                )}
-                {m.kind === 'child' && m.age != null && (
-                  <Text style={styles.familyType}>🧒 {t('subject.yearsOld', { n: m.age })}</Text>
-                )}
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <Pressable
-        onPress={() => router.push('/checkin' as never)}
-        style={({ pressed }) => [styles.familyCta, pressed && { opacity: 0.85 }]}
-      >
-        <Text style={styles.familyCtaText}>{t('checkin.cta')}</Text>
-      </Pressable>
-      <Pressable
-        onPress={() => router.push('/family-map' as never)}
-        style={({ pressed }) => [styles.familyCta, pressed && { opacity: 0.85 }]}
-      >
-        <Text style={styles.familyCtaText}>{t('familyMap.cta')}</Text>
-      </Pressable>
-    </View>
-  ) : null;
-
   // ── 4. Why this app — Thomas's text, one block ──
   const whySection = (
     <View style={styles.why}>
@@ -259,7 +110,7 @@ export default function HomeScreen() {
       <Text style={styles.whySignature}>{t('home.whySignature')}</Text>
       <Pressable
         onPress={() => openFeedbackEmail(t)}
-        hitSlop={6}
+        accessibilityRole="link"
         style={({ pressed }) => [styles.feedback, pressed && { opacity: 0.6 }]}
       >
         <Text style={styles.feedbackText}>{t('feedback.homeLink')}</Text>
@@ -299,28 +150,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {isReturning ? (
-        <>
-          {familySection}
-          {ritualCard}
-          <Pressable
-            onPress={() => setHowOpen((o) => !o)}
-            style={({ pressed }) => [styles.howToggle, pressed && { opacity: 0.7 }]}
-          >
-            <Text style={styles.howToggleText}>
-              {howOpen ? t('home.howToggleClose') : t('home.howToggle')}
-            </Text>
-            <Text style={styles.howToggleChevron}>{howOpen ? '▴' : '▾'}</Text>
-          </Pressable>
-          {howOpen && guide}
-        </>
-      ) : (
-        <>
-          {guide}
-          {ritualCard}
-        </>
-      )}
-
+      {introSection}
+      {guideSection}
+      {reachSection}
       {whySection}
     </ScrollView>
   );
@@ -400,14 +232,14 @@ const styles = StyleSheet.create({
   },
   startTitle: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700',
-    color: colors.accent, letterSpacing: 1.2, textTransform: 'uppercase',
+    color: colors.accentText, letterSpacing: 1.2, textTransform: 'uppercase',
   },
   startBody: {
     fontFamily: fonts.sans, fontSize: 14.5, lineHeight: 22,
     color: colors.text, marginTop: spacing.sm,
   },
   startCta: {
-    marginTop: spacing.md, alignSelf: 'flex-start',
+    marginTop: spacing.md, alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center',
     backgroundColor: colors.accent, borderRadius: radius.full,
     paddingVertical: 11, paddingHorizontal: spacing.lg,
   },
@@ -416,108 +248,8 @@ const styles = StyleSheet.create({
   // ── 3. Reach ──
   reachList: { gap: spacing.sm, marginTop: spacing.xs },
   reachRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.xs },
-  reachDash: { fontFamily: fonts.serif, fontSize: 15, lineHeight: 22, color: colors.accent },
+  reachDash: { fontFamily: fonts.serif, fontSize: 15, lineHeight: 22, color: colors.accentText },
   reachText: { flex: 1, fontFamily: fonts.sans, fontSize: 14.5, lineHeight: 22, color: colors.textSoft },
-
-  // ── Returning users: folded guide ──
-  howToggle: {
-    marginHorizontal: spacing.md, marginTop: spacing.lg,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 12, paddingHorizontal: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
-  },
-  howToggleText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', color: colors.text },
-  howToggleChevron: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
-
-  // ── Ritual ──
-  ritualCard: {
-    marginHorizontal: spacing.md, marginTop: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
-    padding: spacing.md,
-  },
-  ritualHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  ritualEyebrow: {
-    fontFamily: fonts.sans, fontSize: 10, letterSpacing: 1.8,
-    color: colors.textMuted, fontWeight: '700',
-  },
-  ritualDot: {
-    width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent,
-  },
-  ritualText: {
-    fontFamily: fonts.serifItalic, fontSize: 15, lineHeight: 23,
-    color: colors.text,
-  },
-  ritualCtaRow: {
-    flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md,
-  },
-  ritualCtaPrimary: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    borderRadius: radius.sm,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  ritualCtaPrimaryText: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.text, fontWeight: '600',
-  },
-  ritualCtaSecondary: {
-    paddingVertical: 10, paddingHorizontal: spacing.md,
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
-    alignItems: 'center',
-  },
-  ritualCtaSecondaryText: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted,
-  },
-  ritualNoteWrap: { marginTop: spacing.sm },
-  ritualNoteLabel: {
-    fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted,
-    letterSpacing: 1, textTransform: 'uppercase', fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  ritualNoteInput: {
-    fontFamily: fonts.sans, fontSize: 14, color: colors.text,
-    backgroundColor: colors.bg,
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
-    padding: spacing.sm, minHeight: 80, textAlignVertical: 'top',
-  },
-  journalLink: {
-    marginTop: spacing.sm,
-    paddingVertical: 6,
-    alignItems: 'flex-end',
-  },
-  journalLinkText: {
-    fontFamily: fonts.sans, fontSize: 12,
-    color: colors.accent, fontWeight: '600',
-  },
-
-  // ── Ma famille ──
-  familyList: { gap: 8, marginTop: spacing.sm },
-  familyRow: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    paddingVertical: 10, paddingHorizontal: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
-  },
-  familyBadge: {
-    width: 34, height: 34, borderRadius: 17,
-    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  familyBadgeNum: { fontFamily: fonts.serif, fontSize: 16, fontWeight: '700', color: colors.white },
-  familyName: { fontFamily: fonts.sans, fontSize: 14, color: colors.text, fontWeight: '600' },
-  familyType: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
-  familyCta: {
-    marginTop: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.lg,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
-    borderRadius: radius.md, alignItems: 'center',
-  },
-  familyCtaText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '600', color: colors.accent },
 
   // ── 4. Why this app ──
   why: {
@@ -533,7 +265,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.serifItalic, fontSize: 22, color: colors.text,
     marginTop: spacing.lg,
   },
-  feedback: { marginTop: spacing.md, alignSelf: 'flex-start' },
+  feedback: { marginTop: 2, paddingVertical: 14, alignSelf: 'flex-start' },
   feedbackText: {
     fontFamily: fonts.sans, fontSize: 12.5, color: colors.textMuted,
     textDecorationLine: 'underline',

@@ -19,6 +19,10 @@ export const colors = {
   accentFill: 'rgba(192,113,58,0.15)',
   accentSoft: 'rgba(192,113,58,0.08)',
   accentMedium: 'rgba(192,113,58,0.2)',
+  // Lisibilité (WCAG AA, texte ≥ 4.5:1) :
+  accentText: '#e0925a',    // orange pour du TEXTE sur fond bleu (5.6:1 sur surface)
+  accentStrong: '#b25f26',  // orange profond : fond sous texte blanc (4.6:1)
+  accentDeep: '#9d5421',    // fin de dégradé sous texte blanc (5.6:1)
 
   // ── Textes ──
   text: '#f0f0f0',          // texte principal (blanc chaud)
@@ -40,6 +44,7 @@ export const colors = {
   // ── Teal (tab bar active) ──
   teal: '#50c8c8',
   tealMuted: 'rgba(80,180,180,0.45)',
+  tabInactive: '#6fb0b0',   // onglet inactif lisible (5.5:1 sur la barre)
   tealSoft: 'rgba(80,180,180,0.6)',
   tealFaint: 'rgba(80,180,180,0.35)',
   tealBorder: 'rgba(80,180,180,0.25)',

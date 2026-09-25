@@ -16,6 +16,7 @@ import {
 import { useDossier, getRankInfo } from '../../hooks/useDossier';
 import { trackScreen } from '../../constants/firebase';
 import { useT, type Locale } from '../../i18n';
+import JournalCard from '../../components/JournalCard';
 import { hapticSuccess, hapticError } from '../../utils/haptics';
 
 // ── Locale-aware lookups (field-level fallback) ──
@@ -185,7 +186,7 @@ function SherlockBar({ xp }: { xp: number }) {
       <View style={styles.sherlockBarFooter}>
         {info.next ? (
           <Text style={styles.sherlockBarNext}>
-            <Text style={{ color: colors.accent, fontWeight: '700' }}>{xpToNext} XP</Text>
+            <Text style={{ color: colors.accentText, fontWeight: '700' }}>{xpToNext} XP</Text>
             {` ${t('dossiers.rankUntil')} `}
             <Text style={{ color: colors.text }}>{info.next.emoji} {nextTitle}</Text>
           </Text>
@@ -301,7 +302,7 @@ function CitationScreen({ cas, playState, onSubmit }: {
 
       <View style={styles.quoteBlock}>
         <Text style={styles.quoteText}>"{localCas.quote}"</Text>
-        <Text style={styles.quoteAuthor}>— {localCas.author}</Text>
+        <Text style={styles.quoteAuthor}>{localCas.author}</Text>
       </View>
 
       <Text style={styles.playPrompt}>{t('dossiers.promptCitationType')}</Text>
@@ -502,7 +503,7 @@ function DetailScreen({ cas, playState, onSubmit }: {
 }
 
 // ─────────────────────────────────────────────
-//  RevealScreen — enrichi avec fun fact + combo
+//  RevealScreen — enrichi avec fun fact
 // ─────────────────────────────────────────────
 
 function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
@@ -527,22 +528,13 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
   const localC = getCaseLocalized(c, locale);
   const explanationOrKeyDiff = (localC as any).explanation ?? (localC as any).keyDiff;
 
-  const mode = playState.mode as 'entrainement' | 'daily';
-  // Combo banner shows during the daily mission (which is the only mode that
-  // now accumulates a combo with a bonus payout at the end).
-  const showCombo = mode === 'daily' && playState.comboCount >= 2;
-  const isLastInDaily = mode === 'daily' && playState.casesPlayedInSession + 1 >= 3;
-  const nextLabel = isLastInDaily ? t('dossiers.seeSummary') : t('dossiers.nextCase');
-
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.screenHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
+        <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.screenTitle}>
-          {mode === 'daily' ? t('dossiers.headerDaily') : t('dossiers.headerTraining')}
-        </Text>
+        <Text style={styles.screenTitle}>{t('dossiers.headerTraining')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -558,17 +550,6 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
             {playState.xpEarned > 0 && <XpChip value={playState.xpEarned} />}
           </View>
         </View>
-
-        {/* Combo indicator (daily mission only — the combo bonus lives there) */}
-        {showCombo && (
-          <View style={styles.comboBanner}>
-            <Text style={styles.comboBannerText}>
-              {playState.comboCount >= 3
-                ? t('dossiers.comboBannerBonus', { n: playState.comboCount })
-                : t('dossiers.comboBanner', { n: playState.comboCount })}
-            </Text>
-          </View>
-        )}
 
         {answerType && (
           <View style={styles.revealTypeRow}>
@@ -604,76 +585,11 @@ function RevealScreen({ playState, onNext, onViewFiche, onBack, onQuit }: {
 
         {/* Buttons */}
         <Pressable onPress={onNext} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
-          <Text style={styles.nextBtnText}>{nextLabel}</Text>
+          <Text style={styles.nextBtnText}>{t('dossiers.nextCase')}</Text>
         </Pressable>
 
-        {mode === 'entrainement' && (
-          <Pressable onPress={onQuit} style={styles.quitBtn}>
-            <Text style={styles.quitBtnText}>{t('dossiers.quitTraining')}</Text>
-          </Pressable>
-        )}
-      </ScrollView>
-    </View>
-  );
-}
-
-// ─────────────────────────────────────────────
-//  SessionSummary — bilan de fin de Mission du jour (3 cas)
-// ─────────────────────────────────────────────
-
-// Shown at the end of the daily mission (3 cases).
-// Daily is one-shot per day — no "refaire" button; user is invited to come
-// back tomorrow, or to keep playing in Entrainement.
-function SessionSummaryScreen({ summary, onHome, onEntrainement }: {
-  summary: any; onHome: () => void; onEntrainement: () => void;
-}) {
-  const { t } = useT();
-  const allCorrect = summary.correct === summary.cases;
-  return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.screenHeader}>
-        <View style={{ width: 44 }} />
-        <Text style={styles.screenTitle}>{t('dossiers.headerDaily')}</Text>
-        <View style={{ width: 44 }} />
-      </View>
-      <ScrollView contentContainerStyle={styles.summaryContent}>
-        {allCorrect && <CelebrationBurst />}
-        <Text style={styles.summaryEmoji}>{allCorrect ? '🏆' : '✓'}</Text>
-        <Text style={styles.summaryTitle}>
-          {allCorrect ? t('dossiers.summaryTitleAll') : t('dossiers.summaryTitle')}
-        </Text>
-        <Text style={styles.summaryScore}>{t('dossiers.summaryScore', { correct: summary.correct, total: summary.cases })}</Text>
-
-        <View style={styles.summaryStats}>
-          <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryXpEarned')}</Text>
-            <Text style={styles.summaryStatValue}>+{summary.xpTotal} XP</Text>
-          </View>
-          {summary.comboBonus > 0 && (
-            <View style={styles.summaryStatRow}>
-              <Text style={styles.summaryStatLabel}>{t('dossiers.summaryComboBonus')}</Text>
-              <Text style={[styles.summaryStatValue, { color: colors.accent }]}>+{summary.comboBonus} XP</Text>
-            </View>
-          )}
-          <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryBestCombo')}</Text>
-            <Text style={styles.summaryStatValue}>× {summary.bestCombo}</Text>
-          </View>
-          <View style={styles.summaryStatRow}>
-            <Text style={styles.summaryStatLabel}>{t('dossiers.summaryStreak')}</Text>
-            <Text style={[styles.summaryStatValue, { color: colors.accent }]}>{t('dossiers.summaryStreakValue')}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.summaryTomorrow}>
-          {t('dossiers.summaryTomorrow')}
-        </Text>
-
-        <Pressable onPress={onEntrainement} style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.85 }]}>
-          <Text style={styles.nextBtnText}>{t('dossiers.summaryContinueTraining')}</Text>
-        </Pressable>
-        <Pressable onPress={onHome} style={styles.quitBtn}>
-          <Text style={styles.quitBtnText}>{t('dossiers.summaryHome')}</Text>
+        <Pressable onPress={onQuit} style={styles.quitBtn}>
+          <Text style={styles.quitBtnText}>{t('dossiers.quitTraining')}</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -696,7 +612,7 @@ function CollectionScreen({ unlockedFiches, onFiche, onBack }: {
   return (
     <ScrollView style={styles.collectionScroll} contentContainerStyle={styles.collectionContent}>
       <View style={styles.screenHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
+        <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
         <Text style={styles.screenTitle}>{t('dossiers.pokedexHeaderTitle')}</Text>
@@ -796,7 +712,7 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
   return (
     <ScrollView style={styles.ficheScroll} contentContainerStyle={styles.ficheContent}>
       <View style={styles.screenHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
+        <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
         <Text style={styles.screenTitle}>{t('dossiers.ficheTitle')}</Text>
@@ -818,7 +734,7 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
 
       <View style={styles.ficheQuoteBlock}>
         <Text style={styles.ficheQuote}>"{fiche.quote}"</Text>
-        <Text style={styles.ficheQuoteSource}>— {fiche.quoteSource}</Text>
+        <Text style={styles.ficheQuoteSource}>{fiche.quoteSource}</Text>
       </View>
 
       <View style={styles.ficheInfoCard}>
@@ -849,23 +765,27 @@ function FicheScreen({ ficheId, onBack }: { ficheId: string; onBack: () => void 
 }
 
 // ─────────────────────────────────────────────
-//  HUB — Mission du jour (3 cas) + Entraînement + Pokédex
-//  (Le mode "rapide" a été fusionné dans la Mission du jour : simplification
-//   demandée pour ne garder qu'un rituel quotidien + un mode libre.)
+//  HUB — Entraînement + Mon journal + Carnet
+//  (La Mission du jour, avec combo et série, a été retirée : il reste un
+//   mode libre, la question du jour et la collection.)
 // ─────────────────────────────────────────────
 
 function HubScreen({
-  progress, isDailyAvailable, onStartDaily, onStartEntrainement, onCollection,
+  progress, onStartEntrainement, onCollection,
 }: {
   progress: any;
-  isDailyAvailable: boolean;
-  onStartDaily: () => void;
   onStartEntrainement: () => void;
   onCollection: () => void;
 }) {
   const { t } = useT();
   return (
-    <ScrollView style={styles.hubScroll} contentContainerStyle={styles.hubContent}>
+    <ScrollView
+      style={styles.hubScroll}
+      contentContainerStyle={styles.hubContent}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+      automaticallyAdjustKeyboardInsets
+    >
       {/* Hero */}
       <View style={styles.hubHero}>
         <Text style={styles.hubHeroTitle}>{t('dossiers.hubTitle')}</Text>
@@ -875,81 +795,30 @@ function HubScreen({
       {/* Sherlock rank card — XP progression + next rank preview */}
       <SherlockBar xp={progress.totalXP} />
 
-      {/* Streak (if active) */}
-      {progress.streak > 0 && (
-        <View style={styles.streakWrap}>
-          <Text style={styles.streakIcon}>🔥</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.streakNumber}>
-              {progress.streak > 1
-                ? t('dossiers.streakDays', { n: progress.streak })
-                : t('dossiers.streakDay', { n: progress.streak })}
-            </Text>
-            <Text style={styles.streakSub}>
-              {isDailyAvailable
-                ? t('dossiers.streakActive')
-                : t('dossiers.streakDone')}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Daily mission — NOW the 3-case ritual (ex "Mode rapide" fused in).
-          Combo ×3 = bonus XP, streak +1 once the mission is attempted. */}
+      {/* Training mode — the main entry, in the brand orange */}
       <Pressable
-        onPress={onStartDaily}
-        disabled={!isDailyAvailable}
-        style={({ pressed }) => [
-          styles.modeCard,
-          styles.modeDaily,
-          pressed && isDailyAvailable && { opacity: 0.85 },
-          !isDailyAvailable && styles.modeCardDone,
-        ]}
+        onPress={onStartEntrainement}
+        style={({ pressed }) => [styles.modeCard, styles.modeFeatured, pressed && { opacity: 0.85 }]}
       >
         <LinearGradient
-          colors={isDailyAvailable ? [colors.accent, '#e8a06a'] : ['#3a4a52', '#2a3a42']}
+          colors={[colors.accentStrong, colors.accentDeep]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.modeGradient}
         >
           <View style={styles.modeRow}>
-            <Text style={styles.modeEmoji}>🎯</Text>
+            <Text style={styles.modeEmoji}>🎓</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>{t('dossiers.dailyTitle')}</Text>
-              <Text style={styles.modeDesc}>
-                {isDailyAvailable
-                  ? t('dossiers.dailyDescAvailable')
-                  : t('dossiers.dailyDescDone')}
-              </Text>
-              {isDailyAvailable && progress.bestCombo > 0 && (
-                <Text style={[styles.modeStat, { color: colors.white }]}>
-                  {t('dossiers.dailyBestCombo', { n: progress.bestCombo })}
-                </Text>
-              )}
+              <Text style={[styles.modeTitle, styles.modeTitleOnAccent]}>{t('dossiers.trainingTitle')}</Text>
+              <Text style={[styles.modeDesc, styles.modeDescOnAccent]}>{t('dossiers.trainingDesc')}</Text>
             </View>
-            {isDailyAvailable && <Text style={styles.modeChevron}>→</Text>}
+            <Text style={[styles.modeChevron, styles.modeChevronOnAccent]}>→</Text>
           </View>
         </LinearGradient>
       </Pressable>
 
-      {/* Training mode */}
-      <Pressable
-        onPress={onStartEntrainement}
-        style={({ pressed }) => [styles.modeCard, pressed && { opacity: 0.85 }]}
-      >
-        <View style={styles.modeBody}>
-          <View style={styles.modeRow}>
-            <View style={[styles.modeIconBox, { backgroundColor: '#5b8a9a22', borderColor: '#5b8a9a55' }]}>
-              <Text style={styles.modeEmoji}>🎓</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modeTitle}>{t('dossiers.trainingTitle')}</Text>
-              <Text style={styles.modeDesc}>{t('dossiers.trainingDesc')}</Text>
-            </View>
-            <Text style={[styles.modeChevron, { color: '#5b8a9a' }]}>→</Text>
-          </View>
-        </View>
-      </Pressable>
+      {/* Mon journal — the question of the day */}
+      <JournalCard />
 
       {/* Casebook shortcut */}
       <Pressable
@@ -976,7 +845,7 @@ function HubScreen({
 }
 
 // ─────────────────────────────────────────────
-//  PlayingScreen — header simplifié + combo pendant la mission du jour
+//  PlayingScreen — header simplifié
 // ─────────────────────────────────────────────
 
 function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfirm, onBack }: {
@@ -989,26 +858,15 @@ function PlayingScreen({ playState, onRevealNext, onSubmit, onFauxAmis, onConfir
 }) {
   const { t } = useT();
   const c = playState.currentCase;
-  const mode = playState.mode as 'entrainement' | 'daily';
-
-  // Daily shows "Case X / 3" progress (the mission is a 3-case session).
-  // Training is continuous so we just show the static title.
-  const headerTitle = mode === 'daily'
-    ? t('dossiers.headerDailyCase', { n: playState.casesPlayedInSession + 1 })
-    : t('dossiers.headerTraining');
 
   return (
     <View style={styles.playingContainer}>
       <View style={styles.playingHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
+        <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <Text style={styles.backBtnText}>‹</Text>
         </Pressable>
-        <Text style={styles.playingTitle} numberOfLines={1}>{headerTitle}</Text>
-        {mode === 'daily' && playState.comboCount > 0 ? (
-          <Text style={styles.playingCombo}>🔥 ×{playState.comboCount}</Text>
-        ) : (
-          <View style={{ width: 44 }} />
-        )}
+        <Text style={styles.playingTitle} numberOfLines={1}>{t('dossiers.headerTraining')}</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <ScrollView style={styles.playScroll} contentContainerStyle={styles.playScrollContent}>
@@ -1071,9 +929,9 @@ export default function CelebritiesScreen() {
   const { t } = useT();
   useEffect(() => { trackScreen('celebrities').catch(() => {}); }, []);
   const {
-    screen, progress, playState, sessionSummary, selectedFicheId, loading,
-    openCollection, openFiche, goBack, goHub,
-    startEntrainement, startDaily, isDailyAvailable,
+    screen, progress, playState, selectedFicheId, loading,
+    openCollection, openFiche, goBack,
+    startEntrainement,
     revealNextIndice, submitAnswer, submitFauxAmis, confirmAndReveal, nextCase, quitSession,
     rankUp, clearRankUp,
   } = useDossier();
@@ -1091,8 +949,6 @@ export default function CelebritiesScreen() {
       <View style={styles.container}>
         <HubScreen
           progress={progress}
-          isDailyAvailable={isDailyAvailable()}
-          onStartDaily={startDaily}
           onStartEntrainement={startEntrainement}
           onCollection={openCollection}
         />
@@ -1126,18 +982,6 @@ export default function CelebritiesScreen() {
           onQuit={quitSession}
         />
         <RankUpModal rank={rankUp} onClose={clearRankUp} />
-      </View>
-    );
-  }
-
-  if (screen === 'session_summary' && sessionSummary) {
-    return (
-      <View style={styles.container}>
-        <SessionSummaryScreen
-          summary={sessionSummary}
-          onHome={goHub}
-          onEntrainement={startEntrainement}
-        />
       </View>
     );
   }
@@ -1188,7 +1032,7 @@ const styles = StyleSheet.create({
   rankUpEmoji: { fontSize: 56, marginBottom: spacing.xs },
   rankUpLabel: {
     fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', letterSpacing: 1.5,
-    textTransform: 'uppercase', color: colors.accent,
+    textTransform: 'uppercase', color: colors.accentText,
   },
   rankUpName: {
     fontFamily: fonts.serif, fontSize: 24, color: colors.text, textAlign: 'center',
@@ -1231,7 +1075,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted, letterSpacing: 1, textTransform: 'uppercase',
   },
   sherlockBarXPValue: {
-    fontFamily: fonts.serif, fontSize: 20, color: colors.accent, marginTop: 2, fontWeight: '700',
+    fontFamily: fonts.serif, fontSize: 20, color: colors.accentText, marginTop: 2, fontWeight: '700',
   },
   sherlockBarTrack: {
     height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden',
@@ -1242,21 +1086,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted,
   },
 
-  // Streak
-  streakWrap: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-    backgroundColor: colors.accentFill, borderRadius: radius.md,
-    padding: spacing.md, borderWidth: 1, borderColor: colors.accent,
-  },
-  streakIcon: { fontSize: 28 },
-  streakNumber: { fontFamily: fonts.serif, fontSize: 16, color: colors.accent, fontWeight: '700' },
-  streakSub: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: 2 },
-
   // Mode cards
   modeCard: { borderRadius: radius.md, overflow: 'hidden', borderWidth: 1, borderColor: colors.border },
-  modeCardDone: { opacity: 0.6 },
   modeBody: { backgroundColor: colors.surface, padding: spacing.md },
-  modeDaily: { borderColor: 'transparent' },
+  modeFeatured: { borderColor: 'transparent' },
   modeGradient: { padding: spacing.md },
   modeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   modeIconBox: {
@@ -1266,8 +1099,10 @@ const styles = StyleSheet.create({
   modeEmoji: { fontSize: 24 },
   modeTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.text, marginBottom: 2 },
   modeDesc: { fontFamily: fonts.sans, fontSize: 13, color: colors.textMuted, lineHeight: 18 },
-  modeStat: { fontFamily: fonts.sans, fontSize: 11, color: colors.accent, marginTop: 4, fontWeight: '600' },
   modeChevron: { fontSize: 22, fontWeight: '300', color: colors.textMuted, paddingHorizontal: spacing.sm },
+  modeTitleOnAccent: { color: colors.white },
+  modeDescOnAccent: { color: colors.white },
+  modeChevronOnAccent: { color: colors.white },
 
   // ── Generic screen header ──
   screenHeader: {
@@ -1285,10 +1120,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xxl + spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.sm,
   },
   playingTitle: { fontFamily: fonts.serif, fontSize: 16, color: colors.text, flex: 1, textAlign: 'center' },
-  playingCombo: {
-    width: 60, textAlign: 'right', fontFamily: fonts.sans, fontSize: 14,
-    fontWeight: '700', color: colors.accent,
-  },
   playScroll: { flex: 1 },
   playScrollContent: { padding: spacing.md, paddingBottom: spacing.xxl + spacing.xl, gap: spacing.md },
 
@@ -1300,7 +1131,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  playFormatText: { fontFamily: fonts.sans, fontSize: 13, fontWeight: '700', color: colors.accent },
+  playFormatText: { fontFamily: fonts.sans, fontSize: 13, fontWeight: '700', color: colors.accentText },
   playXpHint: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted },
   playPrompt: { fontFamily: fonts.serif, fontSize: 18, color: colors.text, marginVertical: spacing.sm },
 
@@ -1310,7 +1141,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg, borderRadius: radius.sm,
   },
   indiceRowNew: { borderLeftWidth: 3, borderLeftColor: colors.accent },
-  indiceNum: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, width: 24 },
+  indiceNum: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, width: 24 },
   indiceText: { flex: 1, fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.textSoft },
   revealBtn: {
     backgroundColor: colors.bg, padding: spacing.md, borderRadius: radius.sm,
@@ -1322,7 +1153,7 @@ const styles = StyleSheet.create({
   // Citation
   quoteBlock: { padding: spacing.md, backgroundColor: colors.bg, borderRadius: radius.sm, borderLeftWidth: 3, borderLeftColor: colors.accent },
   quoteText: { fontFamily: fonts.serifItalic, fontSize: 16, lineHeight: 24, color: colors.text },
-  quoteAuthor: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: spacing.sm },
+  quoteAuthor: { fontFamily: fonts.sans, fontSize: 12, color: colors.textMuted, marginTop: spacing.sm, fontStyle: 'italic' },
   citationOptions: { gap: spacing.sm },
   citationOption: {
     padding: spacing.sm, backgroundColor: colors.bg, borderRadius: radius.sm,
@@ -1353,7 +1184,7 @@ const styles = StyleSheet.create({
   fauxAmisBlock: { padding: spacing.md, backgroundColor: colors.bg, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, gap: spacing.sm },
   fauxAmisBlockCorrect: { borderColor: colors.success, backgroundColor: 'rgba(76,175,80,0.08)' },
   fauxAmisBlockWrong: { borderColor: colors.error, backgroundColor: 'rgba(233,69,96,0.08)' },
-  fauxAmisLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, letterSpacing: 0.5 },
+  fauxAmisLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, letterSpacing: 0.5 },
   fauxAmisDesc: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.textSoft },
   fauxAmisTypes: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   fauxAmisTypeBtn: { padding: spacing.xs, borderRadius: radius.sm },
@@ -1382,14 +1213,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans, fontSize: 15, fontWeight: '700',
   },
   keyDiffBox: { padding: spacing.md, backgroundColor: colors.accentFill, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.accent },
-  keyDiffLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, marginBottom: spacing.xs },
+  keyDiffLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, marginBottom: spacing.xs },
   keyDiffText: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textSoft },
 
   // Detail
   sceneBlock: { padding: spacing.md, backgroundColor: colors.bg, borderRadius: radius.sm, borderLeftWidth: 3, borderLeftColor: colors.accent },
   sceneText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.textSoft, fontStyle: 'italic' },
   detailReveal: { padding: spacing.md, backgroundColor: colors.accentFill, borderRadius: radius.sm },
-  detailKeyLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, marginBottom: spacing.xs },
+  detailKeyLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, marginBottom: spacing.xs },
   detailKeyText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: colors.text },
 
   // Common
@@ -1416,19 +1247,13 @@ const styles = StyleSheet.create({
   revealResultIconBig: { fontSize: 44, fontWeight: '700' as any, color: colors.text },
   revealResultLabel: { fontFamily: fonts.serif, fontSize: 22, color: colors.text, marginBottom: spacing.xs },
 
-  comboBanner: {
-    backgroundColor: '#e07b5422', borderWidth: 1, borderColor: '#e07b54',
-    padding: spacing.sm, borderRadius: radius.sm, alignItems: 'center',
-  },
-  comboBannerText: { fontFamily: fonts.sans, fontSize: 14, fontWeight: '700', color: '#e07b54' },
-
   revealTypeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.sm },
   revealTypeName: { fontFamily: fonts.serif, fontSize: 18, color: colors.text },
   revealExplanation: {
     padding: spacing.md, backgroundColor: colors.surface, borderRadius: radius.sm,
     borderWidth: 1, borderColor: colors.border,
   },
-  lessonLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 6 },
+  lessonLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 6 },
   revealExplanationText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 22, color: colors.textSoft },
 
   funFactCard: {
@@ -1445,9 +1270,9 @@ const styles = StyleSheet.create({
   },
   ficheUnlockDot: { width: 16, height: 16, borderRadius: 8 },
   ficheUnlockInfo: { flex: 1 },
-  ficheUnlockLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.accent, fontWeight: '700', letterSpacing: 0.5 },
+  ficheUnlockLabel: { fontFamily: fonts.sans, fontSize: 11, color: colors.accentText, fontWeight: '700', letterSpacing: 0.5 },
   ficheUnlockName: { fontFamily: fonts.serif, fontSize: 16, color: colors.text, marginTop: 2 },
-  ficheUnlockArrow: { fontFamily: fonts.sans, fontSize: 22, color: colors.accent },
+  ficheUnlockArrow: { fontFamily: fonts.sans, fontSize: 22, color: colors.accentText },
 
   nextBtn: {
     backgroundColor: colors.accent, padding: spacing.md, borderRadius: radius.md, alignItems: 'center', marginTop: spacing.sm,
@@ -1471,23 +1296,6 @@ const styles = StyleSheet.create({
     position: 'absolute', top: -10, right: 12, flexDirection: 'row', gap: 4,
   },
   celebrationEmoji: { fontSize: 24 },
-
-  // ── Session summary ──
-  summaryContent: { padding: spacing.lg, paddingBottom: spacing.xxl + spacing.xl, alignItems: 'center', gap: spacing.md },
-  summaryEmoji: { fontSize: 64, marginTop: spacing.lg },
-  summaryTitle: { fontFamily: fonts.serif, fontSize: 28, color: colors.text },
-  summaryScore: { fontFamily: fonts.sans, fontSize: 16, color: colors.textSoft },
-  summaryStats: {
-    width: '100%', backgroundColor: colors.surface, borderRadius: radius.md,
-    padding: spacing.md, borderWidth: 1, borderColor: colors.border, gap: spacing.sm,
-  },
-  summaryStatRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  summaryStatLabel: { fontFamily: fonts.sans, fontSize: 14, color: colors.textMuted },
-  summaryStatValue: { fontFamily: fonts.sans, fontSize: 16, fontWeight: '700', color: colors.text },
-  summaryTomorrow: {
-    fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.textMuted,
-    textAlign: 'center', fontStyle: 'italic', paddingHorizontal: spacing.md, marginTop: spacing.xs,
-  },
 
   // ── Pokédex ──
   collectionScroll: { flex: 1 },
@@ -1546,19 +1354,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface, borderRadius: radius.md, borderLeftWidth: 3, borderLeftColor: colors.accent,
   },
   ficheQuote: { fontFamily: fonts.serifItalic, fontSize: 15, lineHeight: 23, color: colors.text },
-  ficheQuoteSource: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginTop: spacing.sm },
+  ficheQuoteSource: { fontFamily: fonts.sans, fontSize: 11, color: colors.textMuted, marginTop: spacing.sm, fontStyle: 'italic' },
   ficheInfoCard: {
     marginHorizontal: spacing.md, marginBottom: spacing.md, padding: spacing.md,
     backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
   },
   ficheInfoRow: { gap: spacing.xs },
-  ficheInfoLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, letterSpacing: 0.5 },
+  ficheInfoLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, letterSpacing: 0.5 },
   ficheInfoValue: { fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft },
   ficheInfoDivider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.md },
   ficheWhyCard: {
     marginHorizontal: spacing.md, padding: spacing.md, marginBottom: spacing.md,
     backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
   },
-  ficheWhyLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accent, letterSpacing: 0.5, marginBottom: spacing.sm },
+  ficheWhyLabel: { fontFamily: fonts.sans, fontSize: 11, fontWeight: '700', color: colors.accentText, letterSpacing: 0.5, marginBottom: spacing.sm },
   ficheWhyText: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 22, color: colors.textSoft },
 });

@@ -16,6 +16,7 @@ import {
   auth, signOut, deleteAccount, isAppleSignedIn, isGoogleSignedIn, trackScreen,
 } from '../constants/firebase';
 import { useT } from '../i18n';
+import { prepareJournalSignOut, clearLocalJournal, stopJournalSync } from '../constants/ritualJournal';
 import { FEEDBACK_EMAIL, openFeedbackEmail } from '../utils/feedback';
 
 export default function AccountScreen() {
@@ -26,12 +27,15 @@ export default function AccountScreen() {
   const user = auth.currentUser;
   const provider = isAppleSignedIn(user) ? 'Apple'
                  : isGoogleSignedIn(user) ? 'Google'
-                 : '—';
+                 : '';
 
   const handleSignOut = async () => {
     if (busy) return;
     setBusy('signout');
     try {
+      // Send pending journal answers first, then drop the phone copy.
+      const uid = auth.currentUser?.uid;
+      if (uid) await prepareJournalSignOut(uid);
       await signOut();
       // Reset the navigation stack — root layout will detect signed-out
       // state and render the AuthScreen.
@@ -45,14 +49,20 @@ export default function AccountScreen() {
 
   const performDelete = async () => {
     setBusy('delete');
+    const uid = auth.currentUser?.uid;
+    // No journal upload may land after the online copy has been listed.
+    if (uid) stopJournalSync(uid);
     try {
       await deleteAccount();
+      if (uid) await clearLocalJournal(uid);
       // Auth listener in _layout will pick up the signed-out state
       // and render the AuthScreen.
       router.replace('/');
     } catch (e: any) {
       const code = e?.code as string | undefined;
       if (code === 'auth/requires-recent-login') {
+        // The data was already deleted online before this error.
+        if (uid) await clearLocalJournal(uid);
         Alert.alert(
           t('account.reauthTitle'),
           t('account.reauthBody'),
@@ -68,10 +78,8 @@ export default function AccountScreen() {
           ],
         );
       } else {
-        Alert.alert(
-          t('account.deleteFailedTitle'),
-          e?.message ?? t('account.deleteFailedBody'),
-        );
+        // Offline or server error: nothing was deleted, the user can retry.
+        Alert.alert(t('account.deleteFailedTitle'), t('account.deleteFailedBody'));
       }
     } finally {
       setBusy(null);
@@ -248,7 +256,7 @@ const styles = StyleSheet.create({
     borderColor: colors.accent,
   },
   langBtnText: { fontFamily: fonts.sans, fontSize: 14, color: colors.textSoft },
-  langBtnTextActive: { color: colors.accent, fontWeight: '700' },
+  langBtnTextActive: { color: colors.accentText, fontWeight: '700' },
 
   card: {
     marginHorizontal: spacing.md,
@@ -281,7 +289,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.accent,
     alignItems: 'center',
   },
-  feedbackBtnText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accent },
+  feedbackBtnText: { fontFamily: fonts.sans, fontSize: 15, fontWeight: '700', color: colors.accentText },
 
   actionBtn: {
     marginHorizontal: spacing.md, marginTop: spacing.lg,

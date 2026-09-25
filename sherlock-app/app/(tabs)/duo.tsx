@@ -203,8 +203,10 @@ function TypeGrid({
                 {t}
               </Text>
               <Text
-                style={[gridStyles.short, { color: isSel ? 'rgba(255,255,255,0.8)' : colors.textDim }]}
+                style={[gridStyles.short, { color: isSel ? colors.white : colors.textMuted }]}
                 numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
               >
                 {typeNames[i]}
               </Text>
@@ -251,7 +253,7 @@ const gridStyles = StyleSheet.create({
   },
   short: {
     fontFamily: fonts.sans,
-    fontSize: 8,
+    fontSize: 10,
     textAlign: 'center',
     marginTop: 1,
   },
@@ -606,7 +608,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.accent,
   },
   shortcutChipText: {
-    fontFamily: fonts.sans, fontSize: 13, color: colors.accent, fontWeight: '600',
+    fontFamily: fonts.sans, fontSize: 13, color: colors.accentText, fontWeight: '600',
   },
 
   // ── Selectors ──
@@ -652,7 +654,7 @@ const styles = StyleSheet.create({
   contextBannerText: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: colors.accent,
+    color: colors.accentText,
     fontWeight: '600',
   },
 

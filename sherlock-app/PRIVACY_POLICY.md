@@ -1,12 +1,12 @@
 # Politique de confidentialité — 5herlock
 
-**Dernière mise à jour : 17 avril 2026**
+**Dernière mise à jour : 25 septembre 2026**
 
 ---
 
 ## 1. Qui sommes-nous ?
 
-L'application **5herlock** (ci-après « l'Application ») est éditée par **Thomas Deillon**, en tant que compagnon numérique du livre « On a tous besoin de quelqu'un d'autre ».
+L'application **5herlock** (ci-après « l'Application ») est éditée par **Thomas Deillon**.
 
 Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter à l'adresse : **contact@thomasdeillon.com**.
 
@@ -27,14 +27,16 @@ Ces données sont transmises par Google lors de votre authentification et sont *
 
 Dans le cadre de l'utilisation de l'Application, nous enregistrons :
 - Les **résultats de vos tests** (quiz ennéagramme : profil dominant, scores détaillés, ailes détectées)
-- Les **profils d'enfants** que vous créez (prénom, âge optionnel, historique des quiz)
-- Vos **progrès de jeu** dans la section « Les Dossiers Sherlock » (XP, rang, fiches collectées, streak quotidien)
-- **Optionnellement, vos notes personnelles** saisies dans la zone « Une situation qui vous intrigue »
+- Les **profils de votre famille** que vous enregistrez, enfants et proches (prénom, âge optionnel pour un enfant, historique des quiz)
+- Le **regard d'un proche** (« second avis ») : le profil qu'un proche vous attribue en répondant au quiz sur vous, avec sa date
+- Vos **progrès de jeu** dans la section « Testez-vous » (XP, rang, fiches collectées)
+- **Vos réponses à la question du jour** dans « Mon journal », sauvegardées avec votre compte dans un espace séparé, pour les retrouver sur un autre appareil
 
 ### 2.3 Données techniques
 
 À des fins de fonctionnement de l'Application :
 - **Date de dernière connexion**
+- **Nombre de visites par écran** de l'Application
 - **Logs d'erreurs éventuelles** (pour le débogage)
 
 ### 2.4 Ce que nous ne collectons PAS
@@ -51,8 +53,8 @@ Dans le cadre de l'utilisation de l'Application, nous enregistrons :
 
 Ces données sont strictement utilisées pour :
 1. **Vous authentifier** et reconnaître votre compte entre sessions
-2. **Sauvegarder vos progrès** (tests, profils enfants, jeu) et les synchroniser entre vos appareils
-3. **Améliorer l'Application** via des logs techniques anonymisés
+2. **Sauvegarder vos progrès** (tests, profils de votre famille, journal, jeu) et les synchroniser entre vos appareils
+3. **Améliorer l'Application**, à partir des données d'usage (section 2.3) et de l'outil d'administration décrit en section 6
 
 Aucune de vos données n'est :
 - ❌ Revendue à des tiers
@@ -83,7 +85,7 @@ Vous pouvez également demander la suppression immédiate de votre compte à tou
 ## 6. Qui a accès à vos données ?
 
 - **Vous** : vous pouvez consulter toutes les données associées à votre profil depuis l'Application
-- **L'éditeur** (Thomas Deillon) : uniquement de manière agrégée et anonymisée, pour améliorer l'Application
+- **L'éditeur** (Thomas Deillon) : pour faire fonctionner et améliorer l'Application, via un outil d'administration qui lui est réservé. Pour chaque compte, cet outil montre l'email et le nom, les dates d'inscription et de dernière connexion, les résultats des quiz, les profils enregistrés (prénom, âge d'un enfant, profil trouvé), la progression du jeu et le nombre de visites par écran. Les réponses de « Mon journal » sont stockées à part et n'apparaissent pas dans cet outil.
 - **Google Firebase** : en tant que sous-traitant technique d'hébergement
 
 **Aucune autre entité** n'a accès à vos données. Nous ne vendons, ne louons et ne partageons vos données avec aucun partenaire commercial.
