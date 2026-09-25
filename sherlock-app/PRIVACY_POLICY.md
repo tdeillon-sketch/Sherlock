@@ -1,4 +1,4 @@
-# Politique de confidentialité — 5herlock
+# Politique de confidentialité de 5herlock
 
 **Dernière mise à jour : 25 septembre 2026**
 
@@ -14,14 +14,16 @@ Pour toute question relative à cette politique de confidentialité, vous pouvez
 
 ## 2. Quelles données collectons-nous ?
 
-### 2.1 Données fournies via Google Sign-In
+### 2.1 Données fournies via votre service de connexion (Apple ou Google)
 
-Lors de votre connexion à l'Application via Google, nous recevons :
-- Votre **adresse email Google**
-- Votre **nom** (tel que renseigné sur votre compte Google)
-- Un **identifiant unique** Google (UID) utilisé pour vous reconnaître
+L'Application propose deux modes d'authentification au choix : **Sign in with Apple** ou **Google Sign-In**. Lors de votre connexion, nous recevons :
+- Votre **adresse email** (avec Sign in with Apple, vous pouvez choisir de masquer votre adresse réelle ; Apple génère alors un alias privé qui transfère le courrier)
+- Votre **nom** (tel que renseigné sur votre compte Apple ou Google, et seulement si vous l'autorisez)
+- Un **identifiant unique** (UID) utilisé pour vous reconnaître
 
-Ces données sont transmises par Google lors de votre authentification et sont **stockées de manière sécurisée** via les services Firebase Authentication de Google.
+Ces données sont transmises par Apple ou Google lors de votre authentification et sont **stockées de manière sécurisée** via les services Firebase Authentication de Google.
+
+Vous pouvez aussi utiliser l'Application **sans compte** : vos résultats sont alors enregistrés chez Google Firebase sous un identifiant anonyme, sans email ni nom. Si vous vous connectez ensuite avec un compte Apple ou Google, nouveau ou existant, ils sont ajoutés à ce compte. Un compte est nécessaire pour enregistrer les profils de votre famille et vos réponses dans « Mon journal ».
 
 ### 2.2 Données créées au fil de votre usage
 
@@ -103,7 +105,7 @@ Conformément au Règlement Général sur la Protection des Données (RGPD), vou
 - **Droit d'opposition** : vous opposer au traitement de vos données
 - **Droit de limitation** : demander la limitation du traitement
 
-Pour exercer ces droits, envoyez un email à **contact@thomasdeillon.com** avec comme sujet « RGPD — [votre demande] ».
+Pour exercer ces droits, envoyez un email à **contact@thomasdeillon.com** avec comme sujet « RGPD : [votre demande] ».
 
 Nous nous engageons à répondre dans un délai de **30 jours maximum**.
 
@@ -113,7 +115,7 @@ Nous nous engageons à répondre dans un délai de **30 jours maximum**.
 
 Nous mettons en œuvre les mesures techniques suivantes pour protéger vos données :
 - Chiffrement des communications (HTTPS/TLS)
-- Authentification sécurisée via Google Sign-In (OAuth 2.0)
+- Authentification sécurisée via Sign in with Apple ou Google Sign-In (OAuth 2.0)
 - Stockage chiffré côté Firebase
 - Accès restreint aux seuls services indispensables au fonctionnement
 
@@ -141,7 +143,7 @@ La date de dernière mise à jour figure en haut de ce document.
 
 **Contact** : contact@thomasdeillon.com
 
-**Réclamation auprès de l'autorité de contrôle** : vous pouvez déposer une réclamation auprès de la **CNIL** (Commission Nationale de l'Informatique et des Libertés), 3 Place de Fontenoy, 75007 Paris — [www.cnil.fr](https://www.cnil.fr).
+**Réclamation auprès de l'autorité de contrôle** : vous pouvez déposer une réclamation auprès de la **CNIL** (Commission Nationale de l'Informatique et des Libertés), 3 Place de Fontenoy, 75007 Paris, [www.cnil.fr](https://www.cnil.fr).
 
 ---
 
